@@ -1,0 +1,223 @@
+.ball-panel{
+  grid-area:balls;
+  padding:9px;
+  border:4px solid var(--pink);
+  background:#151238;
+  box-shadow:4px 4px 0 var(--shadow);
+}
+
+.ball-panel-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:7px;
+}
+
+.ball-panel-title{
+  color:var(--pink);
+  font-size:11px;
+  font-weight:bold;
+  letter-spacing:1.5px;
+}
+
+#selectedBallName{
+  display:block;
+  color:var(--yellow);
+  font-size:13px;
+  margin-top:2px;
+}
+
+#selectedBallDesc{
+  display:block;
+  max-width:240px;
+  color:var(--ink);
+  font-size:9px;
+  line-height:1.35;
+  text-align:right;
+}
+
+.ball-rack{
+  display:grid;
+  grid-template-columns:repeat(7,minmax(0,1fr));
+  gap:5px;
+}
+
+.ball-choice{
+  position:relative;
+  min-height:58px;
+  padding:5px 2px 4px;
+  border:3px solid var(--ink);
+  background:var(--panel2);
+  color:var(--ink);
+  box-shadow:3px 3px 0 var(--shadow);
+  font-size:9px;
+  cursor:pointer;
+}
+
+.ball-choice .ball-icon{
+  display:block;
+  font-size:20px;
+  line-height:1;
+  margin-bottom:4px;
+  color:var(--cyan);
+  text-shadow:2px 2px 0 var(--shadow);
+}
+
+.ball-choice .ball-count{
+  display:block;
+  margin-top:2px;
+  color:var(--yellow);
+  font-size:8px;
+}
+
+.ball-choice.active{
+  border-color:var(--yellow);
+  background:#49305f;
+  transform:translate(-1px,-1px);
+}
+
+.ball-choice.empty:not([data-ball="normal"]){
+  opacity:.42;
+  filter:grayscale(.6);
+}
+
+.ball-choice[data-ball="heavy"] .ball-icon{color:#ff9966}
+.ball-choice[data-ball="speed"] .ball-icon{color:#6bf7ff}
+.ball-choice[data-ball="lucky"] .ball-icon{color:#ffe45c}
+.ball-choice[data-ball="bomb"] .ball-icon{color:#ff5c67}
+.ball-choice[data-ball="ghost"] .ball-icon{color:#d6c7ff}
+.ball-choice[data-ball="magnet"] .ball-icon{color:#56e39f}
+
+.ball-supply{
+  display:grid;
+  grid-template-columns:54px minmax(0,1fr) 34px;
+  align-items:center;
+  gap:6px;
+  margin-top:7px;
+}
+
+.ball-supply span,
+.ball-supply em{
+  color:var(--cyan);
+  font-size:8px;
+  font-style:normal;
+  font-weight:bold;
+}
+
+.ball-supply em{
+  text-align:right;
+  color:var(--yellow);
+}
+
+.ball-supply-meter{
+  height:11px;
+  border:2px solid var(--ink);
+  background:#080b20;
+  overflow:hidden;
+}
+
+.ball-supply-meter>div{
+  height:100%;
+  width:0;
+  background:repeating-linear-gradient(90deg,var(--cyan) 0 10px,#27acc7 10px 20px);
+  transition:width .18s steps(12,end);
+}
+
+@media(min-width:901px){
+  .machine{
+    grid-template-areas:
+      "nav nav"
+      "game title"
+      "game hud"
+      "game progress"
+      "game balls"
+      "game slot"
+      "game control"
+      "game help";
+    grid-template-rows:auto auto auto auto auto auto auto 1fr;
+  }
+}
+
+@media(max-width:900px){
+  .machine{
+    grid-template-areas:
+      "nav"
+      "title"
+      "hud"
+      "progress"
+      "balls"
+      "slot"
+      "game"
+      "control"
+      "help";
+    grid-template-rows:repeat(9,max-content) !important;
+  }
+}
+
+@media(max-width:600px){
+  .ball-panel{
+    margin-bottom:5px;
+    padding:6px;
+    border-width:3px;
+    box-shadow:3px 3px 0 var(--shadow);
+  }
+
+  .ball-panel-head{
+    margin-bottom:5px;
+    gap:5px;
+  }
+
+  .ball-panel-title{font-size:8px}
+  #selectedBallName{font-size:10px}
+  #selectedBallDesc{max-width:210px;font-size:7px}
+
+  .ball-rack{
+    display:flex;
+    gap:4px;
+    overflow-x:auto;
+    padding-bottom:2px;
+    scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  .ball-rack::-webkit-scrollbar{display:none}
+
+  .ball-choice{
+    flex:0 0 58px;
+    min-height:48px;
+    border-width:2px;
+    box-shadow:2px 2px 0 var(--shadow);
+    font-size:8px;
+  }
+
+  .ball-choice .ball-icon{font-size:17px;margin-bottom:2px}
+  .ball-choice .ball-count{font-size:7px}
+  .ball-supply{margin-top:5px;grid-template-columns:45px minmax(0,1fr) 30px}
+  .ball-supply span,.ball-supply em{font-size:7px}
+  .ball-supply-meter{height:9px}
+}
+
+@media(max-height:700px) and (max-width:600px){
+  .ball-panel-head{display:none}
+  .ball-panel{padding:4px;margin-bottom:3px}
+  .ball-choice{flex-basis:50px;min-height:41px;padding:3px 1px;font-size:7px}
+  .ball-choice .ball-icon{font-size:14px}
+  .ball-supply{display:none}
+}
+
+@media(orientation:landscape) and (max-height:520px){
+  .machine{
+    grid-template-areas:
+      "nav nav"
+      "game title"
+      "game hud"
+      "game progress"
+      "game balls"
+      "game slot"
+      "game control";
+    grid-template-rows:max-content max-content max-content max-content max-content max-content minmax(0,1fr) !important;
+  }
+
+  .ball-panel{grid-area:balls;margin:0}
+}
