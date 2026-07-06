@@ -1,0 +1,99 @@
+/* Mobile grid stability overrides. Loaded after the main styles. */
+@media (max-width:900px){
+  .machine{
+    align-content:start !important;
+    grid-auto-rows:max-content;
+    grid-template-rows:repeat(7,max-content);
+  }
+
+  .machine > *{
+    min-width:0;
+    align-self:start;
+  }
+
+  .game-wrap{
+    width:100% !important;
+    height:auto !important;
+    max-height:none !important;
+    min-height:0;
+    aspect-ratio:720 / 920;
+  }
+}
+
+@media (max-width:600px){
+  body{
+    min-height:100svh;
+  }
+
+  .machine{
+    height:auto;
+    min-height:100svh;
+    align-content:start !important;
+    grid-template-rows:max-content max-content max-content max-content max-content max-content max-content;
+  }
+
+  .game-nav,
+  .title,
+  .hud,
+  .bonus-slot,
+  .game-wrap,
+  .control-panel,
+  .help{
+    height:auto !important;
+  }
+
+  .game-nav a{
+    display:grid;
+    place-items:center;
+    min-height:34px;
+  }
+
+  .hud-box{
+    height:auto !important;
+    min-height:43px;
+  }
+
+  .bonus-slot{
+    min-height:0;
+  }
+
+  .game-wrap{
+    display:block;
+    width:100% !important;
+    height:auto !important;
+    max-height:none !important;
+    aspect-ratio:720 / 920;
+    justify-self:stretch;
+  }
+
+  .control-panel{
+    min-height:0;
+  }
+}
+
+@media (max-height:700px) and (max-width:600px) and (orientation:portrait){
+  .machine{
+    align-content:start !important;
+  }
+
+  .game-wrap{
+    width:100% !important;
+    height:auto !important;
+    max-height:none !important;
+    aspect-ratio:720 / 920;
+  }
+}
+
+@media (orientation:landscape) and (max-height:520px){
+  .machine{
+    align-content:start !important;
+    grid-template-rows:max-content max-content max-content max-content minmax(0,1fr);
+  }
+
+  .game-wrap{
+    width:auto !important;
+    height:calc(100svh - 42px) !important;
+    max-height:none !important;
+    aspect-ratio:720 / 920;
+  }
+}
