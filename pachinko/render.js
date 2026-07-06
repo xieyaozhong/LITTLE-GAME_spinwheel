@@ -1,9 +1,8 @@
 ((G)=>{
   const {ctx}=G;
 
-  G.update=(dt)=>{
+  G.update=dt=>{
     const s=G.s;
-
     for(const p of G.pins)p.flash=Math.max(0,p.flash-dt);
     for(const b of G.bumpers)b.flash=Math.max(0,b.flash-dt);
 
@@ -14,26 +13,27 @@
       if(ball.trail.length>(ball.super?16:10))ball.trail.shift();
       for(const t of ball.trail)t.life-=dt;
 
-      ball.vy+=G.gravity*dt;
+      G.applyBallForces?.(ball,dt);
+      ball.vy+=G.gravity*(ball.gravityMul||1)*dt;
       ball.vx*=Math.pow(G.friction,dt);
       ball.vy*=Math.pow(G.friction,dt);
       ball.x+=ball.vx*dt;
       ball.y+=ball.vy*dt;
 
-      if(ball.x+ball.r>680){ball.x=680-ball.r;ball.vx*=-G.bounce}
-      if(ball.x-ball.r<38){ball.x=38+ball.r;ball.vx*=-G.bounce}
-      if(ball.y-ball.r<68){ball.y=68+ball.r;ball.vy*=-G.bounce}
+      if(ball.x+ball.r>680){ball.x=680-ball.r;ball.vx*=-ball.bounce}
+      if(ball.x-ball.r<38){ball.x=38+ball.r;ball.vx*=-ball.bounce}
+      if(ball.y-ball.r<68){ball.y=68+ball.r;ball.vy*=-ball.bounce}
       if(ball.y<145&&ball.x>590)ball.vx-=.28*dt;
 
       for(const pin of G.pins){
-        if(G.collide(ball,pin)){
-          pin.flash=5;
-          s.score+=ball.super?3:1;
-          G.setHigh(false);
-          s.hud=true;
-          if(Math.random()<(G.compact?.08:.15)){
-            G.particles(pin.x,pin.y,ball.super?G.p.pink:G.p.white,G.compact?2:3);
-          }
+        if(G.shouldHitPin?.(ball,pin)===false)continue;
+        if(!G.collide(ball,pin))continue;
+        pin.flash=5;
+        s.score+=ball.pinScore||1;
+        G.setHigh(false);
+        s.hud=true;
+        if(Math.random()<(G.compact?.08:.15)){
+          G.particles(pin.x,pin.y,ball.core||G.p.white,G.compact?2:3);
         }
       }
 
@@ -44,24 +44,25 @@
         if(ball.lastBumper===bumper&&now-(ball.lastBumperAt||0)<180)continue;
         ball.lastBumper=bumper;
         ball.lastBumperAt=now;
-
         bumper.flash=8;
+
         G.award(
-          bumper.value*(ball.super?2:1),
+          bumper.value*(ball.bumperMult||1),
           bumper.x,
           bumper.y-30,
           bumper.color
         );
-        G.energy(1,'撞擊彩色轉盤');
+        G.energy(ball.energyPerBumper||1,'撞擊彩色轉盤');
         G.onBumperHit?.(bumper,ball);
-        G.particles(bumper.x,bumper.y,bumper.color,G.compact?7:10);
-        s.shake=4;
+        G.particles(bumper.x,bumper.y,ball.core||bumper.color,G.compact?7:10);
+        s.shake=ball.type==='heavy'?7:4;
 
         const dx=ball.x-bumper.x;
         const dy=ball.y-bumper.y;
         const d=Math.max(1,Math.hypot(dx,dy));
-        ball.vx+=dx/d*(ball.super?3.2:2.2);
-        ball.vy+=dy/d*(ball.super?3.2:2.2);
+        const kick=ball.kick||1;
+        ball.vx+=dx/d*2.2*kick;
+        ball.vy+=dy/d*2.2*kick;
       }
 
       if(ball.y>822||ball.y>G.H+50)G.finish(ball);
@@ -69,22 +70,21 @@
 
     s.ballsLive=s.ballsLive.filter(b=>b.alive||b.y<G.H+80);
 
-    s.particles.forEach(p=>{
+    for(const p of s.particles){
       p.x+=p.vx*dt;
       p.y+=p.vy*dt;
       p.vy+=.06*dt;
       p.life-=dt;
-    });
+    }
     s.particles=s.particles.filter(p=>p.life>0);
 
-    s.texts.forEach(t=>{
+    for(const t of s.texts){
       t.y-=.7*dt;
       t.life-=dt;
-    });
+    }
     s.texts=s.texts.filter(t=>t.life>0);
 
     s.shake*=G.reduced?.45:.88;
-
     G.playTick?.();
 
     const effect=Math.max(0,Math.ceil((s.feverUntil-performance.now())/1000));
@@ -125,9 +125,7 @@
     G.rect(0,0,G.W,G.H,p.bg);
 
     for(let i=0;i<55;i++){
-      const x=i*137%G.W;
-      const y=i*83%G.H;
-      const z=i%4===0?4:2;
+      const x=i*137%G.W,y=i*83%G.H,z=i%4===0?4:2;
       G.rect(x,y,z,z,i%3===0?p.cyan:'#343a78');
     }
 
@@ -157,10 +155,10 @@
     G.text('▲',654,740,22,p.yellow);
     G.text('POWER',654,775,13,p.cyan);
 
-    for(const x of G.pins){
-      const c=x.flash>0?p.yellow:p.white;
-      G.rect(x.x-6,x.y-6,12,12,p.shadow);
-      G.rect(x.x-4,x.y-4,8,8,c);
+    for(const pin of G.pins){
+      const color=pin.flash>0?p.yellow:p.white;
+      G.rect(pin.x-6,pin.y-6,12,12,p.shadow);
+      G.rect(pin.x-4,pin.y-4,8,8,color);
     }
 
     for(const b of G.bumpers){
@@ -191,7 +189,6 @@
       ctx.arc(b.x,b.y,b.r-8,0,Math.PI*2);
       ctx.fillStyle=p.bg;
       ctx.fill();
-
       G.text(b.label,b.x,b.y,15,b.color);
     }
 
@@ -204,44 +201,64 @@
       ctx.lineTo(x,910);
       ctx.stroke();
     }
-
     ctx.beginPath();
     ctx.moveTo(634,790);
     ctx.lineTo(634,910);
     ctx.stroke();
 
-    for(const s of G.slots){
-      G.rect(s.x,s.y,s.w,s.h,'#121041',s.color,4);
-      G.text(s.label,s.x+s.w/2,s.y+36,s.label==='JACKPOT'?12:18,s.color);
+    for(const slot of G.slots){
+      G.rect(slot.x,slot.y,slot.w,slot.h,'#121041',slot.color,4);
+      G.text(slot.label,slot.x+slot.w/2,slot.y+36,slot.label==='JACKPOT'?12:18,slot.color);
     }
 
-    const boardTitle=G.isOverdrive?.()
+    const title=G.isOverdrive?.()
       ?'⚡ OVERDRIVE x2 ⚡'
       :G.isFever()
         ?'★ FEVER ZONE ★'
         :'LUCKY PIXEL ZONE';
-    const boardColor=G.isOverdrive?.()?p.pink:G.isFever()?p.pink:p.yellow;
-    G.text(boardTitle,G.W/2,110,23,boardColor);
+    G.text(title,G.W/2,110,23,G.isOverdrive?.()||G.isFever()?p.pink:p.yellow);
   };
 
   G.drawBalls=()=>{
-    for(const b of G.s.ballsLive){
-      if(!b.alive)continue;
+    for(const ball of G.s.ballsLive){
+      if(!ball.alive)continue;
+      const alpha=ball.type==='ghost'?.62:1;
 
-      for(let i=0;i<b.trail.length;i++){
-        const t=b.trail[i];
+      for(let i=0;i<ball.trail.length;i++){
+        const t=ball.trail[i];
         if(t.life<=0)continue;
-        const a=(i+1)/b.trail.length*.4;
-        ctx.fillStyle=b.super
-          ?`rgba(255,79,154,${a})`
-          :`rgba(78,233,255,${a})`;
-        ctx.fillRect(t.x-4,t.y-4,8,8);
+        const a=(i+1)/ball.trail.length*.42*alpha;
+        ctx.fillStyle=`rgba(${ball.trailColor||'78,233,255'},${a})`;
+        const size=ball.type==='speed'?6:8;
+        ctx.fillRect(t.x-size/2,t.y-size/2,size,size);
       }
 
-      G.rect(b.x-10,b.y-10,20,20,G.p.shadow);
-      G.rect(b.x-8,b.y-8,16,16,b.super?G.p.yellow:G.p.white);
-      G.rect(b.x-5,b.y-5,8,8,b.super?G.p.pink:G.p.cyan);
-      G.rect(b.x-5,b.y-5,4,4,'#fff');
+      ctx.save();
+      ctx.globalAlpha=alpha;
+      const r=ball.r||9;
+      G.rect(ball.x-r-2,ball.y-r-2,(r+2)*2,(r+2)*2,G.p.shadow);
+      G.rect(ball.x-r,ball.y-r,r*2,r*2,ball.color||G.p.white);
+      G.rect(ball.x-5,ball.y-5,10,10,ball.core||G.p.cyan);
+      G.rect(ball.x-5,ball.y-5,4,4,'#fff');
+
+      if(ball.type==='heavy'){
+        G.rect(ball.x-r+3,ball.y+r-6,r*2-6,3,'#8a3f29');
+      }else if(ball.type==='bomb'){
+        G.rect(ball.x-2,ball.y-r-5,4,6,G.p.yellow);
+        G.rect(ball.x-r+3,ball.y-2,r*2-6,4,G.p.red);
+      }else if(ball.type==='magnet'){
+        ctx.strokeStyle=G.p.green;
+        ctx.lineWidth=2;
+        ctx.strokeRect(ball.x-r-4,ball.y-r-4,(r+4)*2,(r+4)*2);
+      }else if(ball.type==='lucky'){
+        G.rect(ball.x-2,ball.y-r-4,4,4,G.p.yellow);
+        G.rect(ball.x-r-4,ball.y-2,4,4,G.p.yellow);
+        G.rect(ball.x+r,ball.y-2,4,4,G.p.yellow);
+      }else if(ball.type==='thunder'){
+        G.rect(ball.x+r,ball.y-r,4,7,G.p.yellow);
+        G.rect(ball.x-r-4,ball.y+2,4,7,G.p.pink);
+      }
+      ctx.restore();
     }
   };
 
@@ -251,7 +268,6 @@
       G.rect(p.x,p.y,p.size,p.size,p.color);
     }
     ctx.globalAlpha=1;
-
     for(const t of G.s.texts){
       ctx.globalAlpha=Math.min(1,t.life/20);
       G.text(t.text,t.x,t.y,18,t.color);
@@ -260,24 +276,19 @@
   };
 
   let last=performance.now();
-
-  G.loop=(now)=>{
+  G.loop=now=>{
     const dt=Math.min(2,(now-last)/16.6667);
     last=now;
     G.update(dt);
 
     ctx.save();
     if(G.s.shake>0&&!G.reduced){
-      ctx.translate(
-        (Math.random()-.5)*G.s.shake,
-        (Math.random()-.5)*G.s.shake
-      );
+      ctx.translate((Math.random()-.5)*G.s.shake,(Math.random()-.5)*G.s.shake);
     }
     G.drawBoard();
     G.drawBalls();
     G.drawFx();
     ctx.restore();
-
     requestAnimationFrame(G.loop);
   };
 
@@ -299,52 +310,35 @@
 
   G.bind=()=>{
     const s=G.s,u=G.ui;
-
     G.canvas.addEventListener('pointerdown',e=>{
-      s.pointer=true;
-      s.pointerY=e.clientY;
-      s.moved=false;
+      s.pointer=true;s.pointerY=e.clientY;s.moved=false;
       G.canvas.setPointerCapture?.(e.pointerId);
     });
-
     G.canvas.addEventListener('pointermove',e=>{
       if(!s.pointer)return;
       if(Math.abs(e.clientY-s.pointerY)>8)s.moved=true;
       if(s.moved)G.pointerPower(e);
     });
-
     G.canvas.addEventListener('pointerup',e=>{
       if(!s.pointer)return;
       s.pointer=false;
       G.canvas.releasePointerCapture?.(e.pointerId);
       if(!s.moved)G.launch();
     });
-
     G.canvas.addEventListener('pointercancel',()=>s.pointer=false);
-
     u.powerSlider.addEventListener('input',()=>{
       s.power=Number(u.powerSlider.value)/100;
       G.updateHud();
     });
-
     u.launch.addEventListener('click',G.launch);
     u.auto.addEventListener('click',()=>G.toggleAuto());
     u.reset.addEventListener('click',G.reset);
     u.slotSpin.addEventListener('click',G.spinSlot);
 
     addEventListener('keydown',e=>{
-      if(e.code==='Space'){
-        e.preventDefault();
-        G.launch();
-      }
-      if(e.key==='ArrowUp'){
-        s.power=Math.min(1,s.power+.05);
-        G.updateHud();
-      }
-      if(e.key==='ArrowDown'){
-        s.power=Math.max(.2,s.power-.05);
-        G.updateHud();
-      }
+      if(e.code==='Space'){e.preventDefault();G.launch()}
+      if(e.key==='ArrowUp'){s.power=Math.min(1,s.power+.05);G.updateHud()}
+      if(e.key==='ArrowDown'){s.power=Math.max(.2,s.power-.05);G.updateHud()}
       if(e.key.toLowerCase()==='s')G.spinSlot();
     });
 
