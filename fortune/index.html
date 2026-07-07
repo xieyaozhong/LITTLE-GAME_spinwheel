@@ -2,56 +2,379 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#f6a9c8">
-<title>桃桃神籤｜像素占卜</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#2b193d">
+<title>桃桃神籤｜像素搖籤占卜</title>
 <style>
-:root{--ink:#57364a;--pink:#f39abc;--deep:#d65d8c;--cream:#fff4d8;--paper:#fffdf3;--gold:#ffd166;--red:#ec6378}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;min-height:100%;font-family:"PingFang TC","Noto Sans TC",system-ui,sans-serif;color:var(--ink)}
-body{min-height:100dvh;padding:max(14px,env(safe-area-inset-top)) 14px max(20px,env(safe-area-inset-bottom));background:linear-gradient(90deg,#ffffff22 1px,transparent 1px),linear-gradient(#ffffff22 1px,transparent 1px),linear-gradient(#f7b4cf 0 68%,#f2d7a8 68%);background-size:16px 16px,16px 16px,auto}
-.app{width:min(100%,460px);min-height:calc(100dvh - 34px);margin:auto;display:flex;flex-direction:column;align-items:center}.box{border:4px solid var(--ink);border-radius:9px;box-shadow:4px 5px 0 #a85e82}
-header{width:100%;padding:11px;text-align:center;background:#fff3d9ed}h1{margin:0;color:var(--deep);font-size:clamp(24px,7vw,32px);text-shadow:2px 2px #fff}.sub{margin:4px 0 0;font-size:13px;font-weight:800}
-.scene{flex:1;width:100%;min-height:470px;display:flex;flex-direction:column;justify-content:center;align-items:center;position:relative}.star{position:absolute;color:var(--gold);font-size:27px;text-shadow:2px 2px var(--ink);animation:float 2.5s ease-in-out infinite}.s1{top:12%;left:8%}.s2{top:23%;right:9%;animation-delay:-1s}@keyframes float{50%{transform:translateY(-8px) rotate(8deg)}}
-.cat{width:92px;height:66px;position:relative;margin-bottom:5px}.head{position:absolute;left:12px;top:10px;width:68px;height:54px;background:#fff9eb;border:4px solid var(--ink);border-radius:10px;box-shadow:4px 4px #0002}.ear{position:absolute;top:-12px;width:24px;height:26px;background:#fff9eb;border:4px solid var(--ink);border-radius:5px;z-index:-1}.el{left:3px;transform:rotate(-12deg)}.er{right:3px;transform:rotate(12deg)}.eye{position:absolute;top:21px;width:6px;height:8px;background:var(--ink)}.eye.l{left:17px}.eye.r{right:17px}.mouth{position:absolute;left:28px;top:34px;width:11px;height:7px;border-bottom:3px solid var(--ink);border-radius:50%}.cheek{position:absolute;top:34px;width:10px;height:6px;background:#ffb6cd;border-radius:50%}.cheek.l{left:5px}.cheek.r{right:5px}
-.potwrap{width:230px;height:280px;position:relative;display:grid;place-items:end center;transform-origin:50% 85%}.sticks{position:absolute;top:0;left:38px;width:154px;height:180px;transform-origin:50% 95%}.stick{position:absolute;left:67px;bottom:0;width:20px;height:170px;background:#f2c775;border:4px solid var(--ink);border-radius:4px;transform-origin:50% 100%;box-shadow:3px 3px #0002}.stick:after{content:attr(data-x);position:absolute;top:12px;left:50%;transform:translateX(-50%);color:var(--red);font-weight:900}.stick:nth-child(1){transform:rotate(-18deg) translateY(10px)}.stick:nth-child(2){transform:rotate(-10deg)}.stick:nth-child(3){transform:rotate(-3deg) translateY(8px)}.stick:nth-child(4){transform:rotate(5deg)}.stick:nth-child(5){transform:rotate(12deg) translateY(7px)}.stick:nth-child(6){transform:rotate(19deg)}
-.pot{width:184px;height:157px;position:relative;background:#eb7089;border:5px solid var(--ink);border-radius:18px 18px 38px 38px;box-shadow:0 8px #bd536d,5px 11px #0002}.pot:before{content:"";position:absolute;left:-12px;top:-17px;width:198px;height:27px;background:#ffc2d0;border:5px solid var(--ink);border-radius:8px}.label{position:absolute;left:50%;top:47px;transform:translateX(-50%);width:86px;height:73px;display:grid;place-items:center;background:var(--paper);border:4px solid var(--ink);font-size:34px;font-weight:900;color:var(--red);box-shadow:4px 4px #0002}
-.shake .pot,.shake .sticks{animation:shake .11s linear infinite}@keyframes shake{0%{transform:rotate(-4deg) translateX(-4px)}50%{transform:rotate(4deg) translateX(4px)}100%{transform:rotate(-4deg) translateX(-4px)}}
-.tip{text-align:center;font-weight:900;line-height:1.5;margin:4px 0 10px;min-height:46px}.status{display:inline-block;padding:4px 8px;background:var(--cream);border:3px solid var(--ink);border-radius:6px;font-size:12px;box-shadow:3px 3px #0002}
-.controls{width:100%;display:grid;gap:10px}button{font:inherit;color:var(--ink);font-weight:900;cursor:pointer}.main,.small,.again{border:4px solid var(--ink);border-radius:8px}.main{padding:14px;background:var(--pink);font-size:18px;box-shadow:0 6px var(--deep)}.small{padding:10px;background:var(--cream);box-shadow:0 5px #d7b979}.main:active,.small:active,.again:active{transform:translateY(4px);box-shadow:none}footer{font-size:11px;font-weight:700;text-align:center;padding:10px 0 0;opacity:.75}
-.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:18px;background:#46283999;backdrop-filter:blur(3px);z-index:20}.modal.show{display:flex}.card{width:min(100%,400px);max-height:88dvh;overflow:auto;position:relative;padding:17px;background:var(--paper);animation:pop .25s ease-out}@keyframes pop{from{transform:scale(.84);opacity:0}}.close{position:absolute;right:8px;top:8px;width:35px;height:35px;border:3px solid var(--ink);border-radius:5px;background:white}.rank{text-align:center;font-size:31px;font-weight:900;color:var(--red);text-shadow:2px 2px #ffd4df}.no{text-align:center;font-weight:800;font-size:13px}.title{text-align:center;font-size:20px}.poem{padding:11px;background:var(--cream);border:3px dashed var(--deep);text-align:center;font-weight:900;line-height:1.8;white-space:pre-line}.msg{line-height:1.7}.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.item{padding:9px;border:3px solid var(--ink);border-radius:6px;background:white;font-size:13px;line-height:1.45}.item b{display:block;color:var(--deep);margin-bottom:4px}.lucky{margin:11px 0;padding:9px;border:3px solid var(--ink);border-radius:6px;background:#e6f7ed;text-align:center;font-weight:900;line-height:1.6}.again{width:100%;padding:11px;background:var(--gold);box-shadow:0 5px #d1a43b}
-.spark{position:fixed;z-index:30;pointer-events:none;font-size:22px;animation:burst .9s ease-out forwards}@keyframes burst{to{opacity:0;transform:translate(var(--x),var(--y)) rotate(180deg) scale(1.5)}}
-@media(max-height:700px){.scene{min-height:410px}.potwrap{transform:scale(.82);margin:-25px 0}.cat{transform:scale(.85)}}
+:root{
+  --ink:#4b2940;
+  --night:#261735;
+  --night2:#492d5c;
+  --pink:#f487ad;
+  --pink2:#ffb7cf;
+  --red:#d84d72;
+  --cream:#fff0cd;
+  --paper:#fffaf0;
+  --gold:#ffd36a;
+  --wood:#bd5b72;
+  --wood-dark:#81364f;
+  --mint:#9bd8b3;
+  --pixel:4px;
+  --shake-x:0px;
+  --shake-r:0deg;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;overflow-x:hidden}
+body{
+  min-height:100dvh;
+  color:var(--ink);
+  font-family:"PingFang TC","Noto Sans TC",system-ui,sans-serif;
+  background:
+    linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px),
+    linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),
+    radial-gradient(circle at 50% 12%,#684672 0,#3c2750 34%,#21142f 72%);
+  background-size:16px 16px,16px 16px,auto;
+  overscroll-behavior:none;
+}
+button{font:inherit}
+button:focus-visible{outline:4px solid var(--gold);outline-offset:4px}
+.app{
+  width:min(100%,500px);
+  min-height:100dvh;
+  margin:auto;
+  padding:max(14px,env(safe-area-inset-top)) 14px max(18px,env(safe-area-inset-bottom));
+  display:flex;
+  flex-direction:column;
+  position:relative;
+  isolation:isolate;
+}
+.pixel-frame{
+  border:var(--pixel) solid var(--ink);
+  border-radius:8px;
+  box-shadow:0 5px 0 #2a1728,5px 5px 0 #2a1728;
+}
+.sky-decor{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:-3}
+.star{position:absolute;width:5px;height:5px;background:#fff3b4;box-shadow:5px 0 #fff3b4,-5px 0 #fff3b4,0 5px #fff3b4,0 -5px #fff3b4;animation:twinkle 2.2s steps(2,end) infinite}
+.star:nth-child(1){left:10%;top:10%;animation-delay:-.4s}.star:nth-child(2){right:13%;top:14%;transform:scale(.7);animation-delay:-1.1s}.star:nth-child(3){left:22%;top:27%;transform:scale(.55);animation-delay:-1.7s}.star:nth-child(4){right:25%;top:33%;transform:scale(.45);animation-delay:-.8s}
+@keyframes twinkle{50%{opacity:.3;transform:scale(.55)}}
+.moon{position:absolute;right:7%;top:6%;width:70px;height:70px;border-radius:50%;background:#ffe9aa;box-shadow:0 0 0 5px #cc9d75,0 0 25px #ffe59b88}.moon:after{content:"";position:absolute;right:-8px;top:-6px;width:65px;height:65px;border-radius:50%;background:#342144}
+.mountain{position:absolute;left:-12%;right:-12%;bottom:16%;height:180px;background:#1a1028;clip-path:polygon(0 65%,16% 32%,28% 56%,43% 16%,58% 58%,74% 28%,100% 68%,100% 100%,0 100%);opacity:.9}
+.mist{position:absolute;left:-15%;right:-15%;bottom:15%;height:88px;background:linear-gradient(180deg,transparent,#f9c7d322 40%,#f9c7d311);filter:blur(2px)}
+.brand{
+  position:relative;
+  padding:11px 58px 12px;
+  text-align:center;
+  background:linear-gradient(#fff7db,#ffe8b9);
+  z-index:5;
+}
+.brand:before,.brand:after{content:"";position:absolute;top:50%;width:36px;height:36px;transform:translateY(-50%);background:var(--red);border:4px solid var(--ink);box-shadow:inset 0 -5px #a83c5e}
+.brand:before{left:12px;clip-path:polygon(50% 0,100% 45%,76% 100%,24% 100%,0 45%)}
+.brand:after{right:12px;clip-path:polygon(50% 0,100% 45%,76% 100%,24% 100%,0 45%)}
+.brand h1{margin:0;font-size:clamp(24px,7vw,34px);letter-spacing:.13em;color:var(--red);text-shadow:2px 2px #fff,4px 4px #d9a777}
+.brand p{margin:3px 0 0;font-size:12px;font-weight:900;letter-spacing:.08em}
+.shrine{
+  flex:1;
+  min-height:560px;
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:72px 0 18px;
+}
+.torii{position:absolute;left:50%;top:28px;transform:translateX(-50%);width:330px;height:225px;opacity:.58;z-index:-1}
+.torii .beam1,.torii .beam2,.torii .post{position:absolute;background:#8f3657;border:4px solid #2c172a;box-shadow:inset 0 -6px #61243e}
+.torii .beam1{left:10px;right:10px;top:0;height:24px}.torii .beam1:before,.torii .beam1:after{content:"";position:absolute;top:-8px;width:38px;height:13px;background:#8f3657;border:4px solid #2c172a}.torii .beam1:before{left:-21px;transform:skewY(-12deg)}.torii .beam1:after{right:-21px;transform:skewY(12deg)}
+.torii .beam2{left:38px;right:38px;top:38px;height:19px}.torii .post{top:48px;bottom:0;width:30px}.torii .post.left{left:66px;transform:skewX(-2deg)}.torii .post.right{right:66px;transform:skewX(2deg)}
+.lantern{position:absolute;top:160px;width:48px;height:68px;background:#ffe29b;border:4px solid #3b2035;box-shadow:inset 0 7px #f7b86a,inset 0 -7px #db8d61,0 0 22px #ffd67d44;z-index:-1}.lantern:before,.lantern:after{content:"";position:absolute;left:6px;right:6px;height:7px;background:#7f3550;border:3px solid #3b2035}.lantern:before{top:-10px}.lantern:after{bottom:-10px}.lantern.left{left:3%;animation:sway 3.4s ease-in-out infinite;transform-origin:50% -50px}.lantern.right{right:3%;animation:sway 3.4s ease-in-out infinite reverse;transform-origin:50% -50px}
+@keyframes sway{50%{transform:rotate(3deg)}}
+.mascot{position:absolute;top:82px;left:50%;width:96px;height:78px;transform:translateX(-50%);z-index:2;filter:drop-shadow(4px 6px 0 #25152655)}
+.fox-head{position:absolute;left:12px;top:15px;width:72px;height:57px;background:#fff4dc;border:4px solid var(--ink);border-radius:10px}.fox-ear{position:absolute;top:-17px;width:27px;height:31px;background:#fff4dc;border:4px solid var(--ink);z-index:-1}.fox-ear:after{content:"";position:absolute;inset:5px;background:#f7a5b8}.fox-ear.left{left:3px;transform:rotate(-14deg);clip-path:polygon(50% 0,100% 100%,0 100%)}.fox-ear.right{right:3px;transform:rotate(14deg);clip-path:polygon(50% 0,100% 100%,0 100%)}
+.fox-eye{position:absolute;top:22px;width:12px;height:6px;border-bottom:4px solid var(--ink);border-radius:50%}.fox-eye.left{left:12px;transform:rotate(8deg)}.fox-eye.right{right:12px;transform:rotate(-8deg)}.fox-nose{position:absolute;left:31px;top:34px;width:8px;height:7px;background:var(--ink);clip-path:polygon(50% 100%,0 0,100% 0)}.fox-cheek{position:absolute;top:36px;width:11px;height:6px;background:#f7a5b8;border-radius:50%}.fox-cheek.left{left:4px}.fox-cheek.right{right:4px}
+.oracle-stage{position:relative;width:270px;height:340px;margin-top:70px;display:flex;align-items:flex-end;justify-content:center;perspective:900px}
+.glow-ring{position:absolute;left:50%;bottom:12px;width:230px;height:72px;transform:translateX(-50%);border-radius:50%;background:radial-gradient(ellipse,#ffd77b66 0,#f689b322 45%,transparent 72%);filter:blur(2px);animation:breathe 2.2s ease-in-out infinite;z-index:-1}
+@keyframes breathe{50%{transform:translateX(-50%) scale(1.1);opacity:.65}}
+.back-sticks{position:absolute;left:50%;bottom:122px;width:175px;height:190px;transform:translateX(-50%);transform-origin:50% 100%;z-index:1}
+.back-stick{position:absolute;left:77px;bottom:0;width:20px;height:184px;background:linear-gradient(90deg,#ffe5a3 0 28%,#e9b85f 29% 100%);border:4px solid var(--ink);border-radius:5px 5px 2px 2px;transform-origin:50% 100%;box-shadow:3px 3px 0 #2a172833}.back-stick:after{content:attr(data-char);position:absolute;top:12px;left:50%;transform:translateX(-50%);font-weight:1000;color:var(--red);font-size:14px}.back-stick:nth-child(1){transform:rotate(-22deg) translateY(15px)}.back-stick:nth-child(2){transform:rotate(-14deg) translateY(2px)}.back-stick:nth-child(3){transform:rotate(-7deg) translateY(12px)}.back-stick:nth-child(4){transform:rotate(1deg)}.back-stick:nth-child(5){transform:rotate(9deg) translateY(10px)}.back-stick:nth-child(6){transform:rotate(17deg) translateY(3px)}.back-stick:nth-child(7){transform:rotate(24deg) translateY(16px)}
+.drawn-stick{position:absolute;left:50%;bottom:119px;width:23px;height:192px;transform:translateX(-50%) translateY(118px) rotate(2deg);transform-origin:50% 100%;background:linear-gradient(90deg,#fff0b8 0 30%,#e6b356 31% 100%);border:4px solid var(--ink);border-radius:5px 5px 2px 2px;box-shadow:4px 5px 0 #2a172833;z-index:2;opacity:0}.drawn-stick .seal{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:13px;height:25px;display:grid;place-items:center;background:var(--red);color:#fff7e8;font-size:10px;font-weight:1000;border:2px solid var(--ink)}
+.drawn-stick .number-tag{position:absolute;top:50px;left:16px;width:0;height:70px;overflow:hidden;background:var(--paper);border:0 solid var(--ink);box-shadow:4px 4px 0 #2a172833;display:flex;align-items:center;justify-content:center;white-space:nowrap;color:var(--red);font-weight:1000;font-size:20px}.drawn-stick .number-tag span{opacity:0}
+.tube-wrap{position:relative;width:210px;height:185px;z-index:3;transform-origin:50% 92%;will-change:transform}.tube-back{position:absolute;left:8px;top:0;width:194px;height:34px;background:#ffb5c9;border:5px solid var(--ink);border-radius:9px;box-shadow:inset 0 -8px #da6f91}.tube-body{position:absolute;left:18px;top:18px;width:174px;height:156px;background:linear-gradient(90deg,#f98cae 0 18%,#e66f96 19% 65%,#c9557b 66% 100%);border:5px solid var(--ink);border-radius:18px 18px 40px 40px;box-shadow:inset 0 8px #ffa7c0,inset 0 -12px #ae4267,0 10px 0 #2d182b,7px 13px 0 #2d182b55}.tube-rim{position:absolute;left:0;top:8px;width:210px;height:34px;background:linear-gradient(#ffd2dd,#f28baa);border:5px solid var(--ink);border-radius:10px;box-shadow:inset 0 -7px #c95c80;z-index:4}.tube-label{position:absolute;left:50%;top:60px;width:88px;height:78px;transform:translateX(-50%);display:grid;place-items:center;background:#fff4dc;border:4px solid var(--ink);box-shadow:5px 5px 0 #873450;color:var(--red);font-size:37px;font-weight:1000}.tube-label:before,.tube-label:after{content:"✦";position:absolute;font-size:12px;color:var(--gold);text-shadow:1px 1px var(--ink)}.tube-label:before{left:6px;top:5px}.tube-label:after{right:6px;bottom:5px}
+.oracle-stage.manual-jolt .tube-wrap{transform:translateX(var(--shake-x)) rotate(var(--shake-r))}
+.oracle-stage.manual-jolt .back-sticks{transform:translateX(calc(-50% + var(--shake-x))) rotate(var(--shake-r))}
+.oracle-stage.auto-shake .tube-wrap{animation:tubeShake .105s steps(2,end) 15}.oracle-stage.auto-shake .back-sticks{animation:stickBundle .105s steps(2,end) 15}
+.oracle-stage.auto-shake .back-stick:nth-child(odd){animation:stickRattle .15s ease-in-out infinite}.oracle-stage.auto-shake .back-stick:nth-child(even){animation:stickRattle2 .13s ease-in-out infinite}
+@keyframes tubeShake{0%{transform:translate(-7px,1px) rotate(-4deg)}50%{transform:translate(8px,-2px) rotate(5deg)}100%{transform:translate(-6px,0) rotate(-3deg)}}
+@keyframes stickBundle{0%{transform:translateX(calc(-50% - 8px)) rotate(-5deg)}50%{transform:translateX(calc(-50% + 8px)) rotate(6deg)}100%{transform:translateX(calc(-50% - 7px)) rotate(-4deg)}}
+@keyframes stickRattle{50%{margin-bottom:9px}}@keyframes stickRattle2{50%{margin-bottom:-7px}}
+.oracle-stage.selecting .back-sticks{animation:selectPulse .45s ease-in-out 2}.oracle-stage.selecting .drawn-stick{opacity:1;animation:peek .7s cubic-bezier(.3,.85,.35,1) forwards}
+@keyframes selectPulse{50%{filter:brightness(1.22);transform:translateX(-50%) scale(1.03)}}
+@keyframes peek{0%{transform:translateX(-50%) translateY(118px) rotate(3deg)}65%{transform:translateX(-50%) translateY(40px) rotate(-2deg)}100%{transform:translateX(-50%) translateY(55px) rotate(1deg)}}
+.oracle-stage.extracting .drawn-stick{opacity:1;animation:extract 1.08s cubic-bezier(.17,.82,.21,1.13) forwards}
+.oracle-stage.extracting .tube-wrap{animation:tubeSettle .65s ease-out}
+@keyframes extract{0%{transform:translateX(-50%) translateY(55px) rotate(1deg)}42%{transform:translateX(-50%) translateY(-112px) rotate(-8deg)}72%{transform:translateX(-50%) translateY(-154px) rotate(5deg)}100%{transform:translateX(-50%) translateY(-140px) rotate(-2deg)}}
+@keyframes tubeSettle{20%{transform:rotate(3deg)}45%{transform:rotate(-2deg)}70%{transform:rotate(1deg)}}
+.oracle-stage.revealing .drawn-stick{opacity:1;transform:translateX(-50%) translateY(-140px) rotate(-2deg)}
+.oracle-stage.revealing .number-tag{animation:unroll .62s steps(7,end) forwards}.oracle-stage.revealing .number-tag span{animation:inkIn .25s .48s forwards}
+@keyframes unroll{0%{width:0;border-width:0}10%{border-width:4px}100%{width:92px;border-width:4px}}
+@keyframes inkIn{to{opacity:1}}
+.shake-panel{width:min(100%,430px);padding:12px 14px;margin-top:-2px;background:#fff3d8ef;position:relative;z-index:5}.message{text-align:center;font-weight:1000;line-height:1.45;min-height:23px}.energy-wrap{height:16px;margin-top:8px;background:#8c526b;border:3px solid var(--ink);border-radius:4px;overflow:hidden;box-shadow:inset 0 3px #48263a}.energy{height:100%;width:0;background:repeating-linear-gradient(90deg,var(--gold) 0 14px,#ffedaa 14px 18px);transition:width .12s linear}.hint-row{display:flex;align-items:center;justify-content:space-between;margin-top:7px;font-size:11px;font-weight:900}.sensor{padding:3px 7px;border:2px solid var(--ink);border-radius:4px;background:#fff9ec}.sensor.on{background:#d8f4df;color:#256845}
+.controls{width:min(100%,430px);display:grid;grid-template-columns:1fr .78fr;gap:10px;margin-top:12px;z-index:5}.btn{appearance:none;border:4px solid var(--ink);border-radius:8px;padding:13px 10px;font-weight:1000;color:var(--ink);cursor:pointer;transition:transform .08s,box-shadow .08s}.btn.primary{background:linear-gradient(#ffb3cb,#f482aa);box-shadow:0 6px 0 #9f3f65,4px 8px 0 #25152655}.btn.secondary{background:linear-gradient(#fff6dc,#f6d99e);box-shadow:0 6px 0 #bf8e4c,4px 8px 0 #25152655}.btn:active{transform:translateY(5px);box-shadow:0 1px 0 #6d324e}.btn:disabled{filter:saturate(.55);opacity:.8;cursor:default}
+footer{text-align:center;color:#f9dbe7;font-size:11px;font-weight:800;margin-top:12px;text-shadow:2px 2px #21122a}
+.reveal-flash{position:fixed;inset:0;pointer-events:none;z-index:30;background:radial-gradient(circle at center,#fff9db 0,#ffd779aa 18%,transparent 58%);opacity:0}.reveal-flash.show{animation:flash .65s ease-out}@keyframes flash{0%{opacity:0}25%{opacity:.85}100%{opacity:0}}
+.petal{position:fixed;z-index:31;pointer-events:none;width:10px;height:7px;background:#ffafc8;border:2px solid var(--ink);border-radius:70% 20% 70% 20%;animation:petalFly 1.15s ease-out forwards}@keyframes petalFly{to{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(420deg)}}
+.result-layer{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;padding:18px;background:#1b1024cc;backdrop-filter:blur(5px)}.result-layer.show{display:flex;animation:fade .25s ease-out}@keyframes fade{from{opacity:0}}
+.scroll{width:min(100%,420px);max-height:89dvh;overflow:auto;position:relative;padding:28px 18px 20px;background:linear-gradient(90deg,#ead5aa 0 10px,#fffaf0 10px calc(100% - 10px),#ead5aa calc(100% - 10px));border:4px solid var(--ink);box-shadow:0 9px 0 #2b1729,8px 13px 0 #160b1766;animation:scrollOpen .46s steps(8,end)}
+@keyframes scrollOpen{from{transform:scaleY(.08);opacity:.2}to{transform:scaleY(1);opacity:1}}
+.scroll:before,.scroll:after{content:"";position:absolute;left:-9px;right:-9px;height:18px;background:#bb5c72;border:4px solid var(--ink);box-shadow:inset 0 -5px #76334c}.scroll:before{top:-4px}.scroll:after{bottom:-4px}.close{position:absolute;right:13px;top:17px;width:35px;height:35px;border:3px solid var(--ink);border-radius:5px;background:#fff4dd;color:var(--ink);font-weight:1000;z-index:2}.rank{text-align:center;color:var(--red);font-size:34px;font-weight:1000;letter-spacing:.08em;text-shadow:2px 2px #ffd6df}.draw-no{text-align:center;font-size:13px;font-weight:900;margin-top:2px}.result-title{text-align:center;font-size:21px;margin:12px 30px 10px}.poem{padding:12px 8px;background:#fff0ce;border:3px dashed #cc6885;text-align:center;white-space:pre-line;line-height:1.8;font-weight:1000}.summary{font-size:15px;line-height:1.75;text-align:justify}.fortune-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.fortune-item{padding:10px;border:3px solid var(--ink);border-radius:6px;background:#fff;font-size:13px;line-height:1.5;box-shadow:3px 3px 0 #d8bda4}.fortune-item b{display:block;color:var(--red);margin-bottom:3px}.lucky{margin:11px 0;padding:10px;border:3px solid var(--ink);border-radius:6px;background:#daf1df;text-align:center;font-weight:1000;line-height:1.65}.again{width:100%;padding:12px;border:4px solid var(--ink);border-radius:7px;background:var(--gold);box-shadow:0 5px #b88935;color:var(--ink);font-weight:1000}
+@media(max-width:380px){.brand{padding-left:50px;padding-right:50px}.torii{width:290px}.oracle-stage{transform:scale(.92);margin-top:45px;margin-bottom:-18px}.shrine{min-height:520px}.controls{grid-template-columns:1fr}.fortune-grid{grid-template-columns:1fr}}
+@media(max-height:730px){.shrine{min-height:500px;padding-top:42px}.mascot{top:55px;transform:translateX(-50%) scale(.82)}.oracle-stage{transform:scale(.84);margin-top:34px;margin-bottom:-28px}.torii{top:8px;transform:translateX(-50%) scale(.86)}.lantern{top:125px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.001ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}.energy{transition:none}}
 </style>
 </head>
 <body>
+<div class="sky-decor" aria-hidden="true"><i class="star"></i><i class="star"></i><i class="star"></i><i class="star"></i><i class="moon"></i><i class="mountain"></i><i class="mist"></i></div>
 <main class="app">
-<header class="box"><h1>桃桃神籤</h1><p class="sub">搖一搖，抽出今天的像素運勢</p></header>
-<section class="scene"><span class="star s1">✦</span><span class="star s2">✧</span>
-<div class="cat"><i class="ear el"></i><i class="ear er"></i><div class="head"><i class="eye l"></i><i class="eye r"></i><i class="mouth"></i><i class="cheek l"></i><i class="cheek r"></i></div></div>
-<div class="potwrap" id="pot"><div class="sticks"><i class="stick" data-x="吉"></i><i class="stick" data-x="福"></i><i class="stick" data-x="運"></i><i class="stick" data-x="緣"></i><i class="stick" data-x="星"></i><i class="stick" data-x="願"></i></div><div class="pot"><div class="label">籤</div></div></div>
-<div class="tip"><div id="tip">先開啟搖動功能，再輕輕搖晃手機</div><span class="status" id="status">尚未開啟感測</span></div></section>
-<section class="controls"><button class="main" id="motion">📱 開啟手機搖籤</button><button class="small" id="draw">✨ 點我直接抽一支</button></section>
-<footer>占卜僅供娛樂與自我整理，不代替專業建議。</footer></main>
-<div class="modal" id="modal"><article class="card box"><button class="close" id="close">✕</button><div class="rank" id="rank"></div><div class="no" id="no"></div><h2 class="title" id="title"></h2><div class="poem" id="poem"></div><p class="msg" id="msg"></p><div class="grid"><div class="item"><b>💗 感情</b><span id="love"></span></div><div class="item"><b>💰 財運</b><span id="money"></span></div><div class="item"><b>📚 工作／學業</b><span id="work"></span></div><div class="item"><b>🌿 健康</b><span id="health"></span></div></div><div class="lucky" id="lucky"></div><button class="again" id="again">再抽一次</button></article></div>
+  <header class="brand pixel-frame">
+    <h1>桃桃神籤</h1>
+    <p>在月下神社，搖出今日的指引</p>
+  </header>
+
+  <section class="shrine" aria-label="搖籤區">
+    <div class="torii" aria-hidden="true"><i class="beam1"></i><i class="beam2"></i><i class="post left"></i><i class="post right"></i></div>
+    <i class="lantern left" aria-hidden="true"></i><i class="lantern right" aria-hidden="true"></i>
+    <div class="mascot" aria-hidden="true">
+      <i class="fox-ear left"></i><i class="fox-ear right"></i>
+      <div class="fox-head"><i class="fox-eye left"></i><i class="fox-eye right"></i><i class="fox-nose"></i><i class="fox-cheek left"></i><i class="fox-cheek right"></i></div>
+    </div>
+
+    <div class="oracle-stage" id="stage">
+      <div class="glow-ring"></div>
+      <div class="back-sticks" aria-hidden="true">
+        <i class="back-stick" data-char="福"></i><i class="back-stick" data-char="緣"></i><i class="back-stick" data-char="吉"></i><i class="back-stick" data-char="願"></i><i class="back-stick" data-char="運"></i><i class="back-stick" data-char="星"></i><i class="back-stick" data-char="光"></i>
+      </div>
+      <div class="drawn-stick" id="drawnStick" aria-hidden="true">
+        <i class="seal">桃</i><div class="number-tag"><span id="stickNumber">第 01 籤</span></div>
+      </div>
+      <div class="tube-wrap">
+        <div class="tube-back"></div><div class="tube-body"></div><div class="tube-rim"></div><div class="tube-label">籤</div>
+      </div>
+    </div>
+
+    <div class="shake-panel pixel-frame">
+      <div class="message" id="message">開啟感測後，握穩手機輕輕上下搖動</div>
+      <div class="energy-wrap" aria-label="搖籤進度"><div class="energy" id="energy"></div></div>
+      <div class="hint-row"><span>搖動能量</span><span class="sensor" id="sensor">感測尚未開啟</span></div>
+    </div>
+
+    <div class="controls">
+      <button class="btn primary" id="motionBtn">📱 開啟手機搖籤</button>
+      <button class="btn secondary" id="autoBtn">✨ 自動搖一支</button>
+    </div>
+  </section>
+  <footer>占卜結果僅供娛樂與自我整理，不代替專業建議。</footer>
+</main>
+
+<div class="reveal-flash" id="flash"></div>
+<div class="result-layer" id="resultLayer" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
+  <article class="scroll">
+    <button class="close" id="closeBtn" aria-label="關閉結果">✕</button>
+    <div class="rank" id="rank"></div>
+    <div class="draw-no" id="drawNo"></div>
+    <h2 class="result-title" id="resultTitle"></h2>
+    <div class="poem" id="poem"></div>
+    <p class="summary" id="summary"></p>
+    <div class="fortune-grid">
+      <div class="fortune-item"><b>💗 感情</b><span id="love"></span></div>
+      <div class="fortune-item"><b>💰 財運</b><span id="money"></span></div>
+      <div class="fortune-item"><b>📚 工作／學業</b><span id="work"></span></div>
+      <div class="fortune-item"><b>🌿 健康</b><span id="health"></span></div>
+    </div>
+    <div class="lucky" id="lucky"></div>
+    <button class="again" id="againBtn">收回籤，再求一次</button>
+  </article>
+</div>
+
 <script>
-const F=[
-{r:"大吉",t:"星光正落在你的路上",p:"晨風輕動花先笑\n一念澄明萬事開",m:"最近的努力開始累積成看得見的成果。穩穩往前，比一次做完所有事情更容易遇見好機會。",l:"坦率表達會得到溫柔回應。",n:"正財穩定，小驚喜可期。",w:"適合提案、面試與開始新計畫。",h:"精神回升，記得補水與睡飽。",c:"蜜桃粉",d:"8",q:"東南方"},
-{r:"大吉",t:"願望正在悄悄發芽",p:"春雨無聲潤小芽\n回頭已見滿庭花",m:"你以為沒有進展的事情，其實正在暗處慢慢成形。保持耐心，今天適合完成一件拖延已久的小事。",l:"持續的關心比華麗承諾更有效。",n:"適合儲蓄與長期規劃。",w:"練習與作品整理都有收穫。",h:"留意肩頸與眼睛疲勞。",c:"嫩芽綠",d:"3",q:"東方"},
-{r:"中吉",t:"雲會散，路也會亮",p:"雲遮明月非無月\n潮退方知石上光",m:"眼前的卡關不是失敗，而是提醒你換一種方法。把問題拆小，局勢就會開始鬆動。",l:"少猜測，直接而溫和地表達感受。",n:"適合比價與整理支出。",w:"小延誤後仍能順利完成。",h:"散步或提早休息很有幫助。",c:"天空藍",d:"6",q:"西方"},
-{r:"中吉",t:"慢一點，反而先抵達",p:"石階一步通高處\n莫把匆忙當遠行",m:"今天最重要的不是速度，而是方向。確認自己正在做正確的事，再穩定向前。",l:"穩定陪伴會增加安全感。",n:"大型消費隔一天再決定。",w:"適合校正、除錯與修改細節。",h:"避免久坐，安排短暫活動。",c:"奶油黃",d:"4",q:"北方"},
-{r:"小吉",t:"一杯溫柔就能轉運",p:"微光雖小能穿夜\n一語溫柔可解愁",m:"今天的好運藏在微小互動裡。對自己與他人多一點體諒，緊繃的事情會出現新的空間。",l:"一句真心稱讚會帶來好氣氛。",n:"避免情緒購物。",w:"有人願意幫忙，別怕詢問。",h:"飲食清淡、慢慢吃。",c:"薰衣草紫",d:"2",q:"西北方"},
-{r:"末吉",t:"先整理，再出發",p:"亂線耐心終可解\n空杯洗淨好盛茶",m:"事情看起來雜亂，但並沒有失控。先整理資料、帳務或心情，清晰感會帶回掌控力。",l:"重要話題留到心情平穩時談。",n:"暫緩非必要消費。",w:"先排除錯誤與遺漏。",h:"補充水分並讓眼睛休息。",c:"茶褐色",d:"1",q:"東北方"}
+const fortunes=[
+  {rank:"大吉",title:"星光正落在你的路上",poem:"晨風輕動花先笑\n一念澄明萬事開",summary:"最近的努力開始累積成看得見的成果。不要因為順利就急著同時完成所有事，穩穩往前，反而更容易遇見真正適合你的機會。",love:"坦率表達會得到溫柔回應，單身者容易遇到聊得來的人。",money:"正財穩定，小驚喜可期；適合整理預算，不宜衝動加碼。",work:"靈感與執行力都在線，適合提案、面試或開始新計畫。",health:"精神回升，記得補水與睡飽，狀態會更穩定。",color:"蜜桃粉",number:"8",direction:"東南方"},
+  {rank:"大吉",title:"願望正在悄悄發芽",poem:"春雨無聲潤小芽\n回頭已見滿庭花",summary:"你以為沒有進展的事情，其實正在暗處慢慢成形。保持耐心，不必反覆懷疑自己；今天適合完成一件拖延已久的小事。",love:"溫柔而持續的關心，比華麗承諾更有效。",money:"適合長期規劃與儲蓄，暫時不要追逐誇張回報。",work:"累積型任務特別順利，練習與作品整理都有收穫。",health:"留意肩頸與眼睛疲勞，每隔一段時間起身伸展。",color:"嫩芽綠",number:"3",direction:"東方"},
+  {rank:"中吉",title:"雲會散，路也會亮",poem:"雲遮明月非無月\n潮退方知石上光",summary:"眼前的卡關不是失敗，而是提醒你換一種方式。把問題拆小、先完成最簡單的一步，局勢就會開始鬆動。",love:"避免猜測對方心意，直接而不帶指責地說出感受。",money:"收支大致平衡，今天適合比價與取消不必要的訂閱。",work:"可能遇到小延誤，但重新排序後仍可順利完成。",health:"情緒容易累，散步、熱水澡或提早休息很有幫助。",color:"天空藍",number:"6",direction:"西方"},
+  {rank:"中吉",title:"慢一點，反而先抵達",poem:"石階一步通高處\n莫把匆忙當遠行",summary:"今天最重要的不是速度，而是方向。只要確認自己做的是正確的事，即使進度不快，也會比四處分心更接近目標。",love:"穩定陪伴勝過頻繁試探，關係會因安全感而升溫。",money:"有小額支出但多半值得，大型消費建議隔一天再決定。",work:"適合校正、除錯與修改細節，不宜同時開太多新任務。",health:"注意久坐與腰背僵硬，安排幾次短暫活動。",color:"奶油黃",number:"4",direction:"北方"},
+  {rank:"小吉",title:"一杯溫柔就能轉運",poem:"微光雖小能穿夜\n一語溫柔可解愁",summary:"今天的好運藏在微小互動裡。對自己與他人多一點體諒，原本緊繃的事情就會出現新的空間。",love:"一句真心稱讚會帶來好氣氛，別把關心藏得太深。",money:"避免情緒購物，留意小額但頻繁的花費。",work:"有人願意提供幫助，別怕開口詢問。",health:"腸胃較敏感，飲食清淡、慢慢吃會舒服許多。",color:"薰衣草紫",number:"2",direction:"西北方"},
+  {rank:"小吉",title:"把心收回來，好運就靠近",poem:"風來不必追風去\n守得心安自有晴",summary:"外界的聲音有點多，今天適合把注意力放回自己。少比較、少急著證明，反而能做出更準確的選擇。",love:"先照顧自己的感受，才有餘裕好好回應對方。",money:"保守為佳，適合盤點現有資源，不適合高風險嘗試。",work:"專心完成一項核心任務，成果會比想像中更好。",health:"睡眠是今日關鍵，晚上盡量減少螢幕刺激。",color:"月光白",number:"7",direction:"南方"},
+  {rank:"末吉",title:"先整理，再出發",poem:"亂線耐心終可解\n空杯洗淨好盛茶",summary:"事情看起來雜亂，但並沒有失控。今天不適合硬衝，先整理桌面、資料、帳務或心情，清晰感會帶回你的掌控力。",love:"容易因疲累而語氣變重，重要話題留到平穩時再談。",money:"暫緩非必要消費，先確認帳單與付款日期。",work:"先排除錯誤與遺漏，再開始新的進度。",health:"注意疲勞累積與頭痛，補充水分並讓眼睛休息。",color:"茶褐色",number:"1",direction:"東北方"},
+  {rank:"末吉",title:"今日宜低調蓄力",poem:"花未盛時根正深\n弓弦暫歇為長鳴",summary:"今天的能量更適合準備，而不是展示。把基礎打穩、把資料備齊，之後需要出手時會更有底氣。",love:"不必急著得到答案，給彼此一點呼吸空間。",money:"避免替別人承擔不必要的費用或做出模糊承諾。",work:"幕後準備、研究與練習特別有利，公開表現可再等等。",health:"適合溫和活動，不宜勉強挑戰超出負荷的強度。",color:"深莓紅",number:"5",direction:"西南方"}
 ];
-const $=x=>document.getElementById(x),pot=$("pot"),modal=$("modal");let busy=false,on=false,last=0,prev={x:0,y:0,z:0},audio;
-function beep(){try{audio=audio||new(AudioContext||webkitAudioContext);[660,784,988].forEach((f,i)=>{let o=audio.createOscillator(),g=audio.createGain(),t=audio.currentTime+i*.08;o.type="square";o.frequency.value=f;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.05,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+.15);o.connect(g).connect(audio.destination);o.start(t);o.stop(t+.16)})}catch(e){}}
-function burst(){for(let i=0;i<16;i++){let s=document.createElement("i");s.className="spark";s.textContent=["✦","✧","♡","★"][Math.random()*4|0];s.style.left=48+Math.random()*8+"vw";s.style.top=45+Math.random()*8+"vh";s.style.setProperty("--x",(Math.random()-.5)*260+"px");s.style.setProperty("--y",(Math.random()-.7)*260+"px");document.body.append(s);setTimeout(()=>s.remove(),950)}}
-function pick(){let x=Math.random(),r=x<.24?"大吉":x<.58?"中吉":x<.86?"小吉":"末吉",a=F.filter(f=>f.r===r);return a[Math.random()*a.length|0]||F[Math.random()*F.length|0]}
-function show(f){$("rank").textContent=f.r;$("no").textContent="第 "+String(Math.random()*100+1|0).padStart(2,"0")+" 籤";$("title").textContent=f.t;$("poem").textContent=f.p;$("msg").textContent=f.m;$("love").textContent=f.l;$("money").textContent=f.n;$("work").textContent=f.w;$("health").textContent=f.h;$("lucky").innerHTML=`幸運色：${f.c}　｜　幸運數字：${f.d}<br>幸運方位：${f.q}`;modal.classList.add("show");document.body.style.overflow="hidden"}
-function draw(){if(busy||modal.classList.contains("show"))return;busy=true;$("tip").textContent="籤筒搖動中……請默念你的問題";pot.classList.add("shake");navigator.vibrate?.([60,35,60,35,90]);setTimeout(()=>{pot.classList.remove("shake");show(pick());beep();burst();navigator.vibrate?.([100,60,140]);$("tip").textContent=on?"再搖一次，也可以重新抽籤":"點擊按鈕可以再抽一次";busy=false},1200)}
-function close(){modal.classList.remove("show");document.body.style.overflow=""}
-function move(e){let a=e.accelerationIncludingGravity||e.acceleration;if(!a||busy||modal.classList.contains("show"))return;let x=a.x||0,y=a.y||0,z=a.z||0,v=Math.hypot(x-prev.x,y-prev.y,z-prev.z);prev={x,y,z};let t=Date.now();if(v>15&&t-last>1400){last=t;draw()}}
-async function enable(){try{if(typeof DeviceMotionEvent!=="undefined"&&typeof DeviceMotionEvent.requestPermission==="function"&&await DeviceMotionEvent.requestPermission()!=="granted")throw 0;if(!("DeviceMotionEvent"in window))throw 0;addEventListener("devicemotion",move,{passive:true});on=true;$("status").textContent="已開啟，請搖一搖 ✨";$("status").style.background="#e6f7ed";$("tip").textContent="握穩手機，輕輕上下搖動即可抽籤";$("motion").textContent="✅ 手機搖籤已開啟";$("motion").disabled=true;navigator.vibrate?.(50)}catch(e){$("status").textContent="無法開啟感測";$("tip").textContent="請使用 HTTPS 開啟，或改用點擊抽籤"}}
-$("motion").onclick=enable;$("draw").onclick=draw;$("close").onclick=close;$("again").onclick=()=>{close();setTimeout(draw,160)};modal.onclick=e=>{if(e.target===modal)close()};addEventListener("keydown",e=>{if(e.key==="Escape")close()});
+
+const $=id=>document.getElementById(id);
+const stage=$("stage"),energyBar=$("energy"),message=$("message"),sensor=$("sensor"),motionBtn=$("motionBtn"),autoBtn=$("autoBtn"),resultLayer=$("resultLayer"),flash=$("flash");
+let motionEnabled=false,busy=false,shakeEnergy=0,lastImpulseAt=0,lastAcceleration={x:0,y:0,z:0},pendingFortune=null,pendingDrawNo="",audioCtx=null,decayTimer=null;
+
+function clamp(value,min,max){return Math.min(max,Math.max(min,value))}
+function wait(ms){return new Promise(resolve=>setTimeout(resolve,ms))}
+function vibrate(pattern){if("vibrate" in navigator) navigator.vibrate(pattern)}
+function updateEnergy(value){shakeEnergy=clamp(value,0,100);energyBar.style.width=`${shakeEnergy}%`}
+function setMessage(text){message.textContent=text}
+function clearStageClasses(){stage.classList.remove("manual-jolt","auto-shake","selecting","extracting","revealing")}
+
+function weightedFortune(){
+  const roll=Math.random();
+  const wanted=roll<.24?"大吉":roll<.54?"中吉":roll<.82?"小吉":"末吉";
+  const pool=fortunes.filter(item=>item.rank===wanted);
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+
+function playToneSequence(){
+  try{
+    audioCtx=audioCtx||new(window.AudioContext||window.webkitAudioContext)();
+    const now=audioCtx.currentTime;
+    [523.25,659.25,783.99,1046.5].forEach((frequency,index)=>{
+      const oscillator=audioCtx.createOscillator();
+      const gain=audioCtx.createGain();
+      oscillator.type="square";
+      oscillator.frequency.value=frequency;
+      const start=now+index*.085;
+      gain.gain.setValueAtTime(.0001,start);
+      gain.gain.exponentialRampToValueAtTime(.05,start+.012);
+      gain.gain.exponentialRampToValueAtTime(.0001,start+.17);
+      oscillator.connect(gain).connect(audioCtx.destination);
+      oscillator.start(start);oscillator.stop(start+.18);
+    });
+  }catch(error){}
+}
+
+function petals(){
+  for(let i=0;i<20;i++){
+    const petal=document.createElement("i");
+    petal.className="petal";
+    petal.style.left=`${46+Math.random()*8}vw`;
+    petal.style.top=`${34+Math.random()*10}vh`;
+    petal.style.setProperty("--dx",`${(Math.random()-.5)*300}px`);
+    petal.style.setProperty("--dy",`${50+Math.random()*260}px`);
+    document.body.appendChild(petal);
+    setTimeout(()=>petal.remove(),1250);
+  }
+}
+
+function prepareDraw(){
+  pendingFortune=weightedFortune();
+  pendingDrawNo=String(Math.floor(Math.random()*100)+1).padStart(2,"0");
+  $("stickNumber").textContent=`第 ${pendingDrawNo} 籤`;
+}
+
+async function extractSequence({autoShake=false}={}){
+  if(busy||resultLayer.classList.contains("show")) return;
+  busy=true;autoBtn.disabled=true;motionBtn.disabled=true;
+  prepareDraw();
+  clearStageClasses();
+  updateEnergy(100);
+
+  if(autoShake){
+    setMessage("籤筒正在搖動……請在心中默念問題");
+    stage.classList.add("auto-shake");
+    vibrate([45,28,45,28,55,28,70]);
+    await wait(1650);
+    stage.classList.remove("auto-shake");
+  }
+
+  setMessage("有一支籤被選中了……");
+  stage.classList.add("selecting");
+  vibrate(70);
+  await wait(820);
+  stage.classList.remove("selecting");
+  stage.classList.add("extracting");
+  setMessage("籤正在從籤筒中升起");
+  vibrate([45,45,85]);
+  await wait(1120);
+  stage.classList.remove("extracting");
+  stage.classList.add("revealing");
+  setMessage(`抽到第 ${pendingDrawNo} 籤，正在展開籤文`);
+  await wait(720);
+
+  flash.classList.remove("show");void flash.offsetWidth;flash.classList.add("show");
+  petals();playToneSequence();vibrate([100,50,150]);
+  fillResult(pendingFortune,pendingDrawNo);
+  resultLayer.classList.add("show");
+  document.body.style.overflow="hidden";
+  await wait(260);
+  busy=false;autoBtn.disabled=false;
+  if(!motionEnabled) motionBtn.disabled=false;
+}
+
+function fillResult(fortune,drawNo){
+  $("rank").textContent=fortune.rank;
+  $("drawNo").textContent=`第 ${drawNo} 籤`;
+  $("resultTitle").textContent=fortune.title;
+  $("poem").textContent=fortune.poem;
+  $("summary").textContent=fortune.summary;
+  $("love").textContent=fortune.love;
+  $("money").textContent=fortune.money;
+  $("work").textContent=fortune.work;
+  $("health").textContent=fortune.health;
+  $("lucky").innerHTML=`幸運色：${fortune.color}　｜　幸運數字：${fortune.number}<br>幸運方位：${fortune.direction}`;
+}
+
+function resetDraw(){
+  resultLayer.classList.remove("show");
+  document.body.style.overflow="";
+  clearStageClasses();
+  updateEnergy(0);
+  pendingFortune=null;
+  pendingDrawNo="";
+  setMessage(motionEnabled?"感測已開啟，輕輕上下搖動手機":"開啟感測後，握穩手機輕輕上下搖動");
+}
+
+function joltStage(dx,dy,intensity){
+  stage.style.setProperty("--shake-x",`${clamp(dx*1.3,-10,10)}px`);
+  stage.style.setProperty("--shake-r",`${clamp((dx-dy)*.55,-7,7)}deg`);
+  stage.classList.add("manual-jolt");
+  clearTimeout(stage._joltTimer);
+  stage._joltTimer=setTimeout(()=>stage.classList.remove("manual-jolt"),110);
+  updateEnergy(shakeEnergy+clamp(intensity*1.55,3,18));
+  setMessage(shakeEnergy<35?"再搖幾下，讓籤慢慢鬆動":shakeEnergy<75?"籤筒裡開始有籤往上移動了":"就快搖出來了，再一下！");
+  if(shakeEnergy>=100) extractSequence({autoShake:false});
+}
+
+function handleMotion(event){
+  if(!motionEnabled||busy||resultLayer.classList.contains("show")) return;
+  const acceleration=event.accelerationIncludingGravity||event.acceleration;
+  if(!acceleration) return;
+  const x=acceleration.x||0,y=acceleration.y||0,z=acceleration.z||0;
+  const dx=x-lastAcceleration.x,dy=y-lastAcceleration.y,dz=z-lastAcceleration.z;
+  lastAcceleration={x,y,z};
+  const intensity=Math.hypot(dx,dy,dz);
+  const now=Date.now();
+  if(intensity>6.5&&now-lastImpulseAt>105){lastImpulseAt=now;joltStage(dx,dy,intensity)}
+}
+
+async function enableMotion(){
+  try{
+    if(typeof DeviceMotionEvent!=="undefined"&&typeof DeviceMotionEvent.requestPermission==="function"){
+      const permission=await DeviceMotionEvent.requestPermission();
+      if(permission!=="granted") throw new Error("permission denied");
+    }
+    if(!("DeviceMotionEvent" in window)) throw new Error("unsupported");
+    window.removeEventListener("devicemotion",handleMotion);
+    window.addEventListener("devicemotion",handleMotion,{passive:true});
+    motionEnabled=true;
+    sensor.textContent="動作感測已開啟";sensor.classList.add("on");
+    motionBtn.textContent="✅ 搖籤功能已開啟";motionBtn.disabled=true;
+    setMessage("握穩手機，輕輕上下搖動；進度滿後籤會真的升起");
+    vibrate(50);
+    clearInterval(decayTimer);
+    decayTimer=setInterval(()=>{if(!busy&&shakeEnergy>0&&Date.now()-lastImpulseAt>900) updateEnergy(shakeEnergy-1.5)},180);
+  }catch(error){
+    sensor.textContent="無法使用感測";sensor.classList.remove("on");
+    setMessage("iPhone 請允許動作與方向存取；也可以使用自動搖籤");
+  }
+}
+
+motionBtn.addEventListener("click",enableMotion);
+autoBtn.addEventListener("click",()=>extractSequence({autoShake:true}));
+$("closeBtn").addEventListener("click",resetDraw);
+$("againBtn").addEventListener("click",()=>{resetDraw();setTimeout(()=>extractSequence({autoShake:true}),220)});
+resultLayer.addEventListener("click",event=>{if(event.target===resultLayer) resetDraw()});
+document.addEventListener("keydown",event=>{if(event.key==="Escape") resetDraw()});
 </script>
 </body>
 </html>
