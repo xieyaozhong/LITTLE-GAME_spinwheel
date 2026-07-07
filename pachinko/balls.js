@@ -146,7 +146,6 @@
   G.launch=()=>{
     const s=G.s;
     const free=s.superShots>0;
-    const type=free?'thunder':queue.shift()||'normal';
 
     if(!free&&s.balls<=0){
       G.ui.marquee.textContent=s.ballsLive.length?'等待最後的彈珠落下！':'彈珠用完了，按重新開始！';
@@ -154,6 +153,7 @@
       return;
     }
 
+    const type=free?'thunder':queue.shift()||'normal';
     const ballCfg=cfg(type);
     if(free)s.superShots--;
     else s.balls--;
