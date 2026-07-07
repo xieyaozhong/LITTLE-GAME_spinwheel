@@ -6,24 +6,59 @@
   <meta name="theme-color" content="#100b2c">
   <title>PIXEL RIFT：裂隙生存者</title>
   <style>
-    *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#09061d}iframe{display:none;width:100%;height:100%;border:0;background:#09061d}
+    *{box-sizing:border-box}
+    html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#09061d;touch-action:none}
+    iframe{display:none;width:100%;height:100%;border:0;background:#09061d}
     #loading{position:fixed;inset:0;display:grid;place-items:center;color:#ffd166;font:700 18px "Courier New",monospace;letter-spacing:.08em;background:#09061d}
   </style>
 </head>
 <body>
   <div id="loading">OPENING PIXEL RIFT...</div>
-  <iframe id="gameFrame" src="../index.html" title="PIXEL RIFT 裂隙生存者" allow="autoplay; fullscreen"></iframe>
+  <iframe id="gameFrame" src="../index.html?v=2" title="PIXEL RIFT 裂隙生存者" allow="autoplay; fullscreen"></iframe>
   <script>
     const frame=document.getElementById('gameFrame');
+
     frame.addEventListener('load',()=>{
       try{
-        const d=frame.contentDocument;
-        const controls=d.getElementById('mobileControls');
-        const start=d.getElementById('startBtn');
-        if(controls) controls.style.display='none';
-        if(start&&controls) start.addEventListener('click',()=>{controls.style.display=''}, {capture:true});
-      }catch(e){}
-      document.getElementById('loading').remove();
+        const win=frame.contentWindow;
+        const doc=frame.contentDocument;
+        const controls=doc.getElementById('mobileControls');
+        const dashButton=doc.getElementById('dashMobile');
+
+        // 不再由外層頁面隱藏虛擬按鍵，交給遊戲本身控制。
+        if(controls) controls.style.display='';
+
+        // iOS 有時不會可靠送出 click，改成按下按鈕便立即觸發空白鍵衝刺。
+        if(dashButton){
+          dashButton.style.touchAction='none';
+          const triggerDash=(event)=>{
+            event.preventDefault();
+            event.stopPropagation();
+            win.dispatchEvent(new KeyboardEvent('keydown',{
+              key:' ',
+              code:'Space',
+              bubbles:true,
+              cancelable:true
+            }));
+            win.dispatchEvent(new KeyboardEvent('keyup',{
+              key:' ',
+              code:'Space',
+              bubbles:true
+            }));
+          };
+
+          if(win.PointerEvent){
+            dashButton.addEventListener('pointerdown',triggerDash,{passive:false});
+          }else{
+            dashButton.addEventListener('touchstart',triggerDash,{passive:false});
+          }
+        }
+      }catch(error){
+        console.warn('Mobile controls fallback could not be installed.',error);
+      }
+
+      const loading=document.getElementById('loading');
+      if(loading) loading.remove();
       frame.style.display='block';
     });
   </script>
