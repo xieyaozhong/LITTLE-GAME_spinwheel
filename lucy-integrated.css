@@ -1,0 +1,393 @@
+/* Integrated Lucy effects: one visual language, three phases. */
+.wheel-box[data-character="lucy"]{
+  --lucy-angle:0deg;
+  --lucy-cyan:#82f3d1;
+  --lucy-blue:#7887ff;
+  --lucy-yellow:#ffe65c;
+  --lucy-dark:#10172d;
+}
+
+/* Keep every shared character effect disabled. */
+.wheel-box[data-character="lucy"] .ring-one,
+.wheel-box[data-character="lucy"] .ring-two,
+.wheel-box[data-character="lucy"] .paw-burst,
+.wheel-box[data-character="lucy"] .force-wave,
+.wheel-box[data-character="lucy"] .speed-lines,
+.wheel-box[data-character="lucy"] .focus-grid,
+.wheel-box[data-character="lucy"] .spirit-orbit{
+  display:none!important;
+  opacity:0!important;
+  animation:none!important;
+}
+
+.wheel-box[data-character="lucy"].is-spinning .ring-one,
+.wheel-box[data-character="lucy"].is-spinning .rim-lights i,
+.wheel-box[data-character="lucy"].sudden-stop .wheel-anchor{
+  animation:none!important;
+}
+
+.wheel-box[data-character="lucy"] canvas{
+  transform:rotate(0deg)!important;
+  transition:none!important;
+}
+
+.wheel-box[data-character="lucy"] .impact-layer,
+.wheel-box[data-character="lucy"] .wheel-shell{
+  overflow:visible;
+}
+
+.wheel-box[data-character="lucy"] .impact-layer::before,
+.wheel-box[data-character="lucy"] .impact-layer::after,
+.wheel-box[data-character="lucy"] .wheel-shell::before,
+.wheel-box[data-character="lucy"] .wheel-shell::after{
+  content:"";
+  position:absolute;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity .16s ease,filter .16s ease;
+}
+
+/* Shared HUD foundation. */
+.wheel-box[data-character="lucy"] .impact-layer::before{
+  left:48%;
+  top:49%;
+  width:calc(var(--stage-size) + 70px);
+  aspect-ratio:1;
+  border-radius:50%;
+  transform:translate(-50%,-50%);
+  background:
+    radial-gradient(circle,
+      transparent 0 43.5%,
+      rgba(130,243,209,.19) 44% 44.7%,
+      transparent 45.2% 48.3%,
+      rgba(120,135,255,.28) 48.8% 49.5%,
+      transparent 50%),
+    repeating-conic-gradient(
+      from 0deg,
+      rgba(130,243,209,.9) 0deg 1deg,
+      transparent 1deg 12deg);
+  -webkit-mask:radial-gradient(circle,transparent 0 63%,#000 63.5% 72%,transparent 72.5%);
+  mask:radial-gradient(circle,transparent 0 63%,#000 63.5% 72%,transparent 72.5%);
+  filter:drop-shadow(0 0 7px rgba(130,243,209,.45));
+  z-index:1;
+}
+
+/* One beam used for scan and target alignment. */
+.wheel-box[data-character="lucy"] .impact-layer::after{
+  left:48%;
+  top:49%;
+  width:calc(var(--stage-size) + 34px);
+  aspect-ratio:1;
+  border-radius:50%;
+  transform:translate(-50%,-50%) rotate(0deg);
+  background:conic-gradient(
+    from -5deg,
+    transparent 0deg 335deg,
+    rgba(130,243,209,.04) 339deg,
+    rgba(130,243,209,.22) 347deg,
+    rgba(255,255,255,.94) 356deg,
+    var(--lucy-yellow) 359deg,
+    transparent 360deg);
+  -webkit-mask:radial-gradient(circle,transparent 0 16%,#000 17% 100%);
+  mask:radial-gradient(circle,transparent 0 16%,#000 17% 100%);
+  filter:drop-shadow(0 0 10px rgba(130,243,209,.72));
+  z-index:2;
+}
+
+/* Inner radar surface. */
+.wheel-box[data-character="lucy"] .wheel-shell::before{
+  inset:8%;
+  border-radius:50%;
+  border:2px solid rgba(130,243,209,.58);
+  background:
+    repeating-radial-gradient(circle,
+      transparent 0 19px,
+      rgba(130,243,209,.08) 20px 21px,
+      transparent 22px 36px),
+    linear-gradient(90deg,transparent 49.7%,rgba(120,135,255,.16) 50%,transparent 50.3%),
+    linear-gradient(transparent 49.7%,rgba(120,135,255,.16) 50%,transparent 50.3%);
+  box-shadow:
+    inset 0 0 18px rgba(130,243,209,.16),
+    0 0 12px rgba(120,135,255,.28);
+  z-index:4;
+}
+
+/* Lock brackets, only strong in lock/confirm phases. */
+.wheel-box[data-character="lucy"] .wheel-shell::after{
+  inset:17%;
+  z-index:6;
+  background:
+    linear-gradient(var(--lucy-yellow),var(--lucy-yellow)) left top/19% 4px no-repeat,
+    linear-gradient(var(--lucy-yellow),var(--lucy-yellow)) left top/4px 19% no-repeat,
+    linear-gradient(var(--lucy-yellow),var(--lucy-yellow)) right top/19% 4px no-repeat,
+    linear-gradient(var(--lucy-yellow),var(--lucy-yellow)) right top/4px 19% no-repeat,
+    linear-gradient(var(--lucy-yellow),var(--lucy-yellow)) left bottom/19% 4px no-repeat,
+    linear-gradient(var(--lucy-yellow),var(--lucy-yellow)) left bottom/4px 19% no-repeat,
+    linear-gradient(var(--lucy-yellow),var(--lucy-yellow)) right bottom/19% 4px no-repeat,
+    linear-gradient(var(--lucy-yellow),var(--lucy-yellow)) right bottom/4px 19% no-repeat;
+  filter:drop-shadow(0 0 7px rgba(255,230,92,.9));
+}
+
+/* Phase 1: scan. */
+.wheel-box[data-character="lucy"].lucy-scanning .impact-layer::before,
+.wheel-box[data-character="lucy"].lucy-scanning .impact-layer::after,
+.wheel-box[data-character="lucy"].lucy-scanning .wheel-shell::before{
+  opacity:1;
+}
+
+.wheel-box[data-character="lucy"].lucy-scanning .impact-layer::before{
+  animation:lucyIntegratedHud 5.8s linear infinite;
+}
+
+.wheel-box[data-character="lucy"].lucy-scanning .impact-layer::after{
+  animation:lucyIntegratedSweep .84s linear infinite;
+}
+
+.wheel-box[data-character="lucy"].lucy-scanning .wheel-shell::before{
+  animation:lucyIntegratedRadar .82s ease-in-out infinite;
+}
+
+.wheel-box[data-character="lucy"].lucy-scanning .wheel-shell{
+  box-shadow:
+    0 0 calc(10px + 22px * var(--charge)) rgba(130,243,209,.78),
+    0 0 calc(7px + 15px * var(--charge)) rgba(120,135,255,.48),
+    9px 9px 0 rgba(36,23,58,.47),
+    inset 0 0 0 5px #ffeb91;
+}
+
+/* Phase 2: lock. The scan beam settles on the selected segment. */
+.wheel-box[data-character="lucy"].lucy-locking .impact-layer::before,
+.wheel-box[data-character="lucy"].lucy-locking .impact-layer::after,
+.wheel-box[data-character="lucy"].lucy-locking .wheel-shell::before,
+.wheel-box[data-character="lucy"].lucy-locking .wheel-shell::after{
+  opacity:1;
+}
+
+.wheel-box[data-character="lucy"].lucy-locking .impact-layer::before{
+  animation:lucyIntegratedHudLock .48s ease-in-out infinite;
+}
+
+.wheel-box[data-character="lucy"].lucy-locking .impact-layer::after{
+  animation:lucyIntegratedBeamSet .32s ease-out both, lucyIntegratedBeamPulse .54s ease-in-out .32s infinite;
+}
+
+.wheel-box[data-character="lucy"].lucy-locking .wheel-shell::before{
+  animation:lucyIntegratedRadarLock .42s ease-in-out infinite;
+}
+
+.wheel-box[data-character="lucy"].lucy-locking .wheel-shell::after{
+  animation:lucyIntegratedBracket .44s steps(3,end) infinite;
+}
+
+.wheel-box[data-character="lucy"].lucy-locking .wheel-shell{
+  box-shadow:
+    0 0 calc(25px + 20px * var(--charge)) rgba(130,243,209,.9),
+    0 0 calc(16px + 13px * var(--charge)) rgba(120,135,255,.66),
+    0 0 13px rgba(255,230,92,.7),
+    9px 9px 0 rgba(36,23,58,.47),
+    inset 0 0 0 5px #ffeb91;
+}
+
+/* Phase 3: confirmation. Keep only the most important layers. */
+.wheel-box[data-character="lucy"].lucy-confirmed .impact-layer::before,
+.wheel-box[data-character="lucy"].lucy-confirmed .wheel-shell::before,
+.wheel-box[data-character="lucy"].lucy-confirmed .wheel-shell::after{
+  opacity:1;
+}
+
+.wheel-box[data-character="lucy"].lucy-confirmed .impact-layer::after{
+  opacity:0;
+  animation:none;
+}
+
+.wheel-box[data-character="lucy"].lucy-confirmed .impact-layer::before{
+  animation:lucyIntegratedConfirmRing .62s steps(5,end) 2;
+}
+
+.wheel-box[data-character="lucy"].lucy-confirmed .wheel-shell::before{
+  animation:lucyIntegratedConfirmRadar .62s ease-out 2;
+}
+
+.wheel-box[data-character="lucy"].lucy-confirmed .wheel-shell::after{
+  animation:lucyIntegratedConfirmBracket .52s steps(4,end) 2;
+}
+
+.wheel-box[data-character="lucy"].lucy-confirmed .wheel-shell{
+  box-shadow:
+    0 0 43px rgba(130,243,209,.96),
+    0 0 27px rgba(120,135,255,.75),
+    0 0 14px rgba(255,230,92,.82),
+    9px 9px 0 rgba(36,23,58,.47),
+    inset 0 0 0 5px #ffeb91;
+}
+
+/* Rim lights are synchronized with the same phase controller. */
+.wheel-box[data-character="lucy"] .rim-lights i{
+  background:var(--lucy-dark)!important;
+  border-color:#1b2342;
+  box-shadow:none;
+}
+
+.wheel-box[data-character="lucy"].lucy-scanning .rim-lights i{
+  animation:lucyIntegratedLampScan .72s steps(2,end) infinite!important;
+}
+
+.wheel-box[data-character="lucy"].lucy-locking .rim-lights i{
+  animation:lucyIntegratedLampLock .36s steps(2,end) infinite!important;
+}
+
+.wheel-box[data-character="lucy"].lucy-confirmed .rim-lights i{
+  animation:lucyIntegratedLampConfirm .52s steps(3,end) 2!important;
+}
+
+.wheel-box[data-character="lucy"] .rim-lights i:nth-child(1){animation-delay:0s!important}
+.wheel-box[data-character="lucy"] .rim-lights i:nth-child(2){animation-delay:.09s!important}
+.wheel-box[data-character="lucy"] .rim-lights i:nth-child(3){animation-delay:.18s!important}
+.wheel-box[data-character="lucy"] .rim-lights i:nth-child(4){animation-delay:.27s!important}
+.wheel-box[data-character="lucy"] .rim-lights i:nth-child(5){animation-delay:.36s!important}
+.wheel-box[data-character="lucy"] .rim-lights i:nth-child(6){animation-delay:.45s!important}
+.wheel-box[data-character="lucy"] .rim-lights i:nth-child(7){animation-delay:.54s!important}
+.wheel-box[data-character="lucy"] .rim-lights i:nth-child(8){animation-delay:.63s!important}
+
+/* Character, pointer and UI all react to the same phase. */
+.wheel-box[data-character="lucy"].is-spinning .pixel-helper{
+  animation:lucyIntegratedJackIn .5s steps(5,end) both,lucyIntegratedHold .8s steps(2,end) .5s infinite!important;
+}
+
+.wheel-box[data-character="lucy"].lucy-locking .pixel-helper{
+  filter:
+    drop-shadow(0 0 11px rgba(130,243,209,.62))
+    drop-shadow(0 0 14px rgba(120,135,255,.4))
+    drop-shadow(4px 4px 0 rgba(36,23,58,.25));
+}
+
+.wheel-box[data-character="lucy"].lucy-confirmed .pixel-helper{
+  animation:lucyIntegratedConfirmPose .5s steps(4,end) 2!important;
+  filter:
+    drop-shadow(0 0 13px rgba(130,243,209,.78))
+    drop-shadow(0 0 11px rgba(255,230,92,.5))
+    drop-shadow(4px 4px 0 rgba(36,23,58,.25));
+}
+
+.wheel-box[data-character="lucy"].lucy-scanning .pointer{
+  border-top-color:var(--lucy-cyan);
+  filter:drop-shadow(0 0 7px var(--lucy-cyan)) drop-shadow(4px 4px 0 var(--ink));
+}
+
+.wheel-box[data-character="lucy"].lucy-locking .pointer,
+.wheel-box[data-character="lucy"].lucy-confirmed .pointer{
+  border-top-color:var(--lucy-yellow);
+  filter:drop-shadow(0 0 10px var(--lucy-yellow)) drop-shadow(4px 4px 0 var(--ink));
+}
+
+.wheel-box[data-character="lucy"].lucy-scanning .hub,
+.wheel-box[data-character="lucy"].lucy-locking .hub,
+.wheel-box[data-character="lucy"].lucy-confirmed .hub{
+  background:#121a34;
+  box-shadow:
+    inset 0 0 0 7px rgba(130,243,209,.5),
+    0 0 15px rgba(130,243,209,.65);
+}
+
+.wheel-box[data-character="lucy"].lucy-scanning .action-caption,
+.wheel-box[data-character="lucy"].lucy-locking .action-caption,
+.wheel-box[data-character="lucy"].lucy-confirmed .action-caption{
+  color:var(--lucy-cyan);
+  border-color:#203254;
+  box-shadow:0 0 10px rgba(130,243,209,.28);
+}
+
+.wheel-box[data-character="lucy"].lucy-locking .action-caption,
+.wheel-box[data-character="lucy"].lucy-confirmed .action-caption{
+  color:var(--lucy-yellow);
+}
+
+/* Integrated keyframes. */
+@keyframes lucyIntegratedHud{
+  from{transform:translate(-50%,-50%) rotate(0deg)}
+  to{transform:translate(-50%,-50%) rotate(-360deg)}
+}
+
+@keyframes lucyIntegratedSweep{
+  from{transform:translate(-50%,-50%) rotate(0deg)}
+  to{transform:translate(-50%,-50%) rotate(360deg)}
+}
+
+@keyframes lucyIntegratedRadar{
+  0%,100%{opacity:.68;transform:scale(1)}
+  50%{opacity:1;transform:scale(.985)}
+}
+
+@keyframes lucyIntegratedHudLock{
+  0%,100%{transform:translate(-50%,-50%) scale(1);filter:drop-shadow(0 0 7px rgba(130,243,209,.5))}
+  50%{transform:translate(-50%,-50%) scale(1.012);filter:drop-shadow(0 0 13px rgba(255,230,92,.88))}
+}
+
+@keyframes lucyIntegratedBeamSet{
+  from{transform:translate(-50%,-50%) rotate(calc(var(--lucy-angle) - 24deg));opacity:.2}
+  to{transform:translate(-50%,-50%) rotate(var(--lucy-angle));opacity:1}
+}
+
+@keyframes lucyIntegratedBeamPulse{
+  0%,100%{transform:translate(-50%,-50%) rotate(var(--lucy-angle));filter:drop-shadow(0 0 8px rgba(130,243,209,.72))}
+  50%{transform:translate(-50%,-50%) rotate(var(--lucy-angle)) scale(1.012);filter:drop-shadow(0 0 15px rgba(255,230,92,.92))}
+}
+
+@keyframes lucyIntegratedRadarLock{
+  0%,100%{opacity:.78;transform:scale(1)}
+  50%{opacity:1;transform:scale(.965)}
+}
+
+@keyframes lucyIntegratedBracket{
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(.9);filter:drop-shadow(0 0 13px rgba(255,230,92,1))}
+}
+
+@keyframes lucyIntegratedConfirmRing{
+  0%{transform:translate(-50%,-50%) scale(.98);opacity:.65}
+  50%{transform:translate(-50%,-50%) scale(1.07);opacity:1}
+  100%{transform:translate(-50%,-50%) scale(1);opacity:.7}
+}
+
+@keyframes lucyIntegratedConfirmRadar{
+  0%{transform:scale(.95);opacity:.5}
+  50%{transform:scale(1.025);opacity:1}
+  100%{transform:scale(1);opacity:.72}
+}
+
+@keyframes lucyIntegratedConfirmBracket{
+  0%,100%{transform:scale(1);opacity:1}
+  50%{transform:scale(.82);opacity:.48}
+}
+
+@keyframes lucyIntegratedLampScan{
+  0%,68%,100%{background:var(--lucy-dark);box-shadow:none}
+  69%,86%{background:var(--lucy-cyan);box-shadow:0 0 9px var(--lucy-cyan)}
+}
+
+@keyframes lucyIntegratedLampLock{
+  0%,100%{background:var(--lucy-cyan);box-shadow:0 0 8px var(--lucy-cyan)}
+  50%{background:var(--lucy-yellow);box-shadow:0 0 12px var(--lucy-yellow)}
+}
+
+@keyframes lucyIntegratedLampConfirm{
+  0%{background:var(--lucy-dark);box-shadow:none}
+  45%{background:var(--lucy-yellow);box-shadow:0 0 14px var(--lucy-yellow)}
+  100%{background:var(--lucy-cyan);box-shadow:0 0 10px var(--lucy-cyan)}
+}
+
+@keyframes lucyIntegratedJackIn{
+  0%{transform:translate(28px,4px);opacity:0}
+  55%{transform:translate(0,-7px);opacity:1}
+  100%{transform:translate(-8px,0)}
+}
+
+@keyframes lucyIntegratedHold{
+  0%,100%{transform:translate(-8px,0)}
+  50%{transform:translate(-8px,-3px)}
+}
+
+@keyframes lucyIntegratedConfirmPose{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-7px);filter:brightness(1.18)}
+}
