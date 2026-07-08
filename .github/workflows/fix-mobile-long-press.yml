@@ -1,4 +1,4 @@
-name: Expand detailed flavor wheel
+name: Separate coffee game from original wheel
 
 on:
   push:
@@ -10,73 +10,25 @@ permissions:
   contents: write
 
 jobs:
-  patch:
+  separate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Add detailed flavors and looping ring
-        shell: python
+      - name: Move coffee game and restore wheel homepage
         run: |
-          from pathlib import Path
-          import re
+          mkdir -p coffee
+          cp index.html coffee/index.html
+          git show 72805ce62fc6686a08250fe925e59cb2e266d248:index.html > index.html
 
-          path = Path("index.html")
-          text = path.read_text(encoding="utf-8")
-
-          if (
-              'cat:"果香",detail:"葡萄柚"' in text
-              and 'Math.floor(elapsed/430)%words.length' in text
-              and 'animation:charge 1.45s ease-in-out infinite alternate' in text
-          ):
-              print("Detailed looping flavor wheel already installed")
-              raise SystemExit(0)
-
-          def replace_once(old, new, label):
-              global text
-              if old not in text:
-                  raise SystemExit(f"Missing pattern for {label}: {old[:120]}")
-              text = text.replace(old, new, 1)
-
-          replace_once(
-              '.pressing .charge{opacity:1;animation:charge 1.7s linear forwards}',
-              '.pressing .charge{opacity:1;animation:charge 1.45s ease-in-out infinite alternate}',
-              "looping charge ring",
-          )
-
-          replace_once(
-              '.taste-word.active{',
-              '.taste-word span{display:block}.taste-word small{display:block;margin-top:4px;font-size:12px;line-height:1.35;letter-spacing:1px;color:#e2c69c}.taste-word.best small{color:#3a241c}.taste-word.active{',
-              "detail word styling",
-          )
-
-          old_sets = 'wordSets=[[{t:"水感",s:20},{t:"清新",s:52},{t:"柑橘",s:78},{t:"花香",s:100},{t:"蜂蜜",s:86},{t:"熟果",s:55},{t:"過熟",s:22}],[{t:"單薄",s:20},{t:"輕盈",s:52},{t:"滑順",s:80},{t:"平衡",s:100},{t:"焦糖",s:86},{t:"濃郁",s:58},{t:"苦澀",s:20}],[{t:"短暫",s:22},{t:"乾淨",s:56},{t:"甘甜",s:82},{t:"回甘",s:100},{t:"綿長",s:88},{t:"煙燻",s:55},{t:"乾澀",s:18}]]'
-          new_sets = 'wordSets=[[{cat:"水感",detail:"稀薄",s:18},{cat:"果香",detail:"青蘋果",s:52},{cat:"果香",detail:"檸檬",s:70},{cat:"果香",detail:"葡萄柚",s:86},{cat:"果香",detail:"草莓",s:94},{cat:"花香",detail:"茉莉",s:100},{cat:"花香",detail:"橙花",s:96},{cat:"甜香",detail:"蜂蜜",s:88},{cat:"甜香",detail:"黑糖",s:74},{cat:"堅果",detail:"榛果",s:58},{cat:"發酵香",detail:"紅酒",s:40},{cat:"過熟",detail:"熟香蕉",s:18}],[{cat:"單薄",detail:"茶水感",s:18},{cat:"輕盈",detail:"紅茶感",s:50},{cat:"酸質",detail:"檸檬酸",s:70},{cat:"酸質",detail:"莓果酸",s:84},{cat:"甜感",detail:"蜂蜜",s:92},{cat:"口感",detail:"絲滑",s:100},{cat:"平衡",detail:"酸甜均衡",s:96},{cat:"醇厚",detail:"奶油",s:88},{cat:"醇厚",detail:"黑巧克力",s:74},{cat:"烘焙",detail:"焦糖",s:58},{cat:"苦感",detail:"可可苦",s:36},{cat:"苦澀",detail:"藥草",s:16}],[{cat:"短促",detail:"快速消散",s:18},{cat:"乾淨",detail:"紅茶尾韻",s:54},{cat:"果甜",detail:"莓果回甜",s:76},{cat:"糖香",detail:"焦糖回甘",s:90},{cat:"回甘",detail:"蜂蜜甜感",s:100},{cat:"餘韻",detail:"可可綿長",s:96},{cat:"餘韻",detail:"堅果悠長",s:88},{cat:"香料",detail:"肉桂",s:72},{cat:"煙燻",detail:"木質",s:54},{cat:"酒香",detail:"發酵感",s:40},{cat:"乾澀",detail:"茶單寧",s:24},{cat:"苦澀",detail:"焦苦",s:14}]]'
-          replace_once(old_sets, new_sets, "detailed word sets")
-
-          press_pattern = re.compile(r'function press\(e\)\{.*?\}function release\(e\)\{', re.S)
-          new_press = '''function press(e){e.preventDefault();window.getSelection?.()?.removeAllRanges();if(!S.started){start();return}if(S.done||S.down)return;S.down=true;S.t0=performance.now();S.wordIndex=-1;S.word="";S.wordScore=0;E.scene.classList.add("pressing");E.hold.classList.add("down");E.word.classList.add("active");navigator.vibrate&&navigator.vibrate(18);function bar(){if(!S.down)return;let elapsed=performance.now()-S.t0,ringPhase=(elapsed%2900)/2900,ringProgress=ringPhase<.5?ringPhase*200:(1-ringPhase)*200;E.hold.style.setProperty("--p",`${ringProgress}%`);let words=wordSets[si()],i=Math.floor(elapsed/430)%words.length,item=words[i];if(i!==S.wordIndex){S.wordIndex=i;S.word=`${item.cat}・${item.detail}`;S.wordScore=item.s;E.word.innerHTML=item.s>=95?`<span>✨ ${item.cat}</span><small>${item.detail}｜現在放開！</small>`:`<span>${item.cat}</span><small>${item.detail}</small>`;E.word.classList.toggle("best",item.s>=95);tone(330+i*28,.035);if(navigator.vibrate)navigator.vibrate(item.s>=95?28:8)}requestAnimationFrame(bar)}bar()}function release(e){'''
-          text, count = press_pattern.subn(new_press, text, count=1)
-          if count != 1:
-              raise SystemExit("Could not replace press handler")
-
-          text = text.replace(
-              '按住時形容詞會依序變化，看到最適合的詞就放開。',
-              '按住查看風味大類與細項；光圈與詞語會持續循環。',
-          )
-          text = text.replace(
-              '按住觀察形容詞，出現金色「現在放開」時立即鬆手。',
-              '風味與光圈會反覆循環，出現金色提示時放開。',
-          )
-
-          path.write_text(text, encoding="utf-8")
-
-      - name: Commit patch
+      - name: Commit separated games
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html
+          git add index.html coffee/index.html
           if ! git diff --cached --quiet; then
-            git commit -m "Expand detailed flavor wheel and looping ring"
+            git commit -m "Keep original wheel and move coffee game to subpage"
             git push
           fi
