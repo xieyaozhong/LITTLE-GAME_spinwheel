@@ -1,47 +1,46 @@
-.pixel-helper .lucy-hair,.pixel-helper .lucy-hair-back,.pixel-helper .lucy-wire,.pixel-helper .lucy-sparkles,.pixel-helper .lucy-halo,.pixel-helper .lucy-hearts,.pixel-helper .lucy-face{transform-box:fill-box}
-.pixel-helper .lucy-hair,.pixel-helper .lucy-hair-back{transform-origin:50% 16%}
-.pixel-helper .lucy-wire{transform-origin:15% 18%}
-.pixel-helper .lucy-hearts,.pixel-helper .lucy-sparkles,.pixel-helper .lucy-halo{transform-origin:50% 50%}
-.pixel-helper .arm-front,.pixel-helper .arm-back{transform-box:fill-box}
-.wheel-box[data-character="lucy"] .pixel-helper{filter:drop-shadow(0 0 8px rgba(71,244,255,.48)) drop-shadow(0 0 14px rgba(255,103,212,.22)) drop-shadow(4px 4px 0 rgba(36,23,58,.24))}
-.wheel-box[data-character="lucy"] .lucy-hair{animation:lucyHairIdle 1.8s steps(2,end) infinite}
-.wheel-box[data-character="lucy"] .lucy-hair-back{animation:lucyHairBack 2.1s steps(3,end) infinite}
-.wheel-box[data-character="lucy"] .lucy-wire{animation:lucyWireIdle 1.25s steps(3,end) infinite}
-.wheel-box[data-character="lucy"] .lucy-sparkles{animation:lucySparkle 1.7s steps(3,end) infinite}
-.wheel-box[data-character="lucy"] .lucy-hearts{animation:lucyHearts 1.9s steps(3,end) infinite}
-.wheel-box[data-character="lucy"] .lucy-halo{animation:lucyHalo 2.2s ease-in-out infinite}
-.wheel-box[data-character="lucy"] .lucy-face{animation:lucyBlink 3.2s steps(1,end) infinite}
+.pixel-helper .lucy-hair,.pixel-helper .lucy-hair-back,.pixel-helper .lucy-sparkles,.pixel-helper .lucy-aura,.pixel-helper .lucy-face,.pixel-helper .lucy-jacket,.pixel-helper .lucy-boots{transform-box:fill-box}
+.pixel-helper .lucy-hair,.pixel-helper .lucy-hair-back{transform-origin:50% 20%}
+.pixel-helper .lucy-sparkles,.pixel-helper .lucy-aura{transform-origin:50% 50%}
+.pixel-helper .lucy-jacket{transform-origin:50% 25%}
+.pixel-helper .lucy-boots{transform-origin:50% 100%}
+.wheel-box[data-character="lucy"] .pixel-helper{filter:drop-shadow(0 0 8px rgba(130,226,188,.42)) drop-shadow(0 0 13px rgba(233,154,216,.28)) drop-shadow(4px 4px 0 rgba(36,23,58,.25))}
+.wheel-box[data-character="lucy"] .lucy-hair{animation:lucyHairIdle 1.7s steps(2,end) infinite}
+.wheel-box[data-character="lucy"] .lucy-hair-back{animation:lucyHairBack 2s steps(3,end) infinite}
+.wheel-box[data-character="lucy"] .lucy-sparkles{animation:lucySparkle 1.5s steps(3,end) infinite}
+.wheel-box[data-character="lucy"] .lucy-aura{animation:lucyAura 1.4s steps(3,end) infinite}
+.wheel-box[data-character="lucy"] .lucy-face{animation:lucyBlink 3.1s steps(1,end) infinite}
+.wheel-box[data-character="lucy"] .lucy-jacket{animation:lucySleeveIdle 1.8s steps(2,end) infinite}
 .wheel-box[data-character="lucy"].is-spinning .pixel-helper{animation:lucyEnter .58s steps(5,end) both,lucyHover .34s steps(2,end) .58s infinite}
 .wheel-box[data-character="lucy"].is-spinning .arm-front{animation:lucyHackArm .28s steps(3,end) .45s infinite}
 .wheel-box[data-character="lucy"].is-spinning .arm-back{animation:lucyBackArm .4s steps(3,end) .45s infinite}
-.wheel-box[data-character="lucy"].is-spinning .lucy-wire{animation:lucyWireSpin .22s steps(2,end) infinite}
-.wheel-box[data-character="lucy"].is-spinning .lucy-sparkles{animation:lucySparkleFast .34s steps(3,end) infinite}
+.wheel-box[data-character="lucy"].is-spinning .lucy-sparkles{animation:lucySparkleFast .3s steps(3,end) infinite}
+.wheel-box[data-character="lucy"].is-spinning .lucy-boots{animation:lucyBootPulse .42s steps(2,end) infinite}
 .wheel-box[data-character="lucy"].lucy-hacking .focus-grid{opacity:1;animation:lucyGrid .46s steps(5,end) infinite}
 .wheel-box[data-character="lucy"].lucy-hacking .speed-lines{opacity:1;animation:lucyDataRush .16s steps(2,end) infinite}
 .wheel-box[data-character="lucy"].lucy-hacking .spirit-orbit{opacity:1;animation:lucyOrbit 1.05s linear infinite}
 .wheel-box[data-character="lucy"].lucy-hacking .ring-two{opacity:1;animation:lucyRing calc(.72s - .42s*var(--charge,0)) linear infinite}
-.wheel-box[data-character="lucy"].lucy-hacking .wheel-shell{box-shadow:0 0 calc(12px + 32px*var(--charge,0)) rgba(71,244,255,.88),0 0 calc(8px + 24px*var(--charge,0)) rgba(255,103,212,.62),9px 9px 0 rgba(36,23,58,.47),inset 0 0 0 5px #ffeb91}
-.wheel-box[data-character="lucy"].lucy-hacking .rim-lights i:nth-child(odd){background:#47f4ff}
-.wheel-box[data-character="lucy"].lucy-hacking .rim-lights i:nth-child(even){background:#ff67d4}
-.wheel-box[data-character="lucy"].reaction-rare .pixel-helper{filter:drop-shadow(0 0 14px #47f4ff) drop-shadow(0 0 12px #ff67d4) drop-shadow(4px 4px 0 rgba(36,23,58,.25))}
-.wheel-box[data-character="lucy"].reaction-normal .lucy-hearts{animation:lucyHeartPop .5s steps(2,end) 2}
-.wheel-box[data-character="lucy"].reaction-rare .lucy-hearts{animation:lucyHeartPopBig .44s steps(2,end) 4}
+.wheel-box[data-character="lucy"].lucy-hacking .wheel-shell{box-shadow:0 0 calc(12px + 30px*var(--charge,0)) rgba(130,226,188,.86),0 0 calc(8px + 24px*var(--charge,0)) rgba(233,154,216,.64),0 0 calc(5px + 18px*var(--charge,0)) rgba(255,233,77,.5),9px 9px 0 rgba(36,23,58,.47),inset 0 0 0 5px #ffeb91}
+.wheel-box[data-character="lucy"].lucy-hacking .rim-lights i:nth-child(3n+1){background:#82e2bc}
+.wheel-box[data-character="lucy"].lucy-hacking .rim-lights i:nth-child(3n+2){background:#e99ad8}
+.wheel-box[data-character="lucy"].lucy-hacking .rim-lights i:nth-child(3n){background:#ffe94d}
+.wheel-box[data-character="lucy"].reaction-rare .pixel-helper{filter:drop-shadow(0 0 14px #82e2bc) drop-shadow(0 0 12px #e99ad8) drop-shadow(0 0 8px #ffe94d) drop-shadow(4px 4px 0 rgba(36,23,58,.25))}
+.wheel-box[data-character="lucy"].reaction-normal .lucy-sparkles{animation:lucySparklePop .45s steps(2,end) 3}
+.wheel-box[data-character="lucy"].reaction-rare .lucy-aura{animation:lucyAuraBurst .38s steps(3,end) 5}
 @keyframes lucyHairIdle{50%{transform:translateY(1px) skewX(-2deg)}}
 @keyframes lucyHairBack{50%{transform:translateY(2px) skewX(2deg)}}
-@keyframes lucyWireIdle{50%{transform:rotate(6deg)}}
 @keyframes lucySparkle{50%{opacity:.3;transform:translateY(-2px)}}
-@keyframes lucySparkleFast{50%{opacity:1;transform:translate(3px,-3px) scale(1.08)}}
-@keyframes lucyHearts{50%{transform:translateY(-3px);opacity:.65}}
-@keyframes lucyHalo{50%{transform:translateY(-2px) scale(1.06);opacity:.65}}
-@keyframes lucyBlink{0%,44%,47%,100%{transform:translateY(0)}45%,46%{transform:translateY(1px) scaleY(.98)}}
+@keyframes lucySparkleFast{50%{opacity:1;transform:translate(3px,-3px) scale(1.12)}}
+@keyframes lucyAura{50%{opacity:.45;transform:scale(.94)}}
+@keyframes lucyBlink{0%,44%,47%,100%{transform:translateY(0)}45%,46%{transform:translateY(1px) scaleY(.97)}}
+@keyframes lucySleeveIdle{50%{transform:translateY(1px) rotate(1deg)}}
 @keyframes lucyEnter{0%{transform:translate(38px,6px);opacity:0}58%{transform:translate(2px,-12px);opacity:1}100%{transform:translate(-10px,0)}}
 @keyframes lucyHover{50%{transform:translate(-10px,-6px)}}
-@keyframes lucyHackArm{0%,100%{transform:rotate(-26deg)}50%{transform:rotate(35deg)}}
-@keyframes lucyBackArm{0%,100%{transform:rotate(12deg)}50%{transform:rotate(30deg)}}
-@keyframes lucyWireSpin{50%{transform:rotate(15deg) scaleY(1.08)}}
+@keyframes lucyHackArm{0%,100%{transform:rotate(-24deg)}50%{transform:rotate(32deg)}}
+@keyframes lucyBackArm{0%,100%{transform:rotate(12deg)}50%{transform:rotate(28deg)}}
+@keyframes lucyBootPulse{50%{transform:translateY(-2px);filter:brightness(1.35)}}
 @keyframes lucyGrid{0%{transform:translate(-50%,-50%) rotate(0);opacity:.25}50%{transform:translate(-50%,-50%) rotate(3deg) scale(1.04);opacity:.8}100%{transform:translate(-50%,-50%) rotate(0);opacity:.25}}
 @keyframes lucyDataRush{50%{transform:translateX(20px);opacity:.2}}
 @keyframes lucyOrbit{to{transform:translate(-50%,-50%) rotate(360deg) scale(1.05)}}
 @keyframes lucyRing{to{transform:translate(-50%,-50%) rotate(360deg)}}
-@keyframes lucyHeartPop{50%{transform:translateY(-7px) scale(1.18)}}
-@keyframes lucyHeartPopBig{50%{transform:translateY(-10px) scale(1.35);opacity:1}}
+@keyframes lucySparklePop{50%{transform:translateY(-8px) scale(1.25);opacity:1}}
+@keyframes lucyAuraBurst{50%{transform:scale(1.25);opacity:1}}
