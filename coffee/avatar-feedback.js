@@ -4,16 +4,17 @@
   const result = document.getElementById("result");
   const summary = document.getElementById("flavorSummary");
   const quote = document.getElementById("quote");
+  const title = document.getElementById("title");
   const canvas = document.getElementById("canvas");
-  if (!result || !summary || !quote || !canvas) return;
+  if (!result || !summary || !quote || !title || !canvas) return;
 
   const styles = {
-    fruit:  { accent: "#ff8a65", sub: "#8fe3c2", cheek: "#ffb08f", coffee: "#7a3f2b", accessory: "leaf" },
-    floral: { accent: "#f6a6ff", sub: "#ffd2f1", cheek: "#ffc7ea", coffee: "#6c3b55", accessory: "flower" },
-    sweet:  { accent: "#ffd56a", sub: "#fff0a8", cheek: "#ffcf84", coffee: "#8d5a32", accessory: "honey" },
-    body:   { accent: "#c98145", sub: "#dca56d", cheek: "#d8b28a", coffee: "#4d2d22", accessory: "bean" },
-    mature: { accent: "#d679b7", sub: "#b5639d", cheek: "#d3a0c5", coffee: "#5a2a42", accessory: "beret" },
-    muted:  { accent: "#8ca5b3", sub: "#b7ccd5", cheek: "#b5c8d0", coffee: "#5b5d63", accessory: "drop" }
+    fruit:  { accent: "#ff8a65", sub: "#8fe3c2", cheek: "#ffb08f", coffee: "#7a3f2b", accessory: "leaf", coffeeName: "花果光譜咖啡", mascotName: "莓果探險家" },
+    floral: { accent: "#f6a6ff", sub: "#ffd2f1", cheek: "#ffc7ea", coffee: "#6c3b55", accessory: "flower", coffeeName: "茉莉雲朵咖啡", mascotName: "茉莉花精靈" },
+    sweet:  { accent: "#ffd56a", sub: "#fff0a8", cheek: "#ffcf84", coffee: "#8d5a32", accessory: "honey", coffeeName: "蜂蜜焦糖咖啡", mascotName: "蜂蜜小咖啡師" },
+    body:   { accent: "#c98145", sub: "#dca56d", cheek: "#d8b28a", coffee: "#4d2d22", accessory: "bean", coffeeName: "絲絨可可咖啡", mascotName: "可可守護者" },
+    mature: { accent: "#d679b7", sub: "#b5639d", cheek: "#d3a0c5", coffee: "#5a2a42", accessory: "beret", coffeeName: "酒香暮色咖啡", mascotName: "暮色鍊金師" },
+    muted:  { accent: "#8ca5b3", sub: "#b7ccd5", cheek: "#b5c8d0", coffee: "#5b5d63", accessory: "drop", coffeeName: "雨後茶霧咖啡", mascotName: "雨霧品飲家" }
   };
 
   const familyFromText = (text) => {
@@ -98,7 +99,7 @@
   }
 
   function clearAvatarArea(ctx) {
-    const left = 235, top = 215, width = 430, height = 345;
+    const left = 205, top = 210, width = 490, height = 495;
     ctx.fillStyle = "#3a241c";
     ctx.fillRect(left, top, width, height);
     ctx.strokeStyle = "rgba(255,255,255,.035)";
@@ -146,6 +147,20 @@
     px(ctx, x + 62*s, y + 18*s, 8*s, 34*s, dark);
     px(ctx, x + 70*s, y + 18*s, 10*s, 8*s, dark);
     px(ctx, x + 70*s, y + 44*s, 10*s, 8*s, dark);
+
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#fff2cf";
+    ctx.font = "bold 42px monospace";
+    ctx.fillText(style.coffeeName, centerX, 585);
+    ctx.fillStyle = style.accent;
+    ctx.font = "bold 25px monospace";
+    ctx.fillText(style.mascotName, centerX, 650);
+  }
+
+  function syncPageNames(style) {
+    if (title.textContent !== style.coffeeName) title.textContent = style.coffeeName;
+    const role = quote.querySelector("b");
+    if (role && role.textContent !== style.mascotName) role.textContent = style.mascotName;
   }
 
   function applyAvatar() {
@@ -156,7 +171,10 @@
 
     const family = familyFromText(familyText);
     const score = Number(scoreMatch[1]);
-    const key = `${family}-${score}`;
+    const style = styles[family];
+    syncPageNames(style);
+
+    const key = `${family}-${score}-${style.mascotName}`;
     if (canvas.dataset.avatarFeedback === key) return;
 
     const ctx = canvas.getContext("2d");
