@@ -2,17 +2,13 @@
   "use strict";
 
   const $ = (id) => document.getElementById(id);
-  const countEl = $("count");
-  const wordEl = $("word");
   const resultEl = $("result");
   const summaryEl = $("flavorSummary");
   const metricsEl = $("metrics");
-  const tagsEl = $("tags");
   const quoteEl = $("quote");
   const titleEl = $("title");
   const canvas = $("canvas");
-
-  if (!countEl || !wordEl || !resultEl || !summaryEl) return;
+  if (!resultEl || !summaryEl || !metricsEl || !quoteEl || !titleEl || !canvas) return;
 
   const familyInfo = {
     fruit:  { label: "果香明亮系", icon: "🍓", color: "#ff8a65", title: "花果光譜咖啡", role: "果香導航員" },
@@ -25,8 +21,7 @@
 
   const categoryFamily = {
     水感: "muted", 清新: "muted", 單薄: "muted", 輕盈: "muted", 短促: "muted", 乾淨: "muted", 苦感: "muted", 苦澀: "muted", 乾澀: "muted", 土質: "muted", 過熟: "muted",
-    果香: "fruit", 果甜: "fruit", 柑橘: "fruit", 酸質: "fruit",
-    花香: "floral",
+    果香: "fruit", 果甜: "fruit", 柑橘: "fruit", 酸質: "fruit", 花香: "floral",
     甜香: "sweet", 甜感: "sweet", 糖香: "sweet", 回甘: "sweet",
     堅果: "body", 口感: "body", 平衡: "body", 醇厚: "body", 烘焙: "body", 餘韻: "body",
     發酵香: "mature", 酒香: "mature", 煙燻: "mature", 香料: "mature"
@@ -41,58 +36,33 @@
     muted:  { 香氣: -3, 明亮感: -2, 醇厚度: -2, 順口度: -3, 平衡感: -3, 餘韻: -2 }
   };
 
-  const stageNames = ["聞香", "啜飲", "餘韻"];
   const stageColors = ["#ff8aa0", "#8fe3c2", "#ffd56a"];
-  let choices = [];
   let applied = false;
-
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
   const beans = (value) => {
     const filled = clamp(Math.round(value / 20), 1, 5);
     return "◆".repeat(filled) + "◇".repeat(5 - filled);
   };
 
-  function familyFor(category) {
-    return categoryFamily[category] || "muted";
-  }
-
-  function readChoice(index) {
-    const span = wordEl.querySelector("span");
-    const small = wordEl.querySelector("small");
-    if (!span || !small) return;
-    const raw = span.textContent.trim();
-    if (!raw.startsWith("抓到：")) return;
-    const category = raw.replace("抓到：", "").trim();
-    const detail = small.textContent.trim();
-    if (!category || !detail) return;
-    choices[index] = {
-      category,
-      detail,
-      family: familyFor(category),
-      stage: Math.floor(index / 2),
-      text: `${category}・${detail}`
+  function currentRun() {
+    const run = window.__coffeeRun;
+    if (!run || !Array.isArray(run.choices) || !run.choices.length) return null;
+    return {
+      ...run,
+      total: run.total || run.choices.length,
+      phaseNames: run.phaseNames || ["聞香", "啜飲", "餘韻"],
+      choices: run.choices.map((choice) => ({
+        ...choice,
+        cat: choice.cat || String(choice.word || "").split("・")[0],
+        detail: choice.detail || String(choice.word || "").split("・").slice(1).join("・"),
+        family: categoryFamily[choice.cat] || choice.fx || "muted"
+      }))
     };
   }
 
-  function recoverFromTags() {
-    if (choices.filter(Boolean).length >= 6) return;
-    const tags = [...tagsEl.querySelectorAll(".tag")].map((tag) => tag.textContent.replace(/^#\s*/, "").trim());
-    tags.slice(0, 6).forEach((text, index) => {
-      if (choices[index] || !text) return;
-      const [category, ...rest] = text.split("・");
-      choices[index] = {
-        category,
-        detail: rest.join("・") || "未命名風味",
-        family: familyFor(category),
-        stage: Math.floor(index / 2),
-        text
-      };
-    });
-  }
-
-  function familyCounts() {
+  function familyCounts(run) {
     const counts = Object.fromEntries(Object.keys(familyInfo).map((key) => [key, 0]));
-    choices.filter(Boolean).forEach((choice) => { counts[choice.family] += 1; });
+    run.choices.forEach((choice) => { counts[choice.family] = (counts[choice.family] || 0) + 1; });
     return counts;
   }
 
@@ -106,7 +76,7 @@
     return ordered[0][0];
   }
 
-  function adjustMetrics() {
+  function adjustMetrics(run) {
     const values = {};
     [...metricsEl.querySelectorAll(".metric")].forEach((card) => {
       const label = card.querySelector("b")?.textContent || "";
@@ -114,45 +84,45 @@
       if (match) values[match[1].trim()] = Number(match[2]);
     });
 
-    choices.filter(Boolean).forEach((choice) => {
-      const influence = metricInfluence[choice.family];
+    const scale = 6 / run.total;
+    run.choices.forEach((choice) => {
+      const influence = metricInfluence[choice.family] || metricInfluence.muted;
       Object.entries(influence).forEach(([metric, amount]) => {
-        if (metric in values) values[metric] += amount;
+        if (metric in values) values[metric] += amount * scale;
       });
     });
 
     Object.keys(values).forEach((key) => { values[key] = Math.round(clamp(values[key], 10, 100)); });
     metricsEl.innerHTML = ["香氣", "明亮感", "醇厚度", "順口度", "平衡感", "餘韻"]
-      .map((key) => `<div class="metric"><b>${key} ${values[key]}</b><span class="beans">${beans(values[key])}</span></div>`)
-      .join("");
+      .map((key) => `<div class="metric"><b>${key} ${values[key]}</b><span class="beans">${beans(values[key])}</span></div>`).join("");
     return values;
   }
 
-  function buildSummary(counts, dominant) {
+  function buildSummary(run, counts, dominant) {
     const info = familyInfo[dominant];
     const bars = Object.entries(familyInfo).map(([key, family]) => {
       const count = counts[key];
-      return `<div class="family-row"><span class="family-name">${family.icon} ${family.label.replace("系", "")}</span><span class="family-track"><i class="family-fill" style="--family-width:${(count / 6) * 100}%;--family-color:${family.color}"></i></span><span class="family-count">${count}</span></div>`;
+      const width = run.total ? (count / run.total) * 100 : 0;
+      return `<div class="family-row"><span class="family-name">${family.icon} ${family.label.replace("系", "")}</span><span class="family-track"><i class="family-fill" style="--family-width:${width}%;--family-color:${family.color}"></i></span><span class="family-count">${count}</span></div>`;
     }).join("");
 
-    const records = stageNames.map((name, stageIndex) => {
-      const stageChoices = choices.filter((choice) => choice && choice.stage === stageIndex);
-      return `<div class="stage-record" style="--stage-color:${stageColors[stageIndex]}"><strong>${name}</strong><div class="stage-flavors">${stageChoices.map((choice) => `<span class="stage-chip">${choice.text}</span>`).join("")}</div></div>`;
+    const records = run.phaseNames.map((name, phaseIndex) => {
+      const stageChoices = run.choices.filter((choice) => Number(choice.phase) === phaseIndex);
+      return `<div class="stage-record" style="--stage-color:${stageColors[phaseIndex]}"><strong>${name}</strong><div class="stage-flavors">${stageChoices.map((choice) => `<span class="stage-chip">${choice.cat}・${choice.detail}</span>`).join("")}</div></div>`;
     }).join("");
 
-    const signatures = choices.filter((choice) => choice && choice.family === dominant).map((choice) => choice.detail);
-    const signatureText = [...new Set(signatures)].slice(0, 3).join("、") || choices.filter(Boolean).slice(0, 3).map((choice) => choice.detail).join("、");
+    const signatures = run.choices.filter((choice) => choice.family === dominant).map((choice) => choice.detail);
+    const signatureText = [...new Set(signatures)].slice(0, 3).join("、") || run.choices.slice(0, 3).map((choice) => choice.detail).join("、");
 
     summaryEl.innerHTML = `
-      <div class="summary-title"><span>你的主要風味家族</span><div><b>${info.icon} ${info.label}</b><em>${counts[dominant]} / 6 次選擇</em></div></div>
+      <div class="summary-title"><span>你的主要風味家族</span><div><b>${info.icon} ${info.label}</b><em>${counts[dominant]} / ${run.total} 次選擇</em></div></div>
       <div class="family-bars">${bars}</div>
       <div class="stage-records">${records}</div>
-      <div class="signature-note">代表細項：<b>${signatureText}</b><br>這些實際選擇已直接影響下方分數、咖啡命名與評語。</div>`;
-
+      <div class="signature-note">代表細項：<b>${signatureText}</b><br>${run.modeLabel}・${run.total} 步的實際選擇已影響分數、咖啡命名、角色與評語。</div>`;
     return signatureText;
   }
 
-  function updateIdentity(dominant, signatureText, metricValues) {
+  function updateIdentity(run, dominant, signatureText, metricValues) {
     const info = familyInfo[dominant];
     titleEl.textContent = info.title;
     const score = Math.round(Object.values(metricValues).reduce((sum, value) => sum + value, 0) / Object.keys(metricValues).length);
@@ -164,74 +134,59 @@
       mature: `你偏好發酵、酒香與香料層次，以 ${signatureText} 最有代表性，餘韻成熟、深邃且富有變化。`,
       muted: `你的味覺偏向安靜的茶感與低飽和風味，以 ${signatureText} 最有代表性，輪廓柔和、沉靜而克制。`
     };
-    quoteEl.innerHTML = `<b>${info.role}</b><br>${descriptions[dominant]}<br><br>選擇回饋後總評分：<b>${score} / 100</b>`;
+    quoteEl.innerHTML = `<b>${info.role}</b><br>${descriptions[dominant]}<br><span class="result-mode-chip">${run.modeLabel}・${run.total} 步</span><br>選擇回饋後總評分：<b>${score} / 100</b>`;
     return score;
   }
 
-  function decorateCanvas(dominant, signatureText, score) {
-    if (!canvas || !canvas.getContext) return;
-    const oldWidth = canvas.width;
-    const oldHeight = canvas.height;
+  function fitLine(text, max = 28) {
+    return text.length > max ? `${text.slice(0, max - 1)}…` : text;
+  }
+
+  function decorateCanvas(run, dominant, signatureText, score) {
     const snapshot = document.createElement("canvas");
-    snapshot.width = oldWidth;
-    snapshot.height = oldHeight;
+    snapshot.width = canvas.width;
+    snapshot.height = canvas.height;
     snapshot.getContext("2d").drawImage(canvas, 0, 0);
 
     canvas.height = 1450;
     const ctx = canvas.getContext("2d");
     ctx.imageSmoothingEnabled = false;
     ctx.drawImage(snapshot, 0, 0);
-    ctx.fillStyle = "#211511";
-    ctx.fillRect(54, 1210, 792, 190);
-    ctx.strokeStyle = familyInfo[dominant].color;
-    ctx.lineWidth = 6;
-    ctx.strokeRect(68, 1224, 764, 162);
+    ctx.fillStyle = "#211511"; ctx.fillRect(54, 1210, 792, 190);
+    ctx.strokeStyle = familyInfo[dominant].color; ctx.lineWidth = 6; ctx.strokeRect(68, 1224, 764, 162);
     ctx.textAlign = "left";
-    ctx.fillStyle = familyInfo[dominant].color;
-    ctx.font = "bold 28px monospace";
-    ctx.fillText(`${familyInfo[dominant].icon} ${familyInfo[dominant].label}`, 92, 1265);
-    ctx.fillStyle = "#fff2cf";
-    ctx.font = "20px monospace";
-    ctx.fillText(`代表風味：${signatureText}`, 92, 1305);
-    stageNames.forEach((name, index) => {
-      const text = choices.filter((choice) => choice && choice.stage === index).map((choice) => choice.detail).join("・");
+    ctx.fillStyle = familyInfo[dominant].color; ctx.font = "bold 27px monospace";
+    ctx.fillText(`${familyInfo[dominant].icon} ${familyInfo[dominant].label}・${run.modeLabel}`, 92, 1262);
+    ctx.fillStyle = "#fff2cf"; ctx.font = "19px monospace";
+    ctx.fillText(`代表風味：${fitLine(signatureText, 24)}`, 92, 1298);
+    run.phaseNames.forEach((name, index) => {
+      const text = run.choices.filter((choice) => Number(choice.phase) === index).map((choice) => choice.detail).join("・");
       ctx.fillStyle = stageColors[index];
-      ctx.fillText(`${name}｜${text}`, 92, 1342 + index * 27);
+      ctx.fillText(`${name}｜${fitLine(text, 31)}`, 92, 1332 + index * 28);
     });
-    ctx.textAlign = "right";
-    ctx.fillStyle = "#ffd56a";
-    ctx.font = "bold 30px monospace";
-    ctx.fillText(`${score} / 100`, 806, 1371);
+    ctx.textAlign = "right"; ctx.fillStyle = "#ffd56a"; ctx.font = "bold 30px monospace";
+    ctx.fillText(`${score} / 100`, 806, 1382);
   }
 
   function applyFeedback() {
     if (applied) return;
-    recoverFromTags();
-    if (choices.filter(Boolean).length < 6) return;
+    const run = currentRun();
+    if (!run || run.choices.length !== run.total) return;
     applied = true;
-    const counts = familyCounts();
+    const counts = familyCounts(run);
     const dominant = dominantFamily(counts);
-    const metrics = adjustMetrics();
-    const signatureText = buildSummary(counts, dominant);
-    const score = updateIdentity(dominant, signatureText, metrics);
-    decorateCanvas(dominant, signatureText, score);
+    const metrics = adjustMetrics(run);
+    const signatureText = buildSummary(run, counts, dominant);
+    const score = updateIdentity(run, dominant, signatureText, metrics);
+    decorateCanvas(run, dominant, signatureText, score);
   }
 
-  const countObserver = new MutationObserver(() => {
-    const number = Number.parseInt(countEl.textContent, 10);
-    if (number === 0) {
-      choices = [];
+  const observer = new MutationObserver(() => {
+    if (!resultEl.classList.contains("hidden")) setTimeout(applyFeedback, 90);
+    else {
       applied = false;
       summaryEl.innerHTML = "";
-      return;
     }
-    if (number >= 1 && number <= 6) readChoice(number - 1);
   });
-  countObserver.observe(countEl, { childList: true, characterData: true, subtree: true });
-
-  const resultObserver = new MutationObserver(() => {
-    if (!resultEl.classList.contains("hidden")) setTimeout(applyFeedback, 80);
-    else applied = false;
-  });
-  resultObserver.observe(resultEl, { attributes: true, attributeFilter: ["class"] });
+  observer.observe(resultEl, { attributes: true, attributeFilter: ["class"] });
 })();
