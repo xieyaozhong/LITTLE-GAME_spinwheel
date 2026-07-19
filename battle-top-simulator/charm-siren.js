@@ -1,4 +1,4 @@
-/* Enchantress Siren: irregular charm control */
+/* Enchantress Siren: irregular charm control with enhanced moon-song visuals */
 (() => {
  const CHARM_KEY='enchantressSiren';
  const ENCHANTRESS_SIREN={
@@ -20,7 +20,7 @@
   const combo=host.querySelector('.combo-box');
   const ability=document.createElement('div');
   ability.className='combo-box charm-ability';
-  ability.innerHTML='<strong>月歌魅惑機構</strong>會在不固定時間鎖定一名可見敵人，使其短暫停止攻擊魅惑者並繞著魅惑者移動。魅惑期間目標會略微損失角速度；隱形或飛行中的陀螺不會被鎖定。<div class="combo-tags"><span>隨機魅惑</span><span>軌道牽引</span><span>短暫停戰</span></div>';
+  ability.innerHTML='<strong>月歌魅惑機構</strong>會在不固定時間鎖定一名可見敵人，使其短暫停止攻擊魅惑者並繞著魅惑者移動。魅惑期間會出現月波、歌聲絲帶與魅惑封印；隱形或飛行中的陀螺不會被鎖定。<div class="combo-tags"><span>隨機魅惑</span><span>月歌牽引</span><span>魅惑封印</span></div>';
   if(combo)combo.insertAdjacentElement('afterend',ability);else host.appendChild(ability);
  };
 
@@ -51,11 +51,121 @@
   target.charmedBy=null;
   target.charmTimer=0;
   target.charmGrace=.22;
+  target.charmReleasePulse=1;
   target.rimCooldown=Math.max(target.rimCooldown||0,.12);
   target.xDashCooldown=Math.max(target.xDashCooldown||0,.18);
-  emit(target.x,target.y,target.c.secondary||'#fff',14,.48,'streak');
-  wave(target.x,target.y,source?.c?.primary||'#ff8ad8',30);
+  emit(target.x,target.y,target.c.secondary||'#fff',22,.62,'streak');
+  emit(target.x,target.y,source?.c?.accent||'#fff0fb',12,.42);
+  wave(target.x,target.y,source?.c?.primary||'#ff8ad8',42);
   if(reason)addLog(`${target.c.name} ${reason}，解除魅惑並恢復自主軌道。`);
+ }
+
+ function drawCrescent(x,y,r,rotation,color,opacity){
+  ctx.save();
+  ctx.translate(x,y);ctx.rotate(rotation);
+  ctx.globalCompositeOperation='screen';
+  ctx.strokeStyle=alpha(color,opacity);
+  ctx.lineWidth=Math.max(1,r*.16);
+  ctx.beginPath();ctx.arc(0,0,r,-Math.PI*.68,Math.PI*.68);ctx.stroke();
+  ctx.restore();
+ }
+
+ function drawCharmRibbon(source,target,color){
+  if(!source||!target||source.out||target.out||source.burst||target.burst)return;
+  const dx=target.x-source.x,dy=target.y-source.y,d=mag(dx,dy)||1;
+  const px=-dy/d,py=dx/d;
+  const midX=(source.x+target.x)/2,midY=(source.y+target.y)/2;
+  const curve=Math.sin(time*6.2+target.angle)*Math.min(18,7+d*.045);
+
+  ctx.save();
+  ctx.globalCompositeOperation='screen';
+  ctx.lineCap='round';
+
+  ctx.strokeStyle=alpha(color,.10);
+  ctx.shadowBlur=18;ctx.shadowColor=color;
+  ctx.lineWidth=9;
+  ctx.beginPath();ctx.moveTo(source.x,source.y);
+  ctx.quadraticCurveTo(midX+px*curve,midY+py*curve,target.x,target.y);ctx.stroke();
+
+  ctx.shadowBlur=10;
+  ctx.strokeStyle=alpha(color,.42);
+  ctx.lineWidth=2.2;
+  ctx.beginPath();ctx.moveTo(source.x,source.y);
+  ctx.quadraticCurveTo(midX+px*curve,midY+py*curve,target.x,target.y);ctx.stroke();
+
+  for(let i=0;i<5;i++){
+   const t=(i/5+(time*.62)%1)%1,q=1-t;
+   const x=q*q*source.x+2*q*t*(midX+px*curve)+t*t*target.x;
+   const y=q*q*source.y+2*q*t*(midY+py*curve)+t*t*target.y;
+   const rr=2.7-i*.24;
+   ctx.fillStyle=alpha(i%2?source.c.accent:'#ffffff',.62-i*.07);
+   ctx.beginPath();ctx.arc(x,y,rr,0,Math.PI*2);ctx.fill();
+  }
+  ctx.restore();
+ }
+
+ function drawSirenAura(top,pulse){
+  const charge=clamp(1-(top.charmCooldown||99)/1.25,0,1);
+  const cast=clamp(top.charmCastPulse||0,0,1.8);
+  const glow=.18+.16*pulse+.20*charge+.22*cast;
+  ctx.save();
+  ctx.translate(top.x,top.y);
+  ctx.rotate(time*.42);
+  ctx.globalCompositeOperation='screen';
+  ctx.shadowBlur=15+charge*8;ctx.shadowColor=top.c.primary;
+
+  ctx.strokeStyle=alpha(top.c.primary,glow);
+  ctx.lineWidth=1.5+charge*.8;
+  ctx.beginPath();ctx.arc(0,0,top.r*(1.16+.05*pulse+.09*charge),0,Math.PI*2);ctx.stroke();
+
+  ctx.rotate(-time*.86);
+  ctx.strokeStyle=alpha(top.c.secondary,.13+.15*pulse+.22*charge+.16*cast);
+  ctx.setLineDash([top.r*.14,top.r*.18]);
+  ctx.beginPath();ctx.arc(0,0,top.r*(1.42+.08*pulse+.12*charge),0,Math.PI*2);ctx.stroke();
+  ctx.setLineDash([]);
+
+  for(let i=0;i<4;i++){
+   const a=i*Math.PI/2+time*.72;
+   const x=Math.cos(a)*top.r*.79,y=Math.sin(a)*top.r*.79;
+   ctx.save();ctx.translate(x,y);ctx.rotate(a+Math.PI/2);
+   ctx.strokeStyle=alpha(top.c.accent,.18+.13*pulse+.20*charge);
+   ctx.beginPath();ctx.ellipse(0,0,top.r*.17,top.r*.40,0,0,Math.PI*2);ctx.stroke();ctx.restore();
+  }
+
+  if(charge>.04){
+   for(let i=0;i<3;i++){
+    const a=i*Math.PI*2/3-time*(1.1+i*.12),rr=top.r*(1.20+.18*charge);
+    drawCrescent(Math.cos(a)*rr,Math.sin(a)*rr,top.r*(.12+.04*charge),a+Math.PI/2,top.c.accent,.16+.34*charge);
+   }
+  }
+  ctx.restore();
+ }
+
+ function drawCharmedSeal(top,color){
+  const pulse=.5+.5*Math.sin(time*9+top.angle);
+  ctx.save();
+  ctx.translate(top.x,top.y);
+  ctx.rotate(-time*1.75);
+  ctx.globalCompositeOperation='screen';
+  ctx.shadowBlur=13;ctx.shadowColor=color;
+
+  ctx.strokeStyle=alpha(color,.34+.18*pulse);
+  ctx.lineWidth=1.8;
+  ctx.beginPath();ctx.arc(0,0,top.r*1.24,0,Math.PI*2);ctx.stroke();
+
+  ctx.strokeStyle=alpha('#fff0fb',.23+.18*pulse);
+  ctx.setLineDash([top.r*.12,top.r*.16]);
+  ctx.beginPath();ctx.arc(0,0,top.r*1.43,0,Math.PI*2);ctx.stroke();
+  ctx.setLineDash([]);
+
+  for(let i=0;i<3;i++){
+   const a=i*Math.PI*2/3+time*2.15;
+   const x=Math.cos(a)*top.r*1.16,y=Math.sin(a)*top.r*1.16;
+   ctx.fillStyle=alpha(color,.42);
+   ctx.beginPath();ctx.arc(x,y,2.2,0,Math.PI*2);ctx.fill();
+   drawCrescent(x,y,top.r*.12,a+Math.PI/2,'#fff0fb',.30+.18*pulse);
+  }
+  ctx.restore();
  }
 
  const PreviousTop=Top;
@@ -64,6 +174,8 @@
    super(index,data);
    this.charmCooldown=999;
    this.charmCastPulse=0;
+   this.charmMarkPulse=0;
+   this.charmReleasePulse=0;
    this.charmCount=0;
    this.charmedBy=null;
    this.charmTimer=0;
@@ -80,16 +192,20 @@
    target.charmOrbitDir=Math.random()<.5?-1:1;
    target.charmOrbitPhase=Math.atan2(target.y-this.y,target.x-this.x);
    target.xDashCooldown=Math.max(target.xDashCooldown||0,.36);
+   target.charmMarkPulse=1.4;
    this.charmCount++;
-   this.charmCastPulse=1;
+   this.charmCastPulse=1.8;
    this.omega*=.987;this.spin=this.omega;
    scheduleCharm(this,false);
-   emit(this.x,this.y,this.c.primary,28,.72,'streak');
-   emit(target.x,target.y,this.c.accent,18,.58,'streak');
-   wave(this.x,this.y,this.c.secondary,54);
-   wave(target.x,target.y,this.c.primary,42);
-   shake=Math.max(shake,3.8);
-   addLog(`${this.c.name} 發動「月歌魅惑」：${target.c.name} 暫時停止攻擊並被牽引至魅惑軌道！`);
+   emit(this.x,this.y,this.c.primary,42,.92,'streak');
+   emit(this.x,this.y,this.c.secondary,24,.72,'streak');
+   emit(target.x,target.y,this.c.accent,30,.74,'streak');
+   emit(target.x,target.y,this.c.primary,14,.52);
+   wave(this.x,this.y,this.c.secondary,72);
+   wave(this.x,this.y,this.c.primary,52);
+   wave(target.x,target.y,this.c.primary,58);
+   shake=Math.max(shake,5.4);flash=Math.max(flash,.20);
+   addLog(`${this.c.name} 發動「月歌魅惑」：月波與歌聲絲帶纏繞 ${target.c.name}，迫使其進入魅惑軌道！`);
    return true;
   }
   updateCharmedMotion(dt){
@@ -119,6 +235,7 @@
    this.tiltVel*=Math.exp(-.28*dt);
    const speed=mag(this.vx,this.vy),limit=172;
    if(speed>limit){this.vx=this.vx/speed*limit;this.vy=this.vy/speed*limit}
+   if(Math.random()<dt*6)emit(this.x,this.y,source.c.primary,1,.24,'streak');
    if(this.charmTimer<=0||Math.abs(this.omega)<9||this.energy<12){
     clearCharm(this,'從月歌中清醒');
    }
@@ -126,6 +243,8 @@
   }
   update(dt,opponent){
    this.charmCastPulse=Math.max(0,this.charmCastPulse-dt*1.7);
+   this.charmMarkPulse=Math.max(0,this.charmMarkPulse-dt*1.35);
+   this.charmReleasePulse=Math.max(0,this.charmReleasePulse-dt*1.8);
    this.charmGrace=Math.max(0,this.charmGrace-dt);
    if(this.charmedBy){
     this.updateCharmedMotion(dt);
@@ -136,6 +255,9 @@
    if(!this.isCharmCaster()||this.out||this.burst||this.phaseInvisible||this.skyJumpGhost)return;
    if(this.energy<=25||Math.abs(this.omega)<15)return;
    this.charmCooldown-=dt;
+   if(this.charmCooldown<=1.25&&Math.random()<dt*7){
+    emit(this.x,this.y,Math.random()<.5?this.c.primary:this.c.accent,1,.20,'streak');
+   }
    if(this.charmCooldown<=0){
     const target=nearestCharmTarget(this,opponent);
     if(target&&mag(target.x-this.x,target.y-this.y)<=outerR*1.05)this.castCharm(target);
@@ -152,28 +274,46 @@
   draw(){
    super.draw();
    if(this.out||this.burst)return;
+
    const charmed=!!this.charmedBy,caster=this.isCharmCaster();
-   if(!charmed&&!caster)return;
-   const pulse=charmed?(.5+.5*Math.sin(time*10+this.angle)):(.5+.5*Math.sin(time*4.2));
-   const color=charmed?(this.charmedBy?.c?.primary||'#ff68c8'):this.c.primary;
-   ctx.save();
-   ctx.translate(this.x,this.y);
-   ctx.rotate((charmed?-1:1)*time*(charmed?2.8:1.1));
-   ctx.globalCompositeOperation='screen';
-   ctx.strokeStyle=alpha(color,charmed?.42:.16+.12*pulse+.18*this.charmCastPulse);
-   ctx.shadowBlur=12;ctx.shadowColor=color;
-   ctx.lineWidth=charmed?2:1.2;
-   ctx.setLineDash(charmed?[this.r*.18,this.r*.12]:[this.r*.10,this.r*.24]);
-   ctx.beginPath();ctx.arc(0,0,this.r*(charmed?1.28:1.12+.06*pulse),0,Math.PI*2);ctx.stroke();
-   ctx.setLineDash([]);
-   if(charmed){
-    for(let i=0;i<3;i++){
-     const a=i*Math.PI*2/3+time*2.1;
-     ctx.fillStyle=alpha(color,.38);
-     ctx.beginPath();ctx.arc(Math.cos(a)*this.r*1.12,Math.sin(a)*this.r*1.12,1.8,0,Math.PI*2);ctx.fill();
+   if(!charmed&&!caster&&!this.charmReleasePulse&&!this.charmMarkPulse)return;
+   const pulse=.5+.5*Math.sin(time*4.2);
+   const charmedColor=this.charmedBy?.c?.primary||'#ff68c8';
+
+   if(caster){
+    drawSirenAura(this,pulse);
+    if(this.charmCastPulse>0){
+     const cast=clamp(this.charmCastPulse,0,1.8)/1.8;
+     ctx.save();ctx.translate(this.x,this.y);
+     ctx.globalCompositeOperation='screen';
+     ctx.shadowBlur=18;ctx.shadowColor=this.c.accent;
+     for(let i=0;i<2;i++){
+      ctx.strokeStyle=alpha(i?this.c.primary:this.c.accent,(.15+.24*cast)*(1-i*.2));
+      ctx.lineWidth=2.2-i*.5;
+      ctx.beginPath();ctx.arc(0,0,this.r*(1.42+i*.22+(1-cast)*.62),0,Math.PI*2);ctx.stroke();
+     }
+     ctx.restore();
     }
    }
-   ctx.restore();
+
+   if(charmed){
+    drawCharmRibbon(this.charmedBy,this,charmedColor);
+    drawCharmedSeal(this,this.charmedBy?.c?.primary||charmedColor);
+   }
+
+   if(this.charmMarkPulse>0){
+    const mark=clamp(this.charmMarkPulse,0,1.4)/1.4;
+    ctx.save();ctx.translate(this.x,this.y);ctx.globalCompositeOperation='screen';
+    ctx.strokeStyle=alpha('#fff0fb',.36*mark);ctx.shadowBlur=18;ctx.shadowColor=charmedColor;
+    ctx.lineWidth=2.4;ctx.beginPath();ctx.arc(0,0,this.r*(1.1+(1-mark)*.75),0,Math.PI*2);ctx.stroke();ctx.restore();
+   }
+
+   if(this.charmReleasePulse>0){
+    const release=clamp(this.charmReleasePulse,0,1);
+    ctx.save();ctx.translate(this.x,this.y);ctx.globalCompositeOperation='screen';
+    ctx.strokeStyle=alpha('#fff0fb',.26*release);ctx.shadowBlur=14;ctx.shadowColor='#ff68c8';
+    ctx.lineWidth=1.8;ctx.beginPath();ctx.arc(0,0,this.r*(1.2+.92*(1-release)),0,Math.PI*2);ctx.stroke();ctx.restore();
+   }
   }
  };
 
@@ -189,12 +329,12 @@
  };
 
  const style=document.createElement('style');
- style.textContent='.charm-ability{border-color:#ff68c855;background:linear-gradient(135deg,#ff68c812,#744cff18)}';
+ style.textContent='.charm-ability{border-color:#ff68c855;background:linear-gradient(135deg,#ff68c812,#744cff18);box-shadow:inset 0 0 22px #ff68c80c}';
  document.head.appendChild(style);
 
  cfg.p2={...ENCHANTRESS_SIREN,preset:CHARM_KEY};
  renderPanel('p1');renderPanel('p2');
  document.querySelector('#n1').textContent=cfg.p1.name;
  document.querySelector('#n2').textContent=cfg.p2.name;
- document.querySelector('#log').textContent='「魅月海妖」已加入：它會不定期魅惑一名可見敵人，使對方停止攻擊並短暫繞著海妖移動。';
+ document.querySelector('#log').textContent='「魅月海妖」特效已強化：施法前會凝聚月波，魅惑時產生歌聲絲帶、旋轉封印與月牙光點。';
 })();
