@@ -47,7 +47,7 @@
   return {x:cx+dx/d*radius,y:cy+dy/d*radius};
  }
  function snapshot(top){
-  return {vx:top.vx,vy:top.vy,omega:top.omega,energy:top.energy,tiltVel:top.tiltVel,lift:top.lift||0,impactBoost:top.impactBoost||0,burstMeter:top.burstMeter||0};
+  return {vx:top.vx,vy:top.vy,omega:top.omega,energy:top.energy,tiltVel:top.tiltVel,lift:top.lift||0,impactBoost:top.impactBoost||0,burstMeter:top.burstMeter||0,burst:!!top.burst};
  }
  function softenFrom(top,before,factor){
   if(!top||!before)return;
@@ -59,6 +59,7 @@
   top.lift=before.lift+(top.lift-before.lift)*factor;
   top.impactBoost=before.impactBoost+(top.impactBoost-before.impactBoost)*factor;
   top.burstMeter=before.burstMeter+(top.burstMeter-before.burstMeter)*factor;
+  if(!before.burst&&top.burst&&top.burstMeter<100)top.burst=false;
  }
  function defenseScale(victim){
   let scale=clamp(1-(Math.max(0,(victim?.c?.d||70)-70))*.0042,.72,1);
