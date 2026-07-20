@@ -174,7 +174,6 @@
   }
   updateFrozen(dt){
    const source=this.timeFrozenBy;
-   this.timeFreezePulse=Math.max(0,this.timeFreezePulse-dt*1.15);
    this.timeFrozenTimer-=dt;
    this.timeFreezeLabelTimer=Math.max(0,this.timeFreezeLabelTimer-dt);
    if(this.timeFreezeStored){
@@ -191,7 +190,6 @@
    let target=this.chronoTarget;
    if(!combatReady(target)||teamOf(target)===teamOf(this))target=nearestEnemy(this,null);
    this.chronoTarget=target;
-   super.update(dt,null);
    if(target){
     this.chronoOrbitAngle+=dt*2.65*(Math.sign(this.omega)||1);
     const radius=this.r+target.r+42;
