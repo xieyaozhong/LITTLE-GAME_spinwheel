@@ -1,4 +1,4 @@
-/* Sky Pouncer Endurance V1: reduced flight drain, landing recovery, and reserve takeoff */
+/* Sky Pouncer Endurance V2: reduced flight drain without reviving a top after energy reaches zero */
 (() => {
   const KEY='skyPouncer';
   const FLIGHT_STATES=new Set(['climb','orbit','air','direct']);
@@ -15,6 +15,15 @@
   if(typeof cfg==='object'){tuneConfig(cfg.p1);tuneConfig(cfg.p2)}
   if(Array.isArray(tops))tops.forEach(top=>tuneConfig(top?.c||top));
 
+  const markDepleted=top=>{
+    if(!top?.c?.skyPouncer)return false;
+    if(top.skyEnergyDepletedLatch||(top.energy||0)<=0){
+      top.skyEnergyDepletedLatch=true;
+      top.energy=0;
+      return true;
+    }
+    return false;
+  };
   const teamOf=top=>top?.teamIndex??(top?.index?1:0);
   const activeEnemy=(source,preferred)=>{
     const valid=target=>!!target&&target!==source&&teamOf(target)!==teamOf(source)&&!target.out&&!target.burst&&!target.phaseInvisible&&!target.skyJumpGhost&&(target.energy||0)>0;
@@ -28,6 +37,7 @@
     return best;
   };
   const restoreExpectedSpin=(top,before,rate,dt,fraction)=>{
+    if(markDepleted(top))return;
     const start=Math.abs(before||0);
     if(!start)return;
     const expected=start*Math.exp(-rate*dt);
@@ -45,7 +55,7 @@
     const host=document.querySelector('#'+id),c=cfg[id];
     if(!host||!c?.skyPouncer)return;
     const box=host.querySelector('.sky-pouncer-ability');
-    if(box)box.innerHTML='<strong>飛鷹三式・高續航翼核</strong>提升耐力並降低盤旋與空中飛行的能量、角速度消耗；每次安全落地可回收少量飛行能量，低能量時仍可動用一次較低門檻的預備升空。<div class="combo-tags"><span>耐力提升</span><span>飛行耗能降低</span><span>落地回收</span><span>預備升空</span></div>';
+    if(box)box.innerHTML='<strong>飛鷹三式・高續航翼核</strong>提升耐力並降低盤旋與空中飛行的能量、角速度消耗；每次安全落地可回收少量飛行能量。體力一旦歸零便會立即失速判敗，不會被回能機構重新救回。<div class="combo-tags"><span>耐力提升</span><span>飛行耗能降低</span><span>落地回收</span><span>零體力失速</span></div>';
   };
 
   const PreviousTop=Top;
@@ -55,11 +65,13 @@
       this.skyEndurancePulse=0;
       this.skyReserveFlightCount=0;
       this.skyLastRecoveryCount=this.skyJumpCount||0;
+      this.skyEnergyDepletedLatch=false;
     }
     updateSkyOrbit(dt,opponent){
       if(!this.c?.skyPouncer)return super.updateSkyOrbit(dt,opponent);
       const beforeOmega=this.omega||0;
       super.updateSkyOrbit(dt,opponent);
+      if(markDepleted(this))return;
       this.energy=clamp((this.energy||0)+dt*1.45*.46,0,100);
       restoreExpectedSpin(this,beforeOmega,.055,dt,.52);
     }
@@ -69,6 +81,7 @@
       const height=this.skyJumpHeight||0;
       const mode=this.skyStrikeMode;
       super.updateSkyAir(dt,opponent);
+      if(markDepleted(this))return;
       const airCost=mode==='grand'?1.85:1.05;
       this.energy=clamp((this.energy||0)+dt*(airCost+height*.75)*.43,0,100);
       restoreExpectedSpin(this,beforeOmega,mode==='grand'?.060:.045,dt,.50);
@@ -77,6 +90,7 @@
       if(!this.c?.skyPouncer)return super.launchSkyDirectAttack(opponent);
       const beforeEnergy=this.energy||0;
       super.launchSkyDirectAttack(opponent);
+      if(markDepleted(this))return;
       const spent=Math.max(0,beforeEnergy-(this.energy||0));
       if(spent>0)this.energy=clamp(this.energy+spent*.40,0,100);
     }
@@ -85,6 +99,7 @@
       const mode=this.skyStrikeMode;
       const beforeCount=this.skyJumpCount||0;
       super.landSkyDive(opponent);
+      if(markDepleted(this))return;
       if((this.skyJumpCount||0)>beforeCount){
         const recovery=mode==='grand'?1.65:1.35;
         this.energy=clamp((this.energy||0)+recovery,0,100);
@@ -98,6 +113,7 @@
       if(!this.c?.skyPouncer)return super.updateSkyDirect(dt,opponent);
       const beforeCount=this.skyJumpCount||0;
       super.updateSkyDirect(dt,opponent);
+      if(markDepleted(this))return;
       if((this.skyJumpCount||0)>beforeCount){
         this.energy=clamp((this.energy||0)+.85,0,100);
         this.skyJumpCooldown=Math.max(1.75,(this.skyJumpCooldown||0)-.55);
@@ -105,10 +121,12 @@
       }
     }
     update(dt,opponent){
+      if(this.c?.skyPouncer&&this.skyEnergyDepletedLatch){this.energy=0;return}
       const beforeState=this.skyJumpState;
       super.update(dt,opponent);
       this.skyEndurancePulse=Math.max(0,(this.skyEndurancePulse||0)-dt*1.35);
       if(!this.c?.skyPouncer||this.out||this.burst)return;
+      if(markDepleted(this))return;
 
       if(this.skyJumpState==='idle'&&!FLIGHT_STATES.has(beforeState)){
         this.energy=clamp((this.energy||0)+dt*.16,0,100);
@@ -147,6 +165,6 @@
   document.head.appendChild(style);
   ['p1','p2'].forEach(id=>{if(cfg?.[id]?.skyPouncer)renderPanel(id)});
   const log=document.querySelector('#log');
-  if(log)log.textContent='天墜獵鷹完成續航強化：耐力提升、空中耗能與耗轉下降，落地可回收能量並在低能量時啟動預備升空。';
-  document.documentElement.dataset.skyPouncerEndurance='v1';
+  if(log)log.textContent='天墜獵鷹續航修正：回能只在仍有體力時生效，體力歸零會鎖定失速並立即進入判敗。';
+  document.documentElement.dataset.skyPouncerEndurance='v2';
 })();
