@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#111827" />
+  <title>WHO'S THE SPY?｜像素身分抽取器</title>
+  <style>
+    :root{
+      --ink:#15151d;
+      --paper:#fff8dc;
+      --paper-2:#f7e7a9;
+      --blue:#5cc8ff;
+      --blue-dark:#166b9c;
+      --pink:#ff6b9a;
+      --pink-dark:#9d3157;
+      --yellow:#ffd95a;
+      --green:#7ce38b;
+      --red:#ff5d5d;
+      --purple:#9b7bff;
+      --white:#fffdf5;
+      --shadow:#090912;
+    }
+
+    *{box-sizing:border-box}
+    html{background:#0d1020}
+    body{
+      margin:0;
+      min-height:100svh;
+      color:var(--ink);
+      font-family:"Courier New","Noto Sans TC",monospace;
+      background:
+        linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px),
+        radial-gradient(circle at 20% 10%,#28346b 0 0,transparent 32%),
+        radial-gradient(circle at 80% 80%,#532c66 0 0,transparent 34%),
+        #0d1020;
+      background-size:24px 24px,24px 24px,auto,auto,auto;
+      image-rendering:pixelated;
+    }
+
+    button,input,select,textarea{font:inherit}
+    button{touch-action:manipulation}
+
+    .app{
+      width:min(100%,760px);
+      min-height:100svh;
+      margin:0 auto;
+      padding:22px 16px calc(28px + env(safe-area-inset-bottom));
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+    }
+
+    .topbar{
+      color:var(--white);
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:12px;
+      padding:2px 2px 8px;
+    }
+    .eyebrow{font-size:12px;letter-spacing:2px;color:var(--yellow);font-weight:900}
+    h1{margin:5px 0 0;font-size:clamp(24px,7vw,42px);line-height:.95;text-shadow:3px 3px 0 #000}
+    .version{font-size:11px;border:2px solid var(--white);padding:5px 7px;background:#1a2040;box-shadow:3px 3px 0 #000;white-space:nowrap}
+
+    .pixel-panel{
+      position:relative;
+      background:var(--paper);
+      border:4px solid var(--ink);
+      box-shadow:8px 8px 0 var(--shadow);
+      padding:18px;
+    }
+    .pixel-panel::before,.pixel-panel::after{
+      content:"";
+      position:absolute;
+      width:10px;height:10px;background:var(--ink);
+    }
+    .pixel-panel::before{left:-4px;bottom:-4px}
+    .pixel-panel::after{right:-4px;top:-4px}
+
+    .screen{display:none}
+    .screen.active{display:block;animation:pop .14s steps(2,end)}
+    @keyframes pop{from{transform:translateY(4px);opacity:.4}to{transform:none;opacity:1}}
+
+    .hero{
+      text-align:center;
+      padding:16px 8px 6px;
+    }
+    .pixel-face{
+      width:92px;height:92px;margin:2px auto 16px;
+      border:4px solid var(--ink);
+      background:
+        linear-gradient(90deg,transparent 16px,var(--ink) 16px 28px,transparent 28px 56px,var(--ink) 56px 68px,transparent 68px),
+        linear-gradient(transparent 24px,#ffd36a 24px 60px,transparent 60px),
+        var(--blue);
+      box-shadow:6px 6px 0 var(--ink);
+      position:relative;
+    }
+    .pixel-face:after{content:"?";position:absolute;inset:0;display:grid;place-items:center;font-size:52px;font-weight:900;color:#fff;text-shadow:3px 3px 0 #000}
+
+    .hero h2,.screen h2{margin:0 0 8px;font-size:24px}
+    .muted{margin:0;color:#5c5a54;font-size:13px;line-height:1.7}
+
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+    @media(max-width:520px){.grid{grid-template-columns:1fr}}
+
+    .field{display:flex;flex-direction:column;gap:7px}
+    .field.full{grid-column:1/-1}
+    label{font-weight:900;font-size:13px}
+    .hint{font-size:11px;color:#6c685d;font-weight:400}
+    input,select,textarea{
+      width:100%;
+      border:3px solid var(--ink);
+      background:#fffdf4;
+      color:var(--ink);
+      padding:12px;
+      outline:none;
+      border-radius:0;
+      box-shadow:3px 3px 0 #c6b874;
+    }
+    textarea{min-height:82px;resize:vertical;line-height:1.5}
+    input:focus,select:focus,textarea:focus{background:#fff8c8;box-shadow:3px 3px 0 var(--blue-dark)}
+
+    .preset-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+    .chip{
+      border:2px solid var(--ink);background:#fff;padding:7px 9px;box-shadow:2px 2px 0 var(--ink);cursor:pointer;font-size:12px;font-weight:900
+    }
+    .chip:active{transform:translate(2px,2px);box-shadow:none}
+
+    .btn{
+      width:100%;border:4px solid var(--ink);padding:14px 15px;margin-top:16px;font-weight:900;letter-spacing:1px;cursor:pointer;color:var(--ink);background:var(--yellow);box-shadow:6px 6px 0 var(--ink);text-transform:uppercase
+    }
+    .btn:active{transform:translate(6px,6px);box-shadow:none}
+    .btn.primary{background:var(--blue)}
+    .btn.danger{background:var(--pink)}
+    .btn.green{background:var(--green)}
+    .btn.ghost{background:#fff;margin-top:10px}
+    .btn:disabled{filter:grayscale(1);opacity:.45;cursor:not-allowed}
+
+    .statusbar{
+      display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:14px;padding:9px 10px;border:3px solid var(--ink);background:var(--paper-2);font-weight:900;font-size:12px
+    }
+    .pixel-hearts{letter-spacing:2px;color:var(--pink-dark)}
+
+    .handoff{
+      text-align:center;
+      min-height:420px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+    }
+    .player-badge{display:inline-block;margin:0 auto 12px;background:var(--purple);color:#fff;border:3px solid var(--ink);padding:7px 10px;box-shadow:3px 3px 0 var(--ink);font-weight:900}
+    .big-player{font-size:clamp(28px,9vw,52px);line-height:1.1;margin:8px 0 12px}
+    .phone-icon{font-size:64px;filter:drop-shadow(4px 4px 0 #111)}
+
+    .secret-wrap{perspective:800px;min-height:280px;margin:8px 0 0}
+    .secret-card{
+      min-height:280px;border:4px solid var(--ink);box-shadow:7px 7px 0 var(--ink);background:#272a43;color:#fff;padding:20px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:12px;position:relative;overflow:hidden
+    }
+    .secret-card::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 48%,rgba(255,255,255,.05) 48% 52%,transparent 52%),linear-gradient(transparent 48%,rgba(255,255,255,.05) 48% 52%,transparent 52%);background-size:22px 22px;pointer-events:none}
+    .role-tag{position:relative;z-index:1;border:3px solid #fff;padding:6px 10px;font-size:12px;font-weight:900;letter-spacing:2px}
+    .secret-card.spy{background:#661f42}
+    .secret-card.civilian{background:#1f607f}
+    .secret-card.blank{background:#5c4d25}
+    .role-title{position:relative;z-index:1;font-size:clamp(28px,8vw,46px);font-weight:900;text-shadow:4px 4px 0 #000}
+    .word-box{position:relative;z-index:1;background:var(--paper);color:var(--ink);border:4px solid var(--ink);padding:16px 18px;min-width:min(90%,320px);font-size:clamp(26px,8vw,44px);font-weight:900;box-shadow:5px 5px 0 #000}
+    .secret-note{position:relative;z-index:1;font-size:12px;line-height:1.6;color:#ececec}
+
+    .cover-card{
+      min-height:280px;border:4px dashed var(--ink);display:flex;flex-direction:column;justify-content:center;align-items:center;gap:13px;background:#fff8d9;padding:20px
+    }
+    .cover-lock{font-size:64px}
+    .cover-card strong{font-size:20px}
+
+    .summary{
+      text-align:center;padding:18px 4px
+    }
+    .trophy{font-size:76px;filter:drop-shadow(5px 5px 0 #111)}
+    .summary-box{border:3px solid var(--ink);background:#fff;margin:18px 0 0;padding:14px;text-align:left;line-height:1.75;font-size:13px}
+    .warning{margin-top:12px;border:3px solid var(--ink);background:#ffd0d0;padding:10px;font-size:12px;font-weight:900}
+
+    .footer-note{color:#bdc6e9;text-align:center;font-size:10px;line-height:1.6;padding:6px 8px 0}
+    .hidden{display:none!important}
+
+    .toast{
+      position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:20;background:#111;color:#fff;border:3px solid #fff;padding:10px 14px;box-shadow:4px 4px 0 #000;font-weight:900;font-size:12px;opacity:0;pointer-events:none;transition:opacity .15s
+    }
+    .toast.show{opacity:1}
+  </style>
+</head>
+<body>
+  <main class="app" id="undercover-app">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">PIXEL PARTY / SECRET ROLE</div>
+        <h1>WHO'S THE SPY?</h1>
+      </div>
+      <div class="version">V1.0</div>
+    </header>
+
+    <section class="pixel-panel">
+      <div class="screen active" id="screenSetup">
+        <div class="hero">
+          <div class="pixel-face" aria-hidden="true"></div>
+          <h2>像素內鬼・身分抽取器</h2>
+          <p class="muted">設定完成後，把手機依序交給每位玩家。每個人只會看到自己的身分與詞語。</p>
+        </div>
+
+        <div class="grid">
+          <div class="field">
+            <label for="playerCount">玩家人數</label>
+            <select id="playerCount"></select>
+          </div>
+          <div class="field">
+            <label for="spyCount">內鬼人數</label>
+            <select id="spyCount"></select>
+          </div>
+
+          <div class="field full">
+            <label for="playerNames">玩家名稱 <span class="hint">（可空白；每行一人）</span></label>
+            <textarea id="playerNames" placeholder="例如：\n阿忠\n小安\nLucy\n玩家4"></textarea>
+          </div>
+
+          <div class="field">
+            <label for="civilianWord">平民詞</label>
+            <input id="civilianWord" maxlength="24" value="拿鐵" />
+          </div>
+          <div class="field">
+            <label for="spyWord">內鬼詞</label>
+            <input id="spyWord" maxlength="24" value="卡布奇諾" />
+          </div>
+
+          <div class="field full">
+            <label>快速詞組</label>
+            <div class="preset-row" id="presets"></div>
+          </div>
+        </div>
+
+        <button class="btn primary" id="startBtn">▶ 產生身分</button>
+      </div>
+
+      <div class="screen" id="screenHandoff">
+        <div class="statusbar">
+          <span id="progressText">PLAYER 1 / 6</span>
+          <span class="pixel-hearts">♥ ♥ ♥</span>
+        </div>
+        <div class="handoff">
+          <div class="player-badge">NEXT PLAYER</div>
+          <div class="phone-icon">📱</div>
+          <h2 class="big-player" id="handoffName">玩家 1</h2>
+          <p class="muted">請把手機交給這位玩家。<br>確認旁邊沒有人偷看後再按下按鈕。</p>
+          <button class="btn primary" id="revealBtn">👁 查看我的身分</button>
+        </div>
+      </div>
+
+      <div class="screen" id="screenSecret">
+        <div class="statusbar">
+          <span id="secretProgress">PLAYER 1 / 6</span>
+          <span>TOP SECRET</span>
+        </div>
+
+        <div class="secret-wrap">
+          <div class="secret-card civilian" id="secretCard">
+            <div class="role-tag" id="roleTag">YOUR ROLE</div>
+            <div class="role-title" id="roleTitle">平民</div>
+            <div class="word-box" id="wordBox">拿鐵</div>
+            <div class="secret-note" id="secretNote">記住你的詞，不要讓其他人看到。</div>
+          </div>
+        </div>
+
+        <button class="btn green" id="hideNextBtn">✓ 我記住了・遮住畫面</button>
+      </div>
+
+      <div class="screen" id="screenReady">
+        <div class="summary">
+          <div class="trophy">🕵️</div>
+          <h2>所有人都看完了！</h2>
+          <p class="muted">現在可以開始描述自己的詞。不要直接說出答案，也不要透露自己的身分。</p>
+          <div class="summary-box" id="gameSummary"></div>
+          <div class="warning">⚠ 這個畫面不會顯示誰是內鬼。重新開始會重新洗牌。</div>
+          <button class="btn danger" id="restartBtn">↻ 再玩一局</button>
+          <button class="btn ghost" id="backSetupBtn">⚙ 回設定頁</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer-note">獨立子頁面版本・不需要任何外部套件・不會改動原本 Lucky Wheel 首頁</div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const $ = (id) => document.getElementById(id);
+      const screens = {
+        setup: $('screenSetup'),
+        handoff: $('screenHandoff'),
+        secret: $('screenSecret'),
+        ready: $('screenReady')
+      };
+
+      const playerCount = $('playerCount');
+      const spyCount = $('spyCount');
+      const playerNames = $('playerNames');
+      const civilianWord = $('civilianWord');
+      const spyWord = $('spyWord');
+      const presets = $('presets');
+      const startBtn = $('startBtn');
+      const revealBtn = $('revealBtn');
+      const hideNextBtn = $('hideNextBtn');
+      const restartBtn = $('restartBtn');
+      const backSetupBtn = $('backSetupBtn');
+      const toast = $('toast');
+
+      const pairs = [
+        ['拿鐵','卡布奇諾'],
+        ['可樂','雪碧'],
+        ['貓','老虎'],
+        ['火鍋','麻辣燙'],
+        ['海邊','游泳池'],
+        ['吉他','烏克麗麗'],
+        ['電影','影集'],
+        ['咖啡','紅茶']
+      ];
+
+      let state = {
+        players: [],
+        roles: [],
+        index: 0,
+        started: false
+      };
+
+      function initSelects(){
+        for(let n=3;n<=16;n++) playerCount.add(new Option(`${n} 人`, String(n)));
+        playerCount.value = '6';
+        updateSpyOptions();
+      }
+
+      function updateSpyOptions(){
+        const count = Number(playerCount.value || 6);
+        const maxSpies = Math.min(4, Math.max(1, Math.floor((count - 1) / 2)));
+        const current = Number(spyCount.value || 1);
+        spyCount.innerHTML = '';
+        for(let n=1;n<=maxSpies;n++) spyCount.add(new Option(`${n} 人`, String(n)));
+        spyCount.value = String(Math.min(current, maxSpies));
+      }
+
+      function initPresets(){
+        pairs.forEach(([a,b]) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'chip';
+          btn.textContent = `${a} / ${b}`;
+          btn.addEventListener('click', () => {
+            civilianWord.value = a;
+            spyWord.value = b;
+            flash('詞組已套用');
+          });
+          presets.appendChild(btn);
+        });
+      }
+
+      function showScreen(name){
+        Object.values(screens).forEach(el => el.classList.remove('active'));
+        screens[name].classList.add('active');
+        window.scrollTo({top:0,behavior:'smooth'});
+      }
+
+      function flash(message){
+        toast.textContent = message;
+        toast.classList.add('show');
+        clearTimeout(flash.t);
+        flash.t = setTimeout(() => toast.classList.remove('show'), 1200);
+      }
+
+      function shuffle(array){
+        const copy = [...array];
+        for(let i=copy.length-1;i>0;i--){
+          const j = Math.floor(Math.random() * (i + 1));
+          [copy[i],copy[j]] = [copy[j],copy[i]];
+        }
+        return copy;
+      }
+
+      function getNames(count){
+        const raw = playerNames.value
+          .split(/\n+/)
+          .map(s => s.trim())
+          .filter(Boolean)
+          .slice(0,count);
+        return Array.from({length:count},(_,i) => raw[i] || `玩家 ${i+1}`);
+      }
+
+      function validate(){
+        const c = civilianWord.value.trim();
+        const s = spyWord.value.trim();
+        if(!c || !s){flash('請輸入兩組詞');return false;}
+        if(c === s){flash('平民詞與內鬼詞要不同');return false;}
+        return true;
+      }
+
+      function buildGame(){
+        if(!validate()) return false;
+        const count = Number(playerCount.value);
+        const spies = Number(spyCount.value);
+        state.players = getNames(count);
+        state.roles = shuffle([
+          ...Array(spies).fill('spy'),
+          ...Array(count-spies).fill('civilian')
+        ]);
+        state.index = 0;
+        state.started = true;
+        return true;
+      }
+
+      function renderHandoff(){
+        const i = state.index;
+        $('progressText').textContent = `PLAYER ${i+1} / ${state.players.length}`;
+        $('handoffName').textContent = state.players[i];
+        showScreen('handoff');
+      }
+
+      function renderSecret(){
+        const role = state.roles[state.index];
+        const isSpy = role === 'spy';
+        $('secretProgress').textContent = `PLAYER ${state.index+1} / ${state.players.length}`;
+        $('secretCard').className = `secret-card ${isSpy ? 'spy' : 'civilian'}`;
+        $('roleTag').textContent = isSpy ? 'UNDERCOVER' : 'CIVILIAN';
+        $('roleTitle').textContent = isSpy ? '你是內鬼' : '你是平民';
+        $('wordBox').textContent = isSpy ? spyWord.value.trim() : civilianWord.value.trim();
+        $('secretNote').textContent = isSpy
+          ? '你的詞和大多數人不一樣。保持冷靜，混進去。'
+          : '記住你的詞，描述時別講得太明顯。';
+        showScreen('secret');
+      }
+
+      function renderReady(){
+        const spyN = state.roles.filter(r => r === 'spy').length;
+        $('gameSummary').innerHTML = [
+          `<strong>玩家：</strong>${state.players.length} 人`,
+          `<br><strong>內鬼：</strong>${spyN} 人`,
+          `<br><strong>建議流程：</strong>每人用一句話描述 → 討論 → 投票淘汰 → 公布是否為內鬼。`
+        ].join('');
+        showScreen('ready');
+      }
+
+      function start(){
+        if(!buildGame()) return;
+        renderHandoff();
+      }
+
+      function next(){
+        state.index++;
+        if(state.index >= state.players.length) renderReady();
+        else renderHandoff();
+      }
+
+      playerCount.addEventListener('change', updateSpyOptions);
+      startBtn.addEventListener('click', start);
+      revealBtn.addEventListener('click', renderSecret);
+      hideNextBtn.addEventListener('click', next);
+      restartBtn.addEventListener('click', () => { if(buildGame()) renderHandoff(); });
+      backSetupBtn.addEventListener('click', () => showScreen('setup'));
+
+      document.addEventListener('keydown', (e) => {
+        if(e.code !== 'Space' && e.code !== 'Enter') return;
+        const active = Object.entries(screens).find(([,el]) => el.classList.contains('active'))?.[0];
+        if(active === 'handoff') revealBtn.click();
+        else if(active === 'secret') hideNextBtn.click();
+      });
+
+      initSelects();
+      initPresets();
+    })();
+  </script>
+</body>
+</html>
