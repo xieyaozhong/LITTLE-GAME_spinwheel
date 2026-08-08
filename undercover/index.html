@@ -1,480 +1,74 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <meta name="theme-color" content="#111827" />
-  <title>WHO'S THE SPY?｜像素身分抽取器</title>
-  <style>
-    :root{
-      --ink:#15151d;
-      --paper:#fff8dc;
-      --paper-2:#f7e7a9;
-      --blue:#5cc8ff;
-      --blue-dark:#166b9c;
-      --pink:#ff6b9a;
-      --pink-dark:#9d3157;
-      --yellow:#ffd95a;
-      --green:#7ce38b;
-      --red:#ff5d5d;
-      --purple:#9b7bff;
-      --white:#fffdf5;
-      --shadow:#090912;
-    }
-
-    *{box-sizing:border-box}
-    html{background:#0d1020}
-    body{
-      margin:0;
-      min-height:100svh;
-      color:var(--ink);
-      font-family:"Courier New","Noto Sans TC",monospace;
-      background:
-        linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),
-        linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px),
-        radial-gradient(circle at 20% 10%,#28346b 0 0,transparent 32%),
-        radial-gradient(circle at 80% 80%,#532c66 0 0,transparent 34%),
-        #0d1020;
-      background-size:24px 24px,24px 24px,auto,auto,auto;
-      image-rendering:pixelated;
-    }
-
-    button,input,select,textarea{font:inherit}
-    button{touch-action:manipulation}
-
-    .app{
-      width:min(100%,760px);
-      min-height:100svh;
-      margin:0 auto;
-      padding:22px 16px calc(28px + env(safe-area-inset-bottom));
-      display:flex;
-      flex-direction:column;
-      gap:16px;
-    }
-
-    .topbar{
-      color:var(--white);
-      display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      gap:12px;
-      padding:2px 2px 8px;
-    }
-    .eyebrow{font-size:12px;letter-spacing:2px;color:var(--yellow);font-weight:900}
-    h1{margin:5px 0 0;font-size:clamp(24px,7vw,42px);line-height:.95;text-shadow:3px 3px 0 #000}
-    .version{font-size:11px;border:2px solid var(--white);padding:5px 7px;background:#1a2040;box-shadow:3px 3px 0 #000;white-space:nowrap}
-
-    .pixel-panel{
-      position:relative;
-      background:var(--paper);
-      border:4px solid var(--ink);
-      box-shadow:8px 8px 0 var(--shadow);
-      padding:18px;
-    }
-    .pixel-panel::before,.pixel-panel::after{
-      content:"";
-      position:absolute;
-      width:10px;height:10px;background:var(--ink);
-    }
-    .pixel-panel::before{left:-4px;bottom:-4px}
-    .pixel-panel::after{right:-4px;top:-4px}
-
-    .screen{display:none}
-    .screen.active{display:block;animation:pop .14s steps(2,end)}
-    @keyframes pop{from{transform:translateY(4px);opacity:.4}to{transform:none;opacity:1}}
-
-    .hero{
-      text-align:center;
-      padding:16px 8px 6px;
-    }
-    .pixel-face{
-      width:92px;height:92px;margin:2px auto 16px;
-      border:4px solid var(--ink);
-      background:
-        linear-gradient(90deg,transparent 16px,var(--ink) 16px 28px,transparent 28px 56px,var(--ink) 56px 68px,transparent 68px),
-        linear-gradient(transparent 24px,#ffd36a 24px 60px,transparent 60px),
-        var(--blue);
-      box-shadow:6px 6px 0 var(--ink);
-      position:relative;
-    }
-    .pixel-face:after{content:"?";position:absolute;inset:0;display:grid;place-items:center;font-size:52px;font-weight:900;color:#fff;text-shadow:3px 3px 0 #000}
-
-    .hero h2,.screen h2{margin:0 0 8px;font-size:24px}
-    .muted{margin:0;color:#5c5a54;font-size:13px;line-height:1.7}
-
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
-    @media(max-width:520px){.grid{grid-template-columns:1fr}}
-
-    .field{display:flex;flex-direction:column;gap:7px}
-    .field.full{grid-column:1/-1}
-    label{font-weight:900;font-size:13px}
-    .hint{font-size:11px;color:#6c685d;font-weight:400}
-    input,select,textarea{
-      width:100%;
-      border:3px solid var(--ink);
-      background:#fffdf4;
-      color:var(--ink);
-      padding:12px;
-      outline:none;
-      border-radius:0;
-      box-shadow:3px 3px 0 #c6b874;
-    }
-    textarea{min-height:82px;resize:vertical;line-height:1.5}
-    input:focus,select:focus,textarea:focus{background:#fff8c8;box-shadow:3px 3px 0 var(--blue-dark)}
-
-    .preset-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
-    .chip{
-      border:2px solid var(--ink);background:#fff;padding:7px 9px;box-shadow:2px 2px 0 var(--ink);cursor:pointer;font-size:12px;font-weight:900
-    }
-    .chip:active{transform:translate(2px,2px);box-shadow:none}
-
-    .btn{
-      width:100%;border:4px solid var(--ink);padding:14px 15px;margin-top:16px;font-weight:900;letter-spacing:1px;cursor:pointer;color:var(--ink);background:var(--yellow);box-shadow:6px 6px 0 var(--ink);text-transform:uppercase
-    }
-    .btn:active{transform:translate(6px,6px);box-shadow:none}
-    .btn.primary{background:var(--blue)}
-    .btn.danger{background:var(--pink)}
-    .btn.green{background:var(--green)}
-    .btn.ghost{background:#fff;margin-top:10px}
-    .btn:disabled{filter:grayscale(1);opacity:.45;cursor:not-allowed}
-
-    .statusbar{
-      display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:14px;padding:9px 10px;border:3px solid var(--ink);background:var(--paper-2);font-weight:900;font-size:12px
-    }
-    .pixel-hearts{letter-spacing:2px;color:var(--pink-dark)}
-
-    .handoff{
-      text-align:center;
-      min-height:420px;
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-    }
-    .player-badge{display:inline-block;margin:0 auto 12px;background:var(--purple);color:#fff;border:3px solid var(--ink);padding:7px 10px;box-shadow:3px 3px 0 var(--ink);font-weight:900}
-    .big-player{font-size:clamp(28px,9vw,52px);line-height:1.1;margin:8px 0 12px}
-    .phone-icon{font-size:64px;filter:drop-shadow(4px 4px 0 #111)}
-
-    .secret-wrap{perspective:800px;min-height:280px;margin:8px 0 0}
-    .secret-card{
-      min-height:280px;border:4px solid var(--ink);box-shadow:7px 7px 0 var(--ink);background:#272a43;color:#fff;padding:20px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:12px;position:relative;overflow:hidden
-    }
-    .secret-card::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 48%,rgba(255,255,255,.05) 48% 52%,transparent 52%),linear-gradient(transparent 48%,rgba(255,255,255,.05) 48% 52%,transparent 52%);background-size:22px 22px;pointer-events:none}
-    .role-tag{position:relative;z-index:1;border:3px solid #fff;padding:6px 10px;font-size:12px;font-weight:900;letter-spacing:2px}
-    .secret-card.spy{background:#661f42}
-    .secret-card.civilian{background:#1f607f}
-    .secret-card.blank{background:#5c4d25}
-    .role-title{position:relative;z-index:1;font-size:clamp(28px,8vw,46px);font-weight:900;text-shadow:4px 4px 0 #000}
-    .word-box{position:relative;z-index:1;background:var(--paper);color:var(--ink);border:4px solid var(--ink);padding:16px 18px;min-width:min(90%,320px);font-size:clamp(26px,8vw,44px);font-weight:900;box-shadow:5px 5px 0 #000}
-    .secret-note{position:relative;z-index:1;font-size:12px;line-height:1.6;color:#ececec}
-
-    .cover-card{
-      min-height:280px;border:4px dashed var(--ink);display:flex;flex-direction:column;justify-content:center;align-items:center;gap:13px;background:#fff8d9;padding:20px
-    }
-    .cover-lock{font-size:64px}
-    .cover-card strong{font-size:20px}
-
-    .summary{
-      text-align:center;padding:18px 4px
-    }
-    .trophy{font-size:76px;filter:drop-shadow(5px 5px 0 #111)}
-    .summary-box{border:3px solid var(--ink);background:#fff;margin:18px 0 0;padding:14px;text-align:left;line-height:1.75;font-size:13px}
-    .warning{margin-top:12px;border:3px solid var(--ink);background:#ffd0d0;padding:10px;font-size:12px;font-weight:900}
-
-    .footer-note{color:#bdc6e9;text-align:center;font-size:10px;line-height:1.6;padding:6px 8px 0}
-    .hidden{display:none!important}
-
-    .toast{
-      position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:20;background:#111;color:#fff;border:3px solid #fff;padding:10px 14px;box-shadow:4px 4px 0 #000;font-weight:900;font-size:12px;opacity:0;pointer-events:none;transition:opacity .15s
-    }
-    .toast.show{opacity:1}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0c1020">
+<title>WHO'S THE SPY?｜風味瓶像素版</title>
+<style>
+:root{--ink:#171722;--paper:#fff8dc;--blue:#58c9ff;--pink:#ff6b9a;--yellow:#ffd95a;--green:#75df8b;--purple:#9b7bff;--white:#fffdf5}
+*{box-sizing:border-box}html{background:#0c1020}body{margin:0;min-height:100svh;color:var(--ink);font-family:"Courier New","Noto Sans TC",monospace;background:linear-gradient(#ffffff08 1px,transparent 1px),linear-gradient(90deg,#ffffff08 1px,transparent 1px),radial-gradient(circle at 15% 5%,#27356f 0,transparent 34%),radial-gradient(circle at 85% 85%,#5a2b65 0,transparent 35%),#0c1020;background-size:24px 24px,24px 24px,auto,auto,auto}
+button,input,select,textarea{font:inherit}button{touch-action:manipulation}.app{width:min(100%,760px);margin:auto;padding:22px 16px calc(30px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:16px}.top{color:#fff;display:flex;justify-content:space-between;align-items:end;gap:12px}.eyebrow{font-size:11px;letter-spacing:2px;color:var(--yellow);font-weight:900}h1{margin:5px 0 0;font-size:clamp(25px,7vw,42px);line-height:.95;text-shadow:3px 3px #000}.version{font-size:10px;border:2px solid #fff;padding:5px 7px;background:#1a2040;box-shadow:3px 3px #000;white-space:nowrap}
+.panel{background:var(--paper);border:4px solid var(--ink);box-shadow:8px 8px #080911;padding:18px}.screen{display:none}.screen.active{display:block;animation:pop .14s steps(2,end)}@keyframes pop{from{transform:translateY(4px);opacity:.4}}
+.hero{text-align:center;padding:10px 6px 4px}.face{width:86px;height:86px;margin:2px auto 15px;border:4px solid var(--ink);background:var(--blue);box-shadow:6px 6px var(--ink);display:grid;place-items:center;font-size:50px;font-weight:900;color:#fff;text-shadow:3px 3px #000}.hero h2,.screen h2{margin:0 0 8px}.muted{margin:0;color:#5f5a51;font-size:12px;line-height:1.65}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:15px 0}.tab,.chip{border:3px solid var(--ink);background:#fff;padding:10px 8px;font-weight:900;box-shadow:3px 3px var(--ink);cursor:pointer}.tab.active{background:var(--yellow);transform:translate(2px,2px);box-shadow:1px 1px var(--ink)}
+.lab{border:3px solid var(--ink);background:#efffe8;padding:12px;margin-bottom:14px;box-shadow:4px 4px #74a76b}.labhead{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px;font-size:12px;font-weight:900}.tag{font-size:9px;background:var(--green);border:2px solid var(--ink);padding:4px 6px}.pair{display:grid;grid-template-columns:1fr 26px 1fr;gap:7px;align-items:center}.bcard{display:grid;grid-template-columns:45px 1fr;gap:8px;align-items:center;background:#fff;border:2px solid var(--ink);padding:8px;min-width:0}.bcopy{min-width:0}.bcopy small{display:block;font-size:8px;color:#716c61}.bcopy b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px}.bcopy span{font-size:9px;color:#6a655d}.vs{text-align:center;font-weight:900;font-size:10px}.rules{margin-top:10px;border:2px solid var(--ink);background:#e5f6ff;padding:8px;font-size:10px;line-height:1.6}
+.bottle{--liquid:#ffd85b;position:relative;width:38px;height:58px;margin:10px auto 2px;border:3px solid var(--ink);background:linear-gradient(to top,var(--liquid) 0 48%,#f4efd9 48%);box-shadow:3px 3px #111}.bottle:before{content:"";position:absolute;left:8px;right:8px;top:-13px;height:10px;border:3px solid var(--ink);background:#e7e5de}.bottle:after{content:"";position:absolute;left:5px;right:5px;top:12px;height:17px;border:2px solid var(--ink);background:#fff8dc}.cap{position:absolute;left:5px;right:5px;top:-21px;height:7px;background:#222;border:2px solid var(--ink)}.shine{position:absolute;z-index:2;left:4px;bottom:5px;width:4px;height:18px;background:#ffffff99}.blabel{position:absolute;z-index:3;left:7px;right:7px;top:17px;text-align:center;font-size:6px;font-weight:900;white-space:nowrap;overflow:hidden}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.field{display:flex;flex-direction:column;gap:6px}.full{grid-column:1/-1}label{font-size:12px;font-weight:900}.hint{font-size:10px;font-weight:400;color:#6c675d}input,select,textarea{width:100%;border:3px solid var(--ink);border-radius:0;background:#fffdf4;padding:11px;color:var(--ink);outline:none;box-shadow:3px 3px #c9bb77}textarea{min-height:76px;resize:vertical}.chips{display:flex;gap:7px;flex-wrap:wrap}.chip{font-size:10px;border-width:2px;padding:7px;box-shadow:2px 2px var(--ink)}.blind{display:flex;align-items:flex-start;gap:8px;border:3px solid var(--ink);background:#fff;padding:9px;margin-top:12px;font-size:10px;line-height:1.5}.blind input{width:18px;height:18px;box-shadow:none;margin:0;flex:0 0 auto}
+.btn{width:100%;border:4px solid var(--ink);padding:13px;margin-top:15px;font-weight:900;cursor:pointer;background:var(--yellow);box-shadow:6px 6px var(--ink)}.btn:active{transform:translate(6px,6px);box-shadow:none}.primary{background:var(--blue)}.green{background:var(--green)}.danger{background:var(--pink)}.ghost{background:#fff;margin-top:9px}.hidden{display:none!important}
+.status{display:flex;justify-content:space-between;gap:8px;border:3px solid var(--ink);background:#f4e4a8;padding:8px 9px;font-size:10px;font-weight:900;margin-bottom:12px}.handoff{text-align:center;min-height:410px;display:flex;flex-direction:column;justify-content:center}.badge{margin:0 auto 10px;border:3px solid var(--ink);background:var(--purple);color:#fff;padding:6px 9px;box-shadow:3px 3px var(--ink);font-weight:900}.phone{font-size:62px}.big{font-size:clamp(30px,9vw,52px);margin:8px 0 12px}
+.secret{min-height:350px;border:4px solid var(--ink);box-shadow:7px 7px #000;background:#1f607f;color:#fff;padding:22px 15px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center}.secret.spy{background:#661f42}.roletag{border:3px solid #fff;padding:5px 9px;font-size:10px;font-weight:900;letter-spacing:2px}.role{font-size:clamp(26px,8vw,44px);font-weight:900;text-shadow:4px 4px #000}.bottleStage{display:flex;align-items:center;gap:16px;width:min(100%,360px);border:3px solid #fff;background:#ffffff18;padding:16px;text-align:left}.bottleStage .bottle{width:62px;height:88px;border-width:4px;box-shadow:5px 5px #000;flex:0 0 auto}.bottleStage .bottle:before{left:12px;right:12px;top:-18px;height:14px;border-width:4px}.bottleStage .cap{left:8px;right:8px;top:-29px;height:10px;border-width:3px}.bottleStage .bottle:after{left:8px;right:8px;top:19px;height:27px;border-width:3px}.bottleStage .blabel{top:26px;font-size:8px}.bc2 small{font-size:9px;letter-spacing:2px}.bc2 strong{display:block;font-size:clamp(23px,7vw,34px);margin:4px 0}.bc2 span{font-size:10px;line-height:1.4}.word{background:var(--paper);color:var(--ink);border:4px solid var(--ink);box-shadow:5px 5px #000;padding:13px 15px;font-size:clamp(22px,7vw,36px);font-weight:900;min-width:min(92%,320px)}.note{font-size:10px;line-height:1.6;color:#eee}.summary{text-align:center;padding:16px 3px}.trophy{font-size:70px}.sbox{text-align:left;border:3px solid var(--ink);background:#fff;padding:12px;margin-top:15px;font-size:11px;line-height:1.75}.warn{margin-top:10px;border:3px solid var(--ink);background:#ffd0d0;padding:9px;font-size:10px;font-weight:900}.footer{text-align:center;color:#bec6e7;font-size:9px;line-height:1.6}.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#111;color:#fff;border:3px solid #fff;box-shadow:4px 4px #000;padding:9px 12px;font-size:10px;font-weight:900;opacity:0;pointer-events:none}.toast.show{opacity:1}
+@media(max-width:520px){.grid{grid-template-columns:1fr}.pair{grid-template-columns:1fr 20px 1fr}.bcard{grid-template-columns:36px 1fr;padding:6px}.bottle{width:32px;height:50px}.bottleStage{gap:12px;padding:16px 10px}}
+</style>
 </head>
 <body>
-  <main class="app" id="undercover-app">
-    <header class="topbar">
-      <div>
-        <div class="eyebrow">PIXEL PARTY / SECRET ROLE</div>
-        <h1>WHO'S THE SPY?</h1>
-      </div>
-      <div class="version">V1.0</div>
-    </header>
-
-    <section class="pixel-panel">
-      <div class="screen active" id="screenSetup">
-        <div class="hero">
-          <div class="pixel-face" aria-hidden="true"></div>
-          <h2>像素內鬼・身分抽取器</h2>
-          <p class="muted">設定完成後，把手機依序交給每位玩家。每個人只會看到自己的身分與詞語。</p>
-        </div>
-
-        <div class="grid">
-          <div class="field">
-            <label for="playerCount">玩家人數</label>
-            <select id="playerCount"></select>
-          </div>
-          <div class="field">
-            <label for="spyCount">內鬼人數</label>
-            <select id="spyCount"></select>
-          </div>
-
-          <div class="field full">
-            <label for="playerNames">玩家名稱 <span class="hint">（可空白；每行一人）</span></label>
-            <textarea id="playerNames" placeholder="例如：\n阿忠\n小安\nLucy\n玩家4"></textarea>
-          </div>
-
-          <div class="field">
-            <label for="civilianWord">平民詞</label>
-            <input id="civilianWord" maxlength="24" value="拿鐵" />
-          </div>
-          <div class="field">
-            <label for="spyWord">內鬼詞</label>
-            <input id="spyWord" maxlength="24" value="卡布奇諾" />
-          </div>
-
-          <div class="field full">
-            <label>快速詞組</label>
-            <div class="preset-row" id="presets"></div>
-          </div>
-        </div>
-
-        <button class="btn primary" id="startBtn">▶ 產生身分</button>
-      </div>
-
-      <div class="screen" id="screenHandoff">
-        <div class="statusbar">
-          <span id="progressText">PLAYER 1 / 6</span>
-          <span class="pixel-hearts">♥ ♥ ♥</span>
-        </div>
-        <div class="handoff">
-          <div class="player-badge">NEXT PLAYER</div>
-          <div class="phone-icon">📱</div>
-          <h2 class="big-player" id="handoffName">玩家 1</h2>
-          <p class="muted">請把手機交給這位玩家。<br>確認旁邊沒有人偷看後再按下按鈕。</p>
-          <button class="btn primary" id="revealBtn">👁 查看我的身分</button>
-        </div>
-      </div>
-
-      <div class="screen" id="screenSecret">
-        <div class="statusbar">
-          <span id="secretProgress">PLAYER 1 / 6</span>
-          <span>TOP SECRET</span>
-        </div>
-
-        <div class="secret-wrap">
-          <div class="secret-card civilian" id="secretCard">
-            <div class="role-tag" id="roleTag">YOUR ROLE</div>
-            <div class="role-title" id="roleTitle">平民</div>
-            <div class="word-box" id="wordBox">拿鐵</div>
-            <div class="secret-note" id="secretNote">記住你的詞，不要讓其他人看到。</div>
-          </div>
-        </div>
-
-        <button class="btn green" id="hideNextBtn">✓ 我記住了・遮住畫面</button>
-      </div>
-
-      <div class="screen" id="screenReady">
-        <div class="summary">
-          <div class="trophy">🕵️</div>
-          <h2>所有人都看完了！</h2>
-          <p class="muted">現在可以開始描述自己的詞。不要直接說出答案，也不要透露自己的身分。</p>
-          <div class="summary-box" id="gameSummary"></div>
-          <div class="warning">⚠ 這個畫面不會顯示誰是內鬼。重新開始會重新洗牌。</div>
-          <button class="btn danger" id="restartBtn">↻ 再玩一局</button>
-          <button class="btn ghost" id="backSetupBtn">⚙ 回設定頁</button>
-        </div>
-      </div>
-    </section>
-
-    <div class="footer-note">獨立子頁面版本・不需要任何外部套件・不會改動原本 Lucky Wheel 首頁</div>
-  </main>
-
-  <div class="toast" id="toast"></div>
-
-  <script>
-    (() => {
-      'use strict';
-
-      const $ = (id) => document.getElementById(id);
-      const screens = {
-        setup: $('screenSetup'),
-        handoff: $('screenHandoff'),
-        secret: $('screenSecret'),
-        ready: $('screenReady')
-      };
-
-      const playerCount = $('playerCount');
-      const spyCount = $('spyCount');
-      const playerNames = $('playerNames');
-      const civilianWord = $('civilianWord');
-      const spyWord = $('spyWord');
-      const presets = $('presets');
-      const startBtn = $('startBtn');
-      const revealBtn = $('revealBtn');
-      const hideNextBtn = $('hideNextBtn');
-      const restartBtn = $('restartBtn');
-      const backSetupBtn = $('backSetupBtn');
-      const toast = $('toast');
-
-      const pairs = [
-        ['拿鐵','卡布奇諾'],
-        ['可樂','雪碧'],
-        ['貓','老虎'],
-        ['火鍋','麻辣燙'],
-        ['海邊','游泳池'],
-        ['吉他','烏克麗麗'],
-        ['電影','影集'],
-        ['咖啡','紅茶']
-      ];
-
-      let state = {
-        players: [],
-        roles: [],
-        index: 0,
-        started: false
-      };
-
-      function initSelects(){
-        for(let n=3;n<=16;n++) playerCount.add(new Option(`${n} 人`, String(n)));
-        playerCount.value = '6';
-        updateSpyOptions();
-      }
-
-      function updateSpyOptions(){
-        const count = Number(playerCount.value || 6);
-        const maxSpies = Math.min(4, Math.max(1, Math.floor((count - 1) / 2)));
-        const current = Number(spyCount.value || 1);
-        spyCount.innerHTML = '';
-        for(let n=1;n<=maxSpies;n++) spyCount.add(new Option(`${n} 人`, String(n)));
-        spyCount.value = String(Math.min(current, maxSpies));
-      }
-
-      function initPresets(){
-        pairs.forEach(([a,b]) => {
-          const btn = document.createElement('button');
-          btn.type = 'button';
-          btn.className = 'chip';
-          btn.textContent = `${a} / ${b}`;
-          btn.addEventListener('click', () => {
-            civilianWord.value = a;
-            spyWord.value = b;
-            flash('詞組已套用');
-          });
-          presets.appendChild(btn);
-        });
-      }
-
-      function showScreen(name){
-        Object.values(screens).forEach(el => el.classList.remove('active'));
-        screens[name].classList.add('active');
-        window.scrollTo({top:0,behavior:'smooth'});
-      }
-
-      function flash(message){
-        toast.textContent = message;
-        toast.classList.add('show');
-        clearTimeout(flash.t);
-        flash.t = setTimeout(() => toast.classList.remove('show'), 1200);
-      }
-
-      function shuffle(array){
-        const copy = [...array];
-        for(let i=copy.length-1;i>0;i--){
-          const j = Math.floor(Math.random() * (i + 1));
-          [copy[i],copy[j]] = [copy[j],copy[i]];
-        }
-        return copy;
-      }
-
-      function getNames(count){
-        const raw = playerNames.value
-          .split(/\n+/)
-          .map(s => s.trim())
-          .filter(Boolean)
-          .slice(0,count);
-        return Array.from({length:count},(_,i) => raw[i] || `玩家 ${i+1}`);
-      }
-
-      function validate(){
-        const c = civilianWord.value.trim();
-        const s = spyWord.value.trim();
-        if(!c || !s){flash('請輸入兩組詞');return false;}
-        if(c === s){flash('平民詞與內鬼詞要不同');return false;}
-        return true;
-      }
-
-      function buildGame(){
-        if(!validate()) return false;
-        const count = Number(playerCount.value);
-        const spies = Number(spyCount.value);
-        state.players = getNames(count);
-        state.roles = shuffle([
-          ...Array(spies).fill('spy'),
-          ...Array(count-spies).fill('civilian')
-        ]);
-        state.index = 0;
-        state.started = true;
-        return true;
-      }
-
-      function renderHandoff(){
-        const i = state.index;
-        $('progressText').textContent = `PLAYER ${i+1} / ${state.players.length}`;
-        $('handoffName').textContent = state.players[i];
-        showScreen('handoff');
-      }
-
-      function renderSecret(){
-        const role = state.roles[state.index];
-        const isSpy = role === 'spy';
-        $('secretProgress').textContent = `PLAYER ${state.index+1} / ${state.players.length}`;
-        $('secretCard').className = `secret-card ${isSpy ? 'spy' : 'civilian'}`;
-        $('roleTag').textContent = isSpy ? 'UNDERCOVER' : 'CIVILIAN';
-        $('roleTitle').textContent = isSpy ? '你是內鬼' : '你是平民';
-        $('wordBox').textContent = isSpy ? spyWord.value.trim() : civilianWord.value.trim();
-        $('secretNote').textContent = isSpy
-          ? '你的詞和大多數人不一樣。保持冷靜，混進去。'
-          : '記住你的詞，描述時別講得太明顯。';
-        showScreen('secret');
-      }
-
-      function renderReady(){
-        const spyN = state.roles.filter(r => r === 'spy').length;
-        $('gameSummary').innerHTML = [
-          `<strong>玩家：</strong>${state.players.length} 人`,
-          `<br><strong>內鬼：</strong>${spyN} 人`,
-          `<br><strong>建議流程：</strong>每人用一句話描述 → 討論 → 投票淘汰 → 公布是否為內鬼。`
-        ].join('');
-        showScreen('ready');
-      }
-
-      function start(){
-        if(!buildGame()) return;
-        renderHandoff();
-      }
-
-      function next(){
-        state.index++;
-        if(state.index >= state.players.length) renderReady();
-        else renderHandoff();
-      }
-
-      playerCount.addEventListener('change', updateSpyOptions);
-      startBtn.addEventListener('click', start);
-      revealBtn.addEventListener('click', renderSecret);
-      hideNextBtn.addEventListener('click', next);
-      restartBtn.addEventListener('click', () => { if(buildGame()) renderHandoff(); });
-      backSetupBtn.addEventListener('click', () => showScreen('setup'));
-
-      document.addEventListener('keydown', (e) => {
-        if(e.code !== 'Space' && e.code !== 'Enter') return;
-        const active = Object.entries(screens).find(([,el]) => el.classList.contains('active'))?.[0];
-        if(active === 'handoff') revealBtn.click();
-        else if(active === 'secret') hideNextBtn.click();
-      });
-
-      initSelects();
-      initPresets();
-    })();
-  </script>
+<main class="app">
+<header class="top"><div><div class="eyebrow">PIXEL PARTY / AROMA LAB</div><h1>WHO'S THE SPY?</h1></div><div class="version">V2.0 / AROMA</div></header>
+<section class="panel">
+<div class="screen active" id="setup">
+<div class="hero"><div class="face">?</div><h2>像素內鬼・風味瓶版</h2><p class="muted">把實體聞香瓶變成遊戲的一部分：分配瓶號、輪流聞香、描述氣味，再找出不一樣的人。</p></div>
+<div class="tabs"><button class="tab active" data-mode="flavor">🧪 風味瓶模式</button><button class="tab" data-mode="word">ABC 文字模式</button></div>
+<div class="lab" id="lab"><div class="labhead"><span>AROMA LAB / 本局風味瓶</span><span class="tag">搭配實體瓶</span></div><div class="pair">
+<div class="bcard"><div class="bottle" id="prevBottleA"><i class="cap"></i><i class="shine"></i><span class="blabel">A</span></div><div class="bcopy"><small>MAJORITY</small><b id="prevNameA">檸檬</b><span id="prevNoA">瓶號 A-01</span></div></div><div class="vs">VS</div>
+<div class="bcard"><div class="bottle" id="prevBottleB"><i class="cap"></i><i class="shine"></i><span class="blabel">B</span></div><div class="bcopy"><small>UNDERCOVER</small><b id="prevNameB">柑橘</b><span id="prevNoB">瓶號 B-01</span></div></div></div>
+<div class="rules">每位玩家只看自己的瓶號 → 拿對應聞香瓶聞 5–10 秒 → 用一句話描述。不能直接說瓶名、瓶號或答案。</div></div>
+<div class="grid">
+<div class="field"><label>玩家人數</label><select id="players"></select></div><div class="field"><label>內鬼人數</label><select id="spies"></select></div>
+<div class="field full"><label>玩家名稱 <span class="hint">（可空白；每行一人）</span></label><textarea id="names" placeholder="阿忠\n小安\nLucy\n玩家4"></textarea></div>
+<div class="field"><label id="labelA">多數風味</label><input id="wordA" maxlength="24" value="檸檬"></div><div class="field"><label id="labelB">內鬼風味</label><input id="wordB" maxlength="24" value="柑橘"></div>
+<div class="field flavorOnly"><label>多數瓶號 <span class="hint">（貼在瓶上）</span></label><input id="noA" maxlength="12" value="A-01"></div><div class="field flavorOnly"><label>內鬼瓶號</label><input id="noB" maxlength="12" value="B-01"></div>
+<div class="field full"><label id="presetLabel">相近風味快速配對</label><div class="chips" id="presets"></div></div></div>
+<label class="blind" id="blindRow"><input type="checkbox" id="blind" checked><span><strong>盲聞模式</strong><br>玩家只看到瓶號，不顯示風味名稱；適合搭配實體聞香瓶。</span></label>
+<button class="btn primary" id="start">▶ 產生身分</button>
+</div>
+<div class="screen" id="handoff"><div class="status"><span id="prog">PLAYER 1 / 6</span><span>♥ ♥ ♥</span></div><div class="handoff"><div class="badge">NEXT PLAYER</div><div class="phone">📱</div><h2 class="big" id="who">玩家 1</h2><p class="muted">把手機交給這位玩家。確認旁邊沒有人偷看。</p><button class="btn primary" id="reveal">👁 查看我的身分</button></div></div>
+<div class="screen" id="secretScreen"><div class="status"><span id="sprog">PLAYER 1 / 6</span><span>TOP SECRET</span></div><div class="secret" id="secretCard"><div class="roletag" id="roleTag">CIVILIAN</div><div class="role" id="role">你是平民</div><div class="bottleStage" id="bottleStage"><div class="bottle" id="secretBottle"><i class="cap"></i><i class="shine"></i><span class="blabel" id="secretLabel">?</span></div><div class="bc2"><small>YOUR AROMA BOTTLE</small><strong id="secretNo"># A-01</strong><span id="bHint">拿這一瓶聞香，別讓其他人看到瓶號。</span></div></div><div class="word" id="word">盲聞・不要猜答案</div><div class="note" id="note"></div></div><button class="btn green" id="next">✓ 我記住了・遮住畫面</button></div>
+<div class="screen" id="ready"><div class="summary"><div class="trophy">🕵️</div><h2>所有人都看完了！</h2><p class="muted">開始聞香與描述。不要直接說出瓶名、瓶號或答案。</p><div class="sbox" id="summary"></div><div class="warn">⚠ 這裡不顯示誰是內鬼；重新開始會重新洗牌。</div><button class="btn danger" id="restart">↻ 再玩一局</button><button class="btn ghost" id="back">⚙ 回設定頁</button></div></div>
+</section>
+<div class="footer">AROMA GAME V2・風味瓶 + 文字雙模式・不會改動 Lucky Wheel 首頁</div>
+</main><div class="toast" id="toast"></div>
+<script>
+(()=>{'use strict';const $=id=>document.getElementById(id),screens={setup:$('setup'),handoff:$('handoff'),secret:$('secretScreen'),ready:$('ready')};
+const P=$('players'),S=$('spies'),N=$('names'),A=$('wordA'),B=$('wordB'),NA=$('noA'),NB=$('noB'),blind=$('blind'),toast=$('toast');
+const wordPairs=[['拿鐵','卡布奇諾'],['可樂','雪碧'],['貓','老虎'],['火鍋','麻辣燙'],['海邊','游泳池'],['吉他','烏克麗麗'],['電影','影集'],['咖啡','紅茶']];
+const flavorPairs=[['檸檬','柑橘','A-01','B-01'],['茉莉','玫瑰','A-02','B-02'],['草莓','覆盆莓','A-03','B-03'],['藍莓','黑莓','A-04','B-04'],['香草','焦糖','A-05','B-05'],['巧克力','可可','A-06','B-06'],['杏仁','榛果','A-07','B-07'],['肉桂','丁香','A-08','B-08'],['紅茶','烏龍茶','A-09','B-09'],['蜂蜜','黑糖','A-10','B-10']];
+let mode='flavor',state={players:[],roles:[],i:0};
+function flash(t){toast.textContent=t;toast.classList.add('show');clearTimeout(flash.t);flash.t=setTimeout(()=>toast.classList.remove('show'),1200)}
+function show(n){Object.values(screens).forEach(x=>x.classList.remove('active'));screens[n].classList.add('active');scrollTo({top:0,behavior:'smooth'})}
+function shuffle(x){x=[...x];for(let i=x.length-1;i;i--){let j=Math.floor(Math.random()*(i+1));[x[i],x[j]]=[x[j],x[i]]}return x}
+function color(t){let p=['#ffd85b','#ff9d5c','#ef6f86','#a779e9','#72cfe6','#80d58c','#c8915b','#f2e1a0','#d95f5f','#8cc1ff'],h=0;for(let c of t)h=(h*31+c.charCodeAt(0))>>>0;return p[h%p.length]}
+function paint(el,name,label){el.style.setProperty('--liquid',color(name||label||'AROMA'));let l=el.querySelector('.blabel');if(l)l.textContent=label||'AROMA'}
+function preview(){let a=A.value.trim()||'多數風味',b=B.value.trim()||'內鬼風味',an=NA.value.trim()||'A',bn=NB.value.trim()||'B';$('prevNameA').textContent=a;$('prevNameB').textContent=b;$('prevNoA').textContent='瓶號 '+an;$('prevNoB').textContent='瓶號 '+bn;paint($('prevBottleA'),a,an);paint($('prevBottleB'),b,bn)}
+function presets(){let box=$('presets');box.innerHTML='';(mode==='flavor'?flavorPairs:wordPairs).forEach(([a,b,an,bn])=>{let x=document.createElement('button');x.type='button';x.className='chip';x.textContent=a+' / '+b;x.onclick=()=>{A.value=a;B.value=b;if(mode==='flavor'){NA.value=an||'A';NB.value=bn||'B'}preview();flash(mode==='flavor'?'風味瓶配對已套用':'詞組已套用')};box.appendChild(x)})}
+function setMode(m){mode=m;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.mode===m));document.querySelectorAll('.flavorOnly').forEach(x=>x.classList.toggle('hidden',m!=='flavor'));$('lab').classList.toggle('hidden',m!=='flavor');$('blindRow').classList.toggle('hidden',m!=='flavor');$('labelA').textContent=m==='flavor'?'多數風味':'平民詞';$('labelB').textContent=m==='flavor'?'內鬼風味':'內鬼詞';$('presetLabel').textContent=m==='flavor'?'相近風味快速配對':'快速詞組';presets();preview()}
+function spies(){let n=+P.value||6,max=Math.min(4,Math.max(1,Math.floor((n-1)/2))),now=+S.value||1;S.innerHTML='';for(let i=1;i<=max;i++)S.add(new Option(i+' 人',i));S.value=Math.min(now,max)}
+function names(n){let a=N.value.split(/\n+/).map(x=>x.trim()).filter(Boolean).slice(0,n);return Array.from({length:n},(_,i)=>a[i]||'玩家 '+(i+1))}
+function build(){let a=A.value.trim(),b=B.value.trim();if(!a||!b){flash('請輸入兩組內容');return false}if(a===b){flash('兩組內容要不同');return false}let n=+P.value,s=+S.value;state.players=names(n);state.roles=shuffle([...Array(s).fill('spy'),...Array(n-s).fill('civilian')]);state.i=0;return true}
+function handoff(){let i=state.i;$('prog').textContent=`PLAYER ${i+1} / ${state.players.length}`;$('who').textContent=state.players[i];show('handoff')}
+function secret(){let spy=state.roles[state.i]==='spy',w=spy?B.value.trim():A.value.trim(),no=(spy?NB.value.trim():NA.value.trim())||(spy?'B':'A');$('sprog').textContent=`PLAYER ${state.i+1} / ${state.players.length}`;$('secretCard').className='secret '+(spy?'spy':'');$('roleTag').textContent=spy?'UNDERCOVER':'CIVILIAN';$('role').textContent=spy?'你是內鬼':'你是平民';let f=mode==='flavor';$('bottleStage').classList.toggle('hidden',!f);if(f){paint($('secretBottle'),w,no);$('secretLabel').textContent=blind.checked?'?':w;$('secretNo').textContent='# '+no;$('bHint').textContent=blind.checked?'拿這一瓶聞香，別讓其他人看到瓶號。':'聞這一瓶，記住它的主要氣味特徵。';$('word').textContent=blind.checked?'盲聞・不要猜答案':w;$('note').textContent=spy?'你的風味瓶和大多數人不同。描述氣味，但不要直接說瓶名或瓶號。':'聞香後描述一個特徵，別說瓶名或瓶號。'}else{$('word').textContent=w;$('note').textContent=spy?'你的詞和大多數人不同。保持冷靜，混進去。':'記住你的詞，描述時別講得太明顯。'}show('secret')}
+function ready(){let n=state.roles.filter(x=>x==='spy').length,f=mode==='flavor';$('summary').innerHTML=`<strong>模式：</strong>${f?'🧪 風味瓶誰是內鬼':'ABC 文字誰是內鬼'}<br><strong>玩家：</strong>${state.players.length} 人<br><strong>內鬼：</strong>${n} 人<br><strong>${f?'聞香規則':'建議流程'}：</strong>${f?'每人聞 5–10 秒 → 一句話描述 → 討論 → 投票'+(blind.checked?'；目前為盲聞。':'。'):'每人一句話描述 → 討論 → 投票淘汰。'}`;show('ready')}
+for(let i=3;i<=16;i++)P.add(new Option(i+' 人',i));P.value=6;spies();document.querySelectorAll('.tab').forEach(x=>x.onclick=()=>setMode(x.dataset.mode));[A,B,NA,NB].forEach(x=>x.oninput=preview);P.onchange=spies;$('start').onclick=()=>{if(build())handoff()};$('reveal').onclick=secret;$('next').onclick=()=>{state.i++;state.i>=state.players.length?ready():handoff()};$('restart').onclick=()=>{if(build())handoff()};$('back').onclick=()=>show('setup');document.addEventListener('keydown',e=>{if(!['Space','Enter'].includes(e.code))return;if(screens.handoff.classList.contains('active'))$('reveal').click();else if(screens.secret.classList.contains('active'))$('next').click()});setMode('flavor');
+})();
+</script>
 </body>
 </html>
