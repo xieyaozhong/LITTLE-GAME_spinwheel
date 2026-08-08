@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101321">
+<title>幹話大師｜像素荒謬事件抽取器</title>
+<style>
+:root{
+  --bg:#0e1120;--panel:#fff4c7;--ink:#171722;--yellow:#ffd84a;--pink:#ff6e9f;--blue:#68d8ff;--green:#84e39a;--purple:#9d83ff;--red:#ff6464;--white:#fffdf7;--shadow:#05060b;
+}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;min-height:100svh;color:var(--ink);font-family:"Courier New","Noto Sans TC",monospace;background:
+linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px),
+radial-gradient(circle at 15% 10%,#29346a 0,transparent 28%),radial-gradient(circle at 85% 80%,#57255c 0,transparent 30%),#0e1120;
+background-size:24px 24px,24px 24px,auto,auto,auto;image-rendering:pixelated}
+button,select,input{font:inherit}
+button{touch-action:manipulation}
+.app{width:min(100%,760px);margin:0 auto;min-height:100svh;padding:22px 16px calc(30px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:14px}
+.topbar{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;color:#fff;padding:0 2px 6px}
+.eyebrow{font-size:11px;letter-spacing:2px;color:var(--yellow);font-weight:900}
+h1{margin:5px 0 0;font-size:clamp(28px,8vw,48px);line-height:.9;text-shadow:4px 4px 0 #000}
+.ver{border:2px solid #fff;background:#1d2240;padding:5px 7px;box-shadow:3px 3px 0 #000;font-size:11px;white-space:nowrap}
+.panel{position:relative;background:var(--panel);border:4px solid var(--ink);box-shadow:8px 8px 0 var(--shadow);padding:18px}
+.panel:before,.panel:after{content:"";position:absolute;width:10px;height:10px;background:var(--ink)}
+.panel:before{left:-4px;bottom:-4px}.panel:after{right:-4px;top:-4px}
+.hero{text-align:center;padding:5px 4px 10px}.hero p{margin:8px auto 0;max-width:540px;font-size:13px;line-height:1.7;color:#5b584e}
+.mascot{width:94px;height:94px;margin:3px auto 13px;border:4px solid var(--ink);background:var(--purple);box-shadow:6px 6px 0 var(--ink);position:relative}
+.mascot:before{content:"";position:absolute;left:17px;top:23px;width:12px;height:12px;background:#111;box-shadow:42px 0 0 #111,0 32px 0 -2px #111,10px 32px 0 -2px #111,20px 32px 0 -2px #111,30px 32px 0 -2px #111,40px 32px 0 -2px #111}
+.mascot:after{content:"!?";position:absolute;right:-12px;top:-18px;background:var(--yellow);border:3px solid var(--ink);padding:4px 6px;font-weight:900;box-shadow:3px 3px 0 var(--ink)}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.field{display:flex;flex-direction:column;gap:6px}.field.full{grid-column:1/-1}
+label{font-size:12px;font-weight:900}.tiny{font-size:10px;color:#6d695e;font-weight:400}
+select,input{width:100%;border:3px solid var(--ink);background:#fffdf5;padding:11px 10px;border-radius:0;box-shadow:3px 3px 0 #c0ad68;outline:none}
+select:focus,input:focus{background:#fff6a9;box-shadow:3px 3px 0 #3a8eb8}
+@media(max-width:520px){.controls{grid-template-columns:1fr}}
+.btn{width:100%;border:4px solid var(--ink);padding:14px 12px;margin-top:12px;font-weight:900;letter-spacing:.5px;cursor:pointer;background:var(--yellow);box-shadow:6px 6px 0 var(--ink);color:var(--ink)}
+.btn:active{transform:translate(6px,6px);box-shadow:none}.btn.primary{background:var(--blue)}.btn.pink{background:var(--pink)}.btn.green{background:var(--green)}.btn.white{background:#fff}.btn.small{padding:10px;margin-top:8px;box-shadow:4px 4px 0 var(--ink);border-width:3px;font-size:12px}.btn.small:active{transform:translate(4px,4px)}
+.card{margin-top:16px;border:4px solid var(--ink);background:#202640;color:#fff;min-height:280px;padding:18px;box-shadow:7px 7px 0 var(--ink);display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden;text-align:center}
+.card:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 48%,rgba(255,255,255,.04) 48% 52%,transparent 52%),linear-gradient(transparent 48%,rgba(255,255,255,.04) 48% 52%,transparent 52%);background-size:22px 22px}
+.badges{position:relative;z-index:1;display:flex;justify-content:center;gap:7px;flex-wrap:wrap;margin-bottom:10px}.badge{border:2px solid #fff;padding:5px 7px;font-size:10px;font-weight:900;background:#0008}.badge.hot{background:#a52d57}.badge.weird{background:#5541a8}.badge.easy{background:#267a58}
+.event{position:relative;z-index:1;font-size:clamp(22px,6.5vw,39px);font-weight:900;line-height:1.35;text-shadow:3px 3px 0 #000;margin:8px 0}
+.mission{position:relative;z-index:1;margin:14px auto 0;max-width:540px;background:var(--panel);color:var(--ink);border:3px solid var(--ink);padding:12px;box-shadow:4px 4px 0 #000;font-size:13px;line-height:1.6}
+.placeholder{color:#c9cde8;font-size:15px;line-height:1.8}.slot{animation:shake .07s steps(2,end) infinite}@keyframes shake{0%{transform:translateX(-3px)}50%{transform:translateX(3px)}100%{transform:translateX(0)}}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media(max-width:520px){.row{grid-template-columns:1fr}}
+.timerbox{margin-top:14px;border:3px solid var(--ink);background:#fff;padding:12px;text-align:center;display:none}.timerbox.show{display:block}.time{font-size:42px;font-weight:900;letter-spacing:2px}.timerhint{font-size:11px;color:#625f57;line-height:1.5}
+.history{margin-top:14px}.history h3{margin:0 0 8px;font-size:14px}.history-list{display:grid;gap:7px}.history-item{border:2px solid var(--ink);background:#fff;padding:9px 10px;font-size:11px;line-height:1.45;box-shadow:2px 2px 0 #b9a96d}.empty{color:#716d62;font-size:11px}
+.footer{text-align:center;color:#bdc6e9;font-size:10px;line-height:1.55;padding:4px 8px}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:20;background:#111;color:#fff;border:3px solid #fff;padding:10px 14px;box-shadow:4px 4px 0 #000;font-size:12px;font-weight:900;opacity:0;pointer-events:none;transition:.15s}.toast.show{opacity:1}
+.levels{display:flex;gap:6px;flex-wrap:wrap}.level{flex:1;min-width:58px;border:3px solid var(--ink);padding:9px 5px;background:#fff;box-shadow:3px 3px 0 var(--ink);font-size:11px;font-weight:900;cursor:pointer}.level.active{background:var(--pink);color:#fff}.level:active{transform:translate(3px,3px);box-shadow:none}
+</style>
+</head>
+<body>
+<main class="app">
+  <header class="topbar">
+    <div><div class="eyebrow">PIXEL PARTY / DISTRACTION ENGINE</div><h1>幹話大師</h1></div>
+    <div class="ver">V1.0</div>
+  </header>
+
+  <section class="panel">
+    <div class="hero">
+      <div class="mascot" aria-hidden="true"></div>
+      <h2 style="margin:0">荒謬事件抽取器</h2>
+      <p>氣氛尷尬、大家突然安靜、話題快死掉？抽一件根本不該發生的事，強迫全場把注意力移走。</p>
+    </div>
+
+    <div class="controls">
+      <div class="field">
+        <label for="category">事件宇宙</label>
+        <select id="category">
+          <option value="all">全部亂來</option>
+          <option value="daily">日常崩壞</option>
+          <option value="work">上班地獄</option>
+          <option value="school">校園失控</option>
+          <option value="tech">科技叛變</option>
+          <option value="animal">動物政變</option>
+          <option value="cosmic">宇宙級幹話</option>
+          <option value="social">社交災難</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="target">指定主角 <span class="tiny">可留白</span></label>
+        <input id="target" maxlength="16" placeholder="例如：阿忠／老闆／隔壁桌">
+      </div>
+      <div class="field full">
+        <label>荒謬程度</label>
+        <div class="levels" id="levels">
+          <button class="level" data-level="1">1 微荒謬</button>
+          <button class="level" data-level="2">2 很可疑</button>
+          <button class="level active" data-level="3">3 不合理</button>
+          <button class="level" data-level="4">4 失去控制</button>
+          <button class="level" data-level="5">5 世界壞掉</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="card">
+      <div class="badges"><span class="badge">READY</span><span class="badge weird">幹話能量 87%</span></div>
+      <div class="event placeholder" id="eventText">按下「抽一件荒謬事件」<br>讓正常世界暫時離線。</div>
+      <div class="mission" id="missionText">任務：抽到後，至少有一個人必須認真回答它。</div>
+    </div>
+
+    <button class="btn primary" id="drawBtn">🎲 抽一件荒謬事件</button>
+    <div class="row">
+      <button class="btn pink" id="panicBtn">🚨 緊急轉移話題</button>
+      <button class="btn green" id="challengeBtn">⏱ 30 秒硬拗挑戰</button>
+    </div>
+    <div class="row">
+      <button class="btn white small" id="copyBtn">📋 複製這句幹話</button>
+      <button class="btn white small" id="resetBtn">↺ 清除抽取紀錄</button>
+    </div>
+
+    <div class="timerbox" id="timerBox">
+      <div class="time" id="time">30</div>
+      <div class="timerhint">在時間歸零前，必須把這件荒謬事件講得像真的一樣。</div>
+      <button class="btn small" id="stopTimer">停止計時</button>
+    </div>
+
+    <div class="history">
+      <h3>最近抽到的災難</h3>
+      <div class="history-list" id="history"><div class="empty">目前宇宙仍算穩定。</div></div>
+    </div>
+  </section>
+  <div class="footer">幹話大師只負責製造荒謬，不負責讓荒謬變成事實。適合聚會、破冰、課堂暖場與尷尬救援。</div>
+</main>
+<div class="toast" id="toast">已複製</div>
+<script>
+const pools={
+ daily:{
+  low:["冰箱今天突然要求你先道歉才肯打開。","你家的電梯決定只停奇數樓。","便利商店店員宣布今天所有發票都要用猜拳領取。","你出門後發現全街的人都穿反鞋。"],
+  high:["整棟大樓的門把同時開始用客服語氣拒絕服務。","你家的馬桶在凌晨三點寄了一封離職信。","全城市的紅綠燈決定改用心情決定顏色。","今天所有影子都晚本人三秒才開始移動。"]
+ },
+ work:{
+  low:["老闆宣布下週開始用猜拳決定誰開會。","公司印表機只願意印出辭職信。","主管要求每份報告都附上一句星座運勢。","會議室突然被登記成保育區。"],
+  high:["董事會一致通過：公司 KPI 改成誰能讓影印機笑出聲。","公司的 AI 宣布升職成副總，並要求所有人向它報到。","人資寄信通知：明天起員工必須攜帶一顆合法的馬鈴薯才能打卡。","老闆說公司其實只是外星人的團建活動，今天是結業式。"]
+ },
+ school:{
+  low:["老師宣布今天考試可以帶一隻鴨子進場。","校長廣播說遲到的人改成加一分。","黑板突然只肯寫冷笑話。","全班桌椅被重新編成星座。"],
+  high:["教務處公告：期末考改成跟一隻鵝辯論三分鐘。","鐘聲響完後，整間學校被系統判定為大型密室逃脫。","數學老師承認 π 只是他年輕時隨口編的。","校長宣布學校被月球教育局接管，今天開始重力不列入出席率。"]
+ },
+ tech:{
+  low:["你的手機開始自動替你拒接所有認真電話。","Wi‑Fi 只在你稱讚它時才有訊號。","鍵盤突然拒絕輸入母音。","導航堅持目的地其實在昨天。"],
+  high:["你的手機成立工會，要求每天充電兩次並享有午休。","所有聊天機器人同步宣布今天只回答謎語。","雲端硬碟真的變成一朵雲飄走了。","整個網路突然進入省話模式，每個人一天只能傳 12 個字。"]
+ },
+ animal:{
+  low:["附近的鴿子開始對路人進行滿意度調查。","一隻橘貓被推選成社區主委。","狗狗散步時突然要求改走民主程序。","便利商店門口的麻雀開始收停車費。"],
+  high:["全台灣的橘貓宣布成立臨時政府，第一條法令是下午三點全面午睡。","一群水豚接管捷運控制中心，但班距反而更準時。","企鵝代表團突然出現在市政府要求冷氣調到 16 度。","鴿子宣布人類已通過試用期，正式成為牠們的城市寵物。"]
+ },
+ cosmic:{
+  low:["月亮今天忘記自己要升起。","NASA 打電話來問你昨天把地球遙控器放哪裡。","太陽傳訊息說今天想請半天假。","火星突然在群組裡已讀不回。"],
+  high:["宇宙客服通知：地球免費試用期將在 24 小時後結束。","銀河系因為忘記續費，今晚可能暫停旋轉。","時間旅行者跑來警告你：千萬不要在 21:17 吃那顆茶葉蛋。","太陽系正在進行軟體更新，請勿拔除地球電源。"]
+ },
+ social:{
+  low:["你剛認識的人突然問你願不願意當他家的名譽叔叔。","隔壁桌全體起立替你鼓掌，但沒有人解釋原因。","有人在群組裡正式提案把星期三取消。","朋友宣布今天所有聊天必須先抽號碼牌。"],
+  high:["你進餐廳後全場突然停止說話，服務生遞給你一頂皇冠說『終於等到你了』。","一個陌生人走過來向你道謝，說你十年後救了他的寵物恐龍。","群組裡 87 個人同時 @你，要求你對『鳳梨到底有沒有夢想』公開表態。","婚禮主持人突然念到你的名字，但你根本不認識新人。"]
+ }
+};
+const subjects=["你","你旁邊的人","隔壁桌","一位完全陌生的人","今天最後一個進門的人","現場最安靜的人"];
+const addOns=[
+ "而且所有人都表現得像這很正常。",
+ "更糟的是，只有你覺得這件事不對勁。",
+ "現場還有人拿出表格要你簽名確認。",
+ "然後廣播突然說：『第二階段現在開始。』",
+ "沒有人願意解釋原因。",
+ "此時有人小聲說：『果然又發生了。』"
+];
+const missions=[
+ "請指定一個人，解釋這件事為什麼其實非常合理。",
+ "所有人投票：如果這是真的，第一個該報警的人是誰？",
+ "請用新聞主播的口氣報導這件事 20 秒。",
+ "請想出三個『事情早就有跡象』的證據。",
+ "請指定一個人扮演現場唯一知道真相的人。",
+ "每個人只能用一句話提出解決方案。",
+ "請把這件事硬接到剛剛原本的話題上。",
+ "請想出一個比這更不合理、但居然能解釋它的原因。"
+];
+const panicEvents=[
+ "緊急問題：如果現在門外站著 12 隻穿西裝的企鵝，你第一句會問什麼？",
+ "先不要管剛剛的事：如果你的手機突然會說話，它最可能先出賣你哪件事？",
+ "重要：如果全場只能選一個人代表地球去跟外星人談判，要派誰？",
+ "打斷一下：如果今天開始所有謊話都會自帶字幕，誰最危險？",
+ "現在立刻回答：如果貓可以投票，人類還能執政多久？",
+ "突發狀況：如果明天星期一被法律永久取消，星期二會不會變成新的星期一？",
+ "等一下，真正重要的是：如果鬼也怕鬼，那牠們晚上到底怕什麼？",
+ "停止原話題：如果一顆馬鈴薯突然知道你所有秘密，你會先吃掉它還是跟它談判？"
+];
+let level=3,current="",history=[],timer=null,timeLeft=30;
+const $=id=>document.getElementById(id);
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+function sourcePool(cat){const cats=cat==='all'?Object.keys(pools):[cat];const band=level<=2?'low':level>=4?'high':Math.random()<.5?'low':'high';let list=[];cats.forEach(c=>list=list.concat(pools[c][band]));return list}
+function decorate(text){const target=$('target').value.trim();if(target){text=text.replace(/^你/,target).replace(/^你旁邊的人/,target)}else if(level>=4&&Math.random()<.35){text=rnd(subjects)+"突然被通知："+text.replace(/^你/,"")}
+ if(level>=3&&Math.random()<.62)text+=" "+rnd(addOns);return text}
+function pickNonRepeat(list){const recent=history.slice(0,8).map(x=>x.text);const candidates=list.filter(x=>!recent.some(r=>r.includes(x)));return rnd(candidates.length?candidates:list)}
+function render(text,mode='normal'){
+ current=text;$('eventText').classList.remove('placeholder');$('eventText').textContent=text;
+ const mission=mode==='panic'?"任務：不准解釋為什麼突然問這個，直接指定一個人回答。":"任務："+rnd(missions);
+ $('missionText').textContent=mission;
+ const badge=level>=5?'世界已壞':level>=4?'高度荒謬':level>=3?'完全不合理':level>=2?'非常可疑':'微妙失控';
+ $('card').querySelector('.badges').innerHTML=`<span class="badge ${level>=4?'hot':'weird'}">${mode==='panic'?'EMERGENCY':'RANDOM EVENT'}</span><span class="badge">LV.${level} ${badge}</span>`;
+ history.unshift({text,mission});history=history.slice(0,5);renderHistory();
+}
+function draw(mode='normal'){
+ if(mode==='panic'){animateThen(()=>render(rnd(panicEvents),'panic'));return}
+ const list=sourcePool($('category').value);const base=pickNonRepeat(list);animateThen(()=>render(decorate(base)));
+}
+function animateThen(done){
+ const e=$('eventText');e.classList.add('slot');let n=0;const fake=["宇宙正在亂數中…","正在召喚不必要的事件…","常識連線中斷…","正在增加不合理成分…","請稍候，現實快壞了…"];
+ const spin=setInterval(()=>{e.textContent=rnd(fake);n++;if(n>8){clearInterval(spin);e.classList.remove('slot');done()}},65);
+}
+function renderHistory(){const box=$('history');if(!history.length){box.innerHTML='<div class="empty">目前宇宙仍算穩定。</div>';return}box.innerHTML=history.map((x,i)=>`<div class="history-item"><strong>#${i+1}</strong> ${escapeHtml(x.text)}</div>`).join('')}
+function escapeHtml(s){return s.replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+function toast(msg){$('toast').textContent=msg;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),1200)}
+function startChallenge(){if(!current)draw();clearInterval(timer);timeLeft=30;$('time').textContent=timeLeft;$('timerBox').classList.add('show');timer=setInterval(()=>{timeLeft--;$('time').textContent=timeLeft;if(timeLeft<=0){clearInterval(timer);timer=null;$('time').textContent='TIME!';toast('硬拗時間到！')}},1000)}
+function stopTimer(){clearInterval(timer);timer=null;$('timerBox').classList.remove('show');timeLeft=30}
+$('levels').addEventListener('click',e=>{const b=e.target.closest('.level');if(!b)return;document.querySelectorAll('.level').forEach(x=>x.classList.remove('active'));b.classList.add('active');level=Number(b.dataset.level)});
+$('drawBtn').onclick=()=>draw();$('panicBtn').onclick=()=>draw('panic');$('challengeBtn').onclick=startChallenge;$('stopTimer').onclick=stopTimer;
+$('copyBtn').onclick=async()=>{if(!current){toast('先抽一件再複製');return}try{await navigator.clipboard.writeText(current+'\n'+$('missionText').textContent);toast('已複製這句幹話')}catch{toast('瀏覽器不允許複製')}};
+$('resetBtn').onclick=()=>{history=[];current='';renderHistory();$('eventText').className='event placeholder';$('eventText').innerHTML='按下「抽一件荒謬事件」<br>讓正常世界暫時離線。';$('missionText').textContent='任務：抽到後，至少有一個人必須認真回答它。';stopTimer();toast('紀錄已清空')};
+</script>
+</body>
+</html>
