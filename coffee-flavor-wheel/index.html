@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#120d0a" />
+  <title>COFFEE FLAVOR ORBIT｜咖啡風味輪</title>
+  <style>
+    :root{
+      --bg:#0f0b09;--panel:rgba(33,24,19,.82);--panel2:rgba(52,37,28,.68);
+      --ink:#fff8ed;--muted:#cbb9a8;--line:rgba(255,240,220,.12);
+      --cream:#f4dcc0;--gold:#d6a85e;--ember:#ff9c5a;--green:#9dbd87;
+      --shadow:0 30px 80px rgba(0,0,0,.42)
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth;background:var(--bg)}
+    body{margin:0;min-height:100vh;color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;background:
+      radial-gradient(circle at 15% 10%,rgba(155,91,53,.18),transparent 30%),
+      radial-gradient(circle at 85% 20%,rgba(188,137,72,.12),transparent 24%),
+      linear-gradient(145deg,#0b0806 0%,#17100c 48%,#0d0a08 100%);overflow-x:hidden}
+    body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.2;background-image:
+      linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:32px 32px;mask-image:linear-gradient(to bottom,black,transparent 84%)}
+    button{font:inherit}
+    .shell{width:min(1180px,calc(100% - 28px));margin:0 auto;padding:24px 0 56px}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:28px}
+    .brand{display:flex;align-items:center;gap:12px;letter-spacing:.08em;font-weight:800}
+    .bean{width:42px;height:42px;border:1px solid rgba(255,255,255,.14);border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#3b2419,#1b120e);box-shadow:inset 0 0 18px rgba(255,193,127,.08)}
+    .bean svg{width:23px;fill:#e1b67f}
+    .tag{font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:8px 12px;background:rgba(255,255,255,.025);white-space:nowrap}
+    .hero{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(310px,.88fr);gap:28px;align-items:center}
+    .eyebrow{margin:0 0 12px;font-size:12px;font-weight:800;letter-spacing:.18em;color:#d8b285}
+    h1{font-size:clamp(36px,6.8vw,78px);line-height:.93;letter-spacing:-.055em;margin:0 0 18px;font-weight:850}
+    h1 span{display:block;color:transparent;-webkit-text-stroke:1px rgba(255,245,232,.58)}
+    .lead{max-width:650px;color:var(--muted);font-size:16px;line-height:1.8;margin:0}
+    .legend{display:flex;flex-wrap:wrap;gap:9px;margin-top:22px}.legend span{font-size:12px;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.025);color:#e7d7c7}
+    .wheel-zone{position:relative;display:grid;place-items:center;min-height:610px}
+    .halo{position:absolute;width:84%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(216,148,74,.17),rgba(105,52,26,.05) 42%,transparent 68%);filter:blur(18px);transition:.3s}
+    .wheel-card{position:relative;width:min(100%,610px);aspect-ratio:1;border-radius:50%;display:grid;place-items:center;padding:3.3%;background:linear-gradient(145deg,rgba(255,255,255,.08),rgba(255,255,255,.01));border:1px solid rgba(255,238,218,.13);box-shadow:var(--shadow),inset 0 0 50px rgba(255,255,255,.025)}
+    .wheel-card:before,.wheel-card:after{content:"";position:absolute;border-radius:50%;pointer-events:none}.wheel-card:before{inset:1.6%;border:1px dashed rgba(255,222,177,.18)}.wheel-card:after{inset:-3.8%;border:1px solid rgba(255,221,183,.06)}
+    canvas{width:100%;height:100%;display:block;border-radius:50%;filter:drop-shadow(0 14px 30px rgba(0,0,0,.42));cursor:pointer;touch-action:manipulation}
+    .center-button{position:absolute;z-index:3;width:122px;height:122px;border-radius:50%;border:1px solid rgba(255,236,211,.28);color:#1d120b;background:radial-gradient(circle at 34% 27%,#fff1dd 0 14%,#e8bb7d 35%,#b8753d 100%);box-shadow:0 0 0 9px rgba(20,12,8,.72),0 0 35px rgba(220,151,80,.35),inset 0 -11px 25px rgba(87,40,13,.23);font-weight:900;letter-spacing:.08em;cursor:pointer;transition:transform .18s ease,box-shadow .25s ease}
+    .center-button:hover{transform:scale(1.04)}.center-button:active{transform:scale(.98)}
+    .center-button small{display:block;font-size:10px;letter-spacing:.16em;margin-top:4px;opacity:.65}
+    .pointer{position:absolute;z-index:4;top:2.6%;left:50%;transform:translateX(-50%);width:0;height:0;border-left:13px solid transparent;border-right:13px solid transparent;border-top:24px solid #fff0d7;filter:drop-shadow(0 3px 8px rgba(255,179,90,.55))}
+    .wheel-zone.spinning .halo{transform:scale(1.08);background:radial-gradient(circle,rgba(255,183,97,.31),rgba(137,68,34,.08) 48%,transparent 70%)}
+    .wheel-zone.spinning .wheel-card{box-shadow:0 0 85px rgba(255,155,79,.18),var(--shadow)}
+    .wheel-zone.spinning .center-button{animation:pulse .75s ease-in-out infinite alternate}
+    @keyframes pulse{to{box-shadow:0 0 0 10px rgba(20,12,8,.72),0 0 58px rgba(255,170,86,.62),inset 0 -11px 25px rgba(87,40,13,.23)}}
+    .result{margin-top:34px;border:1px solid var(--line);border-radius:28px;background:linear-gradient(145deg,rgba(42,30,23,.82),rgba(23,17,14,.88));box-shadow:var(--shadow);overflow:hidden}
+    .result-head{display:flex;justify-content:space-between;gap:18px;align-items:end;padding:24px 24px 18px;border-bottom:1px solid var(--line)}
+    .result-head p{margin:0 0 7px;color:#cda878;font-size:11px;letter-spacing:.16em;font-weight:800}.result-head h2{margin:0;font-size:clamp(24px,4vw,38px);letter-spacing:-.035em}
+    .status{font-size:12px;color:var(--muted);text-align:right}
+    .flavor-locks{display:flex;gap:10px;flex-wrap:wrap;padding:18px 24px 0}
+    .flavor-chip{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:999px;background:rgba(255,255,255,.045);border:1px solid var(--line);font-size:13px;animation:chipIn .45s both}
+    .dot{width:9px;height:9px;border-radius:50%;box-shadow:0 0 12px currentColor}
+    @keyframes chipIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+    .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:18px 24px 24px}
+    .coffee{border:1px solid var(--line);border-radius:20px;padding:18px;background:rgba(255,255,255,.025);position:relative;overflow:hidden;min-height:230px}
+    .coffee:before{content:"";position:absolute;width:90px;height:90px;border-radius:50%;right:-25px;top:-30px;background:radial-gradient(circle,rgba(214,168,94,.16),transparent 70%)}
+    .rank{font-size:10px;letter-spacing:.14em;color:#ba976e;font-weight:850}.coffee h3{font-size:20px;line-height:1.2;margin:8px 0 6px}.meta{font-size:12px;color:var(--muted);margin-bottom:14px}.match{font-size:12px;color:#f0d4b2;line-height:1.65;margin:0 0 12px}.brew{font-size:11px;color:#aab89e;padding-top:12px;border-top:1px solid var(--line);line-height:1.6}.score{position:absolute;right:15px;bottom:13px;color:#d4ae7c;font-size:11px;font-weight:800}
+    .empty{grid-column:1/-1;padding:25px 0 10px;color:#9f8f81;font-size:14px}
+    .method{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:22px}.method article{border-top:1px solid var(--line);padding-top:14px}.method b{display:block;font-size:12px;color:#dbc19f;margin-bottom:7px}.method span{font-size:12px;line-height:1.6;color:#9e8e80}
+    footer{display:flex;justify-content:space-between;gap:18px;align-items:center;color:#807368;font-size:11px;padding:25px 2px 0}.reset{border:0;background:none;color:#d0aa7f;padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:4px}
+    @media (max-width:900px){.hero{grid-template-columns:1fr}.wheel-zone{min-height:auto}.intro{text-align:center}.lead{margin-inline:auto}.legend{justify-content:center}.wheel-card{width:min(94vw,620px)}.cards{grid-template-columns:1fr}.method{grid-template-columns:1fr}.topbar{margin-bottom:18px}}
+    @media (max-width:560px){.shell{width:min(100% - 18px,1180px);padding-top:12px}.topbar .tag{display:none}.hero{gap:14px}.eyebrow{font-size:10px}.lead{font-size:14px;line-height:1.7}.legend{margin-top:16px}.wheel-card{width:96vw;max-width:calc(100vw - 20px)}.center-button{width:94px;height:94px;font-size:12px}.pointer{top:1.8%}.result{border-radius:22px}.result-head{padding:20px 16px 15px;align-items:start}.status{max-width:90px}.flavor-locks{padding:15px 16px 0}.cards{padding:15px 16px 18px}.method{padding-inline:2px}footer{align-items:flex-start;flex-direction:column}}
+    @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}.center-button{animation:none!important}}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <span class="bean" aria-hidden="true"><svg viewBox="0 0 64 64"><path d="M51.2 7.6C38.3-1.5 17.6 5.2 8.8 19.1.4 32.4 4 49.6 16.9 57.4c12.4 7.4 29.9.7 38.3-12.6 8.4-13.3 8.9-28.7-4-37.2ZM19.7 49.9c8-4.3 12.2-10.8 13-19.2.8-8.3 4.6-14.8 11.7-19.3-7.5 2.1-12.8 7.6-14.6 16-1.9 8.8-5.5 15.6-10.1 22.5Z"/></svg></span>
+        <span>COFFEE FLAVOR ORBIT</span>
+      </div>
+      <span class="tag">INTERACTIVE TASTING LAB · 2026</span>
+    </header>
+
+    <section class="hero">
+      <div class="intro">
+        <p class="eyebrow">TAP · SPIN · TASTE</p>
+        <h1>把風味，<span>轉成一杯咖啡</span></h1>
+        <p class="lead">點擊風味輪中央，輪盤會發光旋轉，最後鎖定三個風味格。系統會依照這三個風味的重疊程度，推薦最接近的咖啡產區、處理法與沖煮方向。</p>
+        <div class="legend" aria-label="使用步驟"><span>01 點擊旋轉</span><span>02 鎖定 3 個風味</span><span>03 配對咖啡</span><span>04 依建議沖煮</span></div>
+        <div class="method">
+          <article><b>不是單純亂數</b><span>每支咖啡都有風味標籤，結果會按照命中數與相近風味加權計分。</span></article>
+          <article><b>適合手機操作</b><span>輪盤、推薦卡與文字比例都針對直向手機重新排版。</span></article>
+          <article><b>每次都能重抽</b><span>想找不同方向時，直接再旋轉一次，重新建立你的風味組合。</span></article>
+        </div>
+      </div>
+
+      <div class="wheel-zone" id="wheelZone">
+        <div class="halo"></div>
+        <div class="wheel-card">
+          <div class="pointer" aria-hidden="true"></div>
+          <canvas id="wheel" width="1000" height="1000" aria-label="互動式咖啡風味輪"></canvas>
+          <button id="spin" class="center-button" type="button" aria-label="旋轉咖啡風味輪">旋轉風味<small>SPIN</small></button>
+        </div>
+      </div>
+    </section>
+
+    <section class="result" aria-live="polite">
+      <div class="result-head">
+        <div><p>FLAVOR MATCH</p><h2>你的咖啡風味座標</h2></div>
+        <div class="status" id="status">等待第一次旋轉</div>
+      </div>
+      <div class="flavor-locks" id="flavorLocks"></div>
+      <div class="cards" id="cards"><div class="empty">按下風味輪，讓三個風味決定今天的咖啡方向。</div></div>
+    </section>
+
+    <footer>
+      <span>風味與產區描述為選豆方向，實際杯中表現仍會受到品種、批次、烘焙與沖煮影響。</span>
+      <button class="reset" id="again" type="button">再轉一次 ↗</button>
+    </footer>
+  </main>
+
+<script>
+(() => {
+  const flavors = [
+    {name:'茉莉花', group:'花香', color:'#d9b9c9'},
+    {name:'橙花', group:'花香', color:'#e9c8a0'},
+    {name:'柑橘', group:'明亮酸質', color:'#f0ac5a'},
+    {name:'葡萄柚', group:'明亮酸質', color:'#df7a69'},
+    {name:'莓果', group:'水果', color:'#a85772'},
+    {name:'熱帶水果', group:'水果', color:'#d99c53'},
+    {name:'核果', group:'水果', color:'#c77a57'},
+    {name:'水果乾', group:'水果', color:'#956849'},
+    {name:'酒香', group:'發酵', color:'#864e58'},
+    {name:'蜂蜜', group:'甜感', color:'#d6a453'},
+    {name:'焦糖', group:'甜感', color:'#b97843'},
+    {name:'黑糖', group:'甜感', color:'#8c5a3a'},
+    {name:'可可', group:'可可', color:'#725044'},
+    {name:'黑巧克力', group:'可可', color:'#4f3a36'},
+    {name:'堅果', group:'堅果', color:'#9c7a52'},
+    {name:'烘烤', group:'烘焙', color:'#78614d'},
+    {name:'香料', group:'深色調', color:'#9b6249'},
+    {name:'草本', group:'深色調', color:'#63755b'},
+    {name:'茶感', group:'清爽', color:'#8f9b77'},
+    {name:'乳脂', group:'口感', color:'#cab494'}
+  ];
+
+  const coffees = [
+    {name:'衣索比亞｜耶加雪菲 水洗', meta:'中淺焙 · 高海拔 · 水洗', tags:['茉莉花','橙花','柑橘','茶感'], near:['葡萄柚','蜂蜜'], brew:'V60｜1:16｜90–92°C，拉長尾段注水保留花香與茶感。'},
+    {name:'衣索比亞｜古吉 日曬', meta:'淺焙 · 日曬 · 果香型', tags:['莓果','熱帶水果','水果乾','酒香'], near:['蜂蜜','核果'], brew:'Origami / V60｜1:15.5｜90°C，較快流速凸顯莓果與發酵甜感。'},
+    {name:'肯亞｜涅里 水洗', meta:'淺焙 · 水洗 · 高酸質', tags:['莓果','葡萄柚','柑橘','黑糖'], near:['茶感','核果'], brew:'V60｜1:16.5｜91–93°C，中細研磨，讓黑醋栗感與明亮酸值拉開。'},
+    {name:'哥倫比亞｜薇拉 水洗', meta:'中淺焙 · 水洗 · 平衡型', tags:['柑橘','核果','焦糖','黑糖'], near:['蜂蜜','可可'], brew:'Kalita / V60｜1:16｜91°C，均勻分段注水，保留甜感與乾淨酸質。'},
+    {name:'哥斯大黎加｜塔拉珠 蜜處理', meta:'中淺焙 · 蜜處理 · 甜感型', tags:['蜂蜜','核果','焦糖','水果乾'], near:['柑橘','莓果'], brew:'V60｜1:15.5｜90–91°C，稍高粉水濃度，強化蜂蜜般甜度與滑順口感。'},
+    {name:'瓜地馬拉｜安提瓜', meta:'中焙 · 水洗 · 甜香料型', tags:['可可','焦糖','香料','黑糖'], near:['核果','烘烤'], brew:'V60 / 美式｜1:15.5｜91–92°C，適合稍慢萃取，帶出可可與香料尾韻。'},
+    {name:'巴西｜喜拉朵 日曬', meta:'中焙 · 日曬 · 低酸厚甜', tags:['堅果','可可','焦糖','乳脂'], near:['黑巧克力','烘烤'], brew:'義式 / 摩卡壺｜中細研磨，適合牛奶咖啡，也能呈現堅果巧克力甜感。'},
+    {name:'印尼｜蘇門答臘 曼特寧', meta:'中深焙 · 濕剝法 · 厚重型', tags:['草本','香料','黑巧克力','烘烤'], near:['可可','乳脂'], brew:'法壓 / 聰明濾杯｜1:15｜90–92°C，浸泡式沖煮可保留厚實口感與草本調性。'},
+    {name:'巴拿馬｜藝伎 水洗', meta:'極淺～淺焙 · 水洗 · 花香型', tags:['茉莉花','橙花','柑橘','茶感'], near:['蜂蜜','熱帶水果'], brew:'V60｜1:17｜89–91°C，低擾動、較大粉水比，讓花香與透明感更集中。'},
+    {name:'盧安達｜日曬波旁', meta:'淺焙 · 日曬 · 紅果甜感', tags:['莓果','水果乾','蜂蜜','黑糖'], near:['核果','酒香'], brew:'V60 / Aeropress｜1:16｜90°C，中等研磨，平衡紅果酸與糖蜜甜感。'}
+  ];
+
+  const canvas = document.getElementById('wheel');
+  const ctx = canvas.getContext('2d');
+  const spinBtn = document.getElementById('spin');
+  const wheelZone = document.getElementById('wheelZone');
+  const cards = document.getElementById('cards');
+  const flavorLocks = document.getElementById('flavorLocks');
+  const status = document.getElementById('status');
+  const again = document.getElementById('again');
+
+  const TAU = Math.PI * 2;
+  let rotation = -Math.PI / 2;
+  let selected = [];
+  let spinning = false;
+  let raf = null;
+
+  function shade(hex, amt){
+    const n = parseInt(hex.slice(1),16), r=Math.max(0,Math.min(255,(n>>16)+amt)), g=Math.max(0,Math.min(255,((n>>8)&255)+amt)), b=Math.max(0,Math.min(255,(n&255)+amt));
+    return `rgb(${r},${g},${b})`;
+  }
+
+  function draw(rot=rotation){
+    const w=canvas.width,h=canvas.height,cx=w/2,cy=h/2,r=450,inner=150;
+    ctx.clearRect(0,0,w,h);
+    const slice=TAU/flavors.length;
+    ctx.save();
+    ctx.translate(cx,cy);
+
+    for(let i=0;i<flavors.length;i++){
+      const a0=rot+i*slice,a1=a0+slice,active=selected.includes(i);
+      ctx.beginPath();ctx.arc(0,0,r,a0,a1);ctx.arc(0,0,inner,a1,a0,true);ctx.closePath();
+      const grad=ctx.createRadialGradient(0,0,inner,0,0,r);
+      grad.addColorStop(0,shade(flavors[i].color,-36));grad.addColorStop(.62,flavors[i].color);grad.addColorStop(1,shade(flavors[i].color,-18));
+      ctx.fillStyle=grad;
+      if(active){ctx.save();ctx.shadowColor='#ffd5a0';ctx.shadowBlur=38;ctx.fill();ctx.restore();ctx.fillStyle='rgba(255,248,224,.18)';ctx.fill()}
+      else ctx.fill();
+      ctx.strokeStyle=active?'rgba(255,244,216,.9)':'rgba(255,247,236,.26)';ctx.lineWidth=active?5:2;ctx.stroke();
+
+      const mid=(a0+a1)/2;
+      ctx.save();ctx.rotate(mid);ctx.translate(r*.70,0);ctx.rotate(Math.PI/2);
+      const readable = Math.sin(mid) > 0;
+      if(readable) ctx.rotate(Math.PI);
+      ctx.fillStyle=active?'#fff9ea':'rgba(255,250,240,.90)';ctx.font=`${active?'800':'700'} 25px system-ui,-apple-system,"PingFang TC",sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.shadowColor='rgba(0,0,0,.55)';ctx.shadowBlur=5;ctx.fillText(flavors[i].name,0,0);
+      ctx.font='600 13px system-ui,-apple-system,"PingFang TC",sans-serif';ctx.fillStyle='rgba(255,248,236,.65)';ctx.fillText(flavors[i].group,0,26);ctx.restore();
+    }
+
+    ctx.beginPath();ctx.arc(0,0,inner-4,0,TAU);ctx.fillStyle='#1b120e';ctx.fill();ctx.strokeStyle='rgba(255,229,197,.22)';ctx.lineWidth=4;ctx.stroke();
+    ctx.restore();
+  }
+
+  function pickThree(){
+    const pool=[...flavors.keys()];
+    const picks=[];
+    while(picks.length<3){const p=pool.splice(Math.floor(Math.random()*pool.length),1)[0];picks.push(p)}
+    return picks;
+  }
+
+  function scoreCoffee(coffee,names){
+    let score=0;const hits=[];
+    names.forEach(n=>{if(coffee.tags.includes(n)){score+=4;hits.push(n)}else if(coffee.near.includes(n)){score+=2;hits.push(n)}});
+    const groupBonus = names.filter(n=>{
+      const f=flavors.find(x=>x.name===n);return coffee.tags.some(t=>flavors.find(x=>x.name===t)?.group===f?.group)
+    }).length;
+    return {score:score+groupBonus*.7,hits};
+  }
+
+  function renderResults(){
+    const names=selected.map(i=>flavors[i].name);
+    flavorLocks.innerHTML=selected.map((i,k)=>`<div class="flavor-chip" style="animation-delay:${k*.08}s"><span class="dot" style="background:${flavors[i].color};color:${flavors[i].color}"></span>${flavors[i].name}<small style="opacity:.52">${flavors[i].group}</small></div>`).join('');
+    const ranked=coffees.map(c=>({...c,...scoreCoffee(c,names)})).sort((a,b)=>b.score-a.score).slice(0,3);
+    cards.innerHTML=ranked.map((c,i)=>{
+      const direct=names.filter(n=>c.tags.includes(n));
+      const nearby=names.filter(n=>!c.tags.includes(n)&&c.near.includes(n));
+      const why=[direct.length?`直接命中 ${direct.join('、')}`:'',nearby.length?`相近風味 ${nearby.join('、')}`:''].filter(Boolean).join('；') || '以相同風味群與整體平衡度取得最佳配對';
+      const pct=Math.min(98,Math.round(60+c.score*4.2));
+      return `<article class="coffee"><div class="rank">MATCH 0${i+1}</div><h3>${c.name}</h3><div class="meta">${c.meta}</div><p class="match">${why}</p><div class="brew"><b>建議沖法</b><br>${c.brew}</div><span class="score">${pct}% MATCH</span></article>`
+    }).join('');
+    status.textContent=`已鎖定 ${selected.length} 格 · 完成配對`;
+    setTimeout(()=>document.querySelector('.result').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'}),260);
+  }
+
+  function spin(){
+    if(spinning)return;
+    spinning=true;selected=[];flavorLocks.innerHTML='';cards.innerHTML='<div class="empty">正在掃描風味座標…</div>';status.textContent='輪盤高速旋轉中';wheelZone.classList.add('spinning');spinBtn.disabled=true;
+    const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const start=performance.now(),duration=reduce?700:3600,startRot=rotation,extra=TAU*(reduce?1.25:6.5+Math.random()*2.5)+Math.random()*TAU;
+    const ease=t=>1-Math.pow(1-t,4);
+    function frame(now){
+      const p=Math.min(1,(now-start)/duration);rotation=startRot+extra*ease(p);draw(rotation);
+      if(p<1){raf=requestAnimationFrame(frame)}else{
+        rotation%=TAU;selected=pickThree();draw(rotation);wheelZone.classList.remove('spinning');spinning=false;spinBtn.disabled=false;spinBtn.innerHTML='再轉一次<small>SPIN AGAIN</small>';renderResults();
+      }
+    }
+    cancelAnimationFrame(raf);raf=requestAnimationFrame(frame);
+  }
+
+  spinBtn.addEventListener('click',spin);
+  canvas.addEventListener('click',spin);
+  again.addEventListener('click',()=>{window.scrollTo({top:Math.max(0,wheelZone.getBoundingClientRect().top+scrollY-40),behavior:'smooth'});setTimeout(spin,220)});
+  draw();
+})();
+</script>
+</body>
+</html>
