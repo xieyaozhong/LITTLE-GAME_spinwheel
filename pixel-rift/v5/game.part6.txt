@@ -1,0 +1,37 @@
+if(game.waveT>=game.waveLen){game.wave++;game.waveT=0;game.score+=game.wave*270;toast('WAVE '+game.wave);if(game.wave%5===0)spawnBoss()}
+game.spawnT-=dt;const cap=Math.min(130,10+game.wave*4+(playerCount===2?10:0));if(game.spawnT<=0&&game.enemies.length<cap){spawnEnemy();game.spawnT=Math.max(.09,.69-game.wave*.028)}
+for(const e of game.enemies)e.speed=e.baseSpeed;
+for(const p of game.players){p.mapSlow=1;if(p.slowT>0)p.slowT=Math.max(0,p.slowT-dt)}
+updateHazards(dt);
+for(const p of game.players){
+if(p.dead)continue;const [mx,my]=inputs(p);p.dx=mx;p.dy=my;p.invuln=Math.max(0,p.invuln-dt);p.dashCd=Math.max(0,p.dashCd-dt);p.hunterT=Math.max(0,p.hunterT-dt);p.shadowTempoT=Math.max(0,p.shadowTempoT-dt);
+const moveSlow=p.slowT>0?p.slowFactor:1;
+if(p.dashing>0){p.dashing-=dt;p.x+=p.dashVX*dt;p.y+=p.dashVY*dt;if(p.hero==='shadow'&&p.dashStrike)for(const e of game.enemies)if(!e.dead&&d2(p,e)<85*85)damageEnemy(e,p.damage*.32*p.dashStrike,p,false)}
+else{p.x+=mx*p.speed*p.mapSlow*moveSlow*dt;p.y+=my*p.speed*p.mapSlow*moveSlow*dt}
+p.x=clamp(p.x,24,WORLD_W-24);p.y=clamp(p.y,24,WORLD_H-24);
+p.shotT-=dt;let rate=p.rate*(p.hunterT>0?1+p.hunterMark:1)*(p.shadowTempoT>0?1+p.shadowTempo:1);if(p.shotT<=0&&game.enemies.length){fire(p);p.shotT=1/rate}
+if(p.hero==='support'){p.pulseTimer-=dt;if(p.pulseTimer<=0){p.pulseTimer=p.pulseCd;pulseSupport(p)}if(p.drones){p.droneT-=dt;if(p.droneT<=0){p.droneT=Math.max(.32,.85-p.drones*.09);fireDrone(p)}}}
+if(p.hero==='engineer'){p.mineTimer-=dt;if(p.turretMax&&game.turrets.filter(t=>t.owner===p).length<p.turretMax&&p.mineTimer<=0){deployTurret(p);p.mineTimer=4.5}p.mineCd-=dt;if(p.mineCd<=0){deployMine(p);p.mineCd=Math.max(2.2,6/(p.mineDamage||1))}}
+if(p.nova){p.novaTimer-=dt;if(p.novaTimer<=0){p.novaTimer=p.nova;areaDamage(p.x,p.y,265,p.damage*1.2,p,'#c8b1ff')}}
+}
+updateMachines(dt);
+if(playerCount===2)for(const down of game.players.filter(p=>p.dead)){const saver=game.players.find(p=>!p.dead&&d2(p,down)<75*75);if(saver){down.revive+=dt;if(down.revive>=3){down.dead=false;down.hp=down.maxHp*.42;down.invuln=1.5;down.revive=0;burst(down.x,down.y,'#fff5ae',28);toast('隊友已救援！')}}else down.revive=Math.max(0,down.revive-dt*.65)}
+for(const e of [...game.enemies])updateEnemy(e,dt);
+for(const b of game.bullets){b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;for(const e of game.enemies){if(e.dead||b.hit.has(e))continue;if(d2(b,e)<(b.r+e.r)**2){b.hit.add(e);
+if(e.type==='reflector'&&e.reflectCd<=0&&Math.random()<.28){e.reflectCd=.5;const p=b.owner,a=Math.atan2(p.y-e.y,p.x-e.x);addEnemyBullet(e.x,e.y,a,210,b.damage*.45,3,'#e6c7ff');b.life=0;break}
+damageEnemy(e,b.damage,b.owner,true);applyElement(e,b);if(b.pierce>0)b.pierce--;else b.life=0;if(b.life<=0)break}}}
+for(const b of game.enemyBullets){b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;for(const p of alivePlayers())if(d2(b,p)<(b.r+p.r)**2){b.life=0;const dealt=hurt(p,b.damage,b.x,b.y,null);if(b.effect==='slow'&&dealt>0){p.slowT=1.8;p.slowFactor=.55;}if(b.effect==='blast')damagePlayersInRadius(b.x,b.y,55,b.damage*.45,null);break}}
+for(const gem of game.gems){let p=null,b=Infinity;for(const q of alivePlayers()){const z=d2(gem,q);if(z<b){b=z;p=q}}if(!p)continue;const d=Math.sqrt(b);if(d<p.magnet){const sp=260+(p.magnet-d)*4;gem.x+=(p.x-gem.x)/Math.max(1,d)*sp*dt;gem.y+=(p.y-gem.y)/Math.max(1,d)*sp*dt}if(d<p.r+gem.r+5){gem.dead=true;gainXp(gem.value)}}
+for(const q of game.particles){q.life-=dt;if(q.type==='dot'){q.x+=q.vx*dt;q.y+=q.vy*dt;q.vx*=.95;q.vy*=.95}if(q.type==='ring')q.r+=(q.maxR-q.r)*dt*9}
+game.enemies=game.enemies.filter(e=>!e.dead);game.bullets=game.bullets.filter(b=>b.life>0&&b.x>-80&&b.x<WORLD_W+80&&b.y>-80&&b.y<WORLD_H+80);game.enemyBullets=game.enemyBullets.filter(b=>b.life>0);game.gems=game.gems.filter(g=>!g.dead);game.particles=game.particles.filter(q=>q.life>0);
+game.score+=dt*(14+game.wave*2.3);const al=alivePlayers(),ctr=centerPlayers();let targetZoom=.77;if(al.length>1){const sep=Math.hypot(al[0].x-al[1].x,al[0].y-al[1].y);targetZoom=clamp(.82-sep/2400,.54,.78)}
+const f=1-Math.exp(-dt*5.5);game.camera.x+=(ctr.x-game.camera.x)*f;game.camera.y+=(ctr.y-game.camera.y)*f;game.camera.zoom+=(targetZoom-game.camera.zoom)*f;shake=Math.max(0,shake-dt*25);flash=Math.max(0,flash-dt);updateHud()
+}
+
+function updateHud(){
+const a=game.players[0],b=game.players[1];$('p1HeroLabel').textContent=a.name;$('p1HpText').innerHTML=a.dead?`<span class="downed">DOWN ${Math.round(a.revive/3*100)}%</span>`:`${Math.ceil(a.hp)} / ${Math.ceil(a.maxHp)}${a.shield>0?' +◇'+Math.ceil(a.shield):''}`;$('p1HpBar').style.width=(a.dead?0:clamp(a.hp/a.maxHp,0,1)*100)+'%';
+if(b){$('p2HeroLabel').textContent=b.name;$('p2HpText').innerHTML=b.dead?`<span class="downed">DOWN ${Math.round(b.revive/3*100)}%</span>`:`${Math.ceil(b.hp)} / ${Math.ceil(b.maxHp)}${b.shield>0?' +◇'+Math.ceil(b.shield):''}`;$('p2HpBar').style.width=(b.dead?0:clamp(b.hp/b.maxHp,0,1)*100)+'%'}
+$('waveText').textContent=game.wave;$('levelText').textContent=game.level;$('coinText').textContent=game.coins;$('scoreText').textContent=Math.floor(game.score).toLocaleString();const m=(game.t/60)|0,s=(game.t%60)|0;$('timeText').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+$('reviveNote').style.display=playerCount===2&&game.players.some(p=>p.dead)&&alivePlayers().length?'block':'none';
+if(game.boss&&!game.boss.dead){$('bossBox').style.display='block';$('bossName').textContent=game.boss.bossName;$('bossBar').style.width=clamp(game.boss.hp/game.boss.maxHp,0,1)*100+'%';$('bossAffixes').textContent=game.boss.mutant?'變異詞綴：'+game.boss.mutations.map(m=>m.name+'（'+m.desc+'）').join(' × '):'關主技能：'+BOSS_TYPES.find(b=>b.id===game.boss.bossKind).skill}else $('bossBox').style.display='none'
+}
