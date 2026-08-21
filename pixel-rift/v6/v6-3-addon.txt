@@ -1,0 +1,220 @@
+// PIXEL RIFT V6.3 addon: abyss enemies and endgame boss tiers
+const V63_ENEMY_NAMES={
+voidblade:'虛空刃鬼',mortar:'星骸迫擊獸',chrono:'逆時幽靈',harvester:'魂蝕收割者',
+overseer:'深淵監軍',bastion:'永固壁壘',echo:'鏡像獵犬',broodcarrier:'母巢載體',
+doomseer:'末日預言者',singularity:'奇點吞噬體'
+};
+Object.assign(ENEMY_DEFS,{
+voidblade:{name:V63_ENEMY_NAMES.voidblade,r:10,hp:88,speed:112,damage:24,color:'#8f7cff',xp:18,score:470},
+mortar:{name:V63_ENEMY_NAMES.mortar,r:14,hp:126,speed:32,damage:31,color:'#ff835c',xp:20,score:520},
+chrono:{name:V63_ENEMY_NAMES.chrono,r:9,hp:74,speed:66,damage:18,color:'#6fe8ff',xp:17,score:450},
+harvester:{name:V63_ENEMY_NAMES.harvester,r:12,hp:116,speed:70,damage:23,color:'#ff5f87',xp:20,score:540},
+overseer:{name:V63_ENEMY_NAMES.overseer,r:15,hp:168,speed:38,damage:21,color:'#c378ff',xp:24,score:680},
+bastion:{name:V63_ENEMY_NAMES.bastion,r:17,hp:235,speed:26,damage:26,color:'#7ecbff',xp:26,score:760},
+echo:{name:V63_ENEMY_NAMES.echo,r:10,hp:92,speed:102,damage:22,color:'#ff91dd',xp:21,score:600},
+broodcarrier:{name:V63_ENEMY_NAMES.broodcarrier,r:16,hp:184,speed:41,damage:20,color:'#78ff9c',xp:25,score:720},
+doomseer:{name:V63_ENEMY_NAMES.doomseer,r:13,hp:152,speed:44,damage:32,color:'#ffd06a',xp:27,score:820},
+singularity:{name:V63_ENEMY_NAMES.singularity,r:18,hp:285,speed:24,damage:28,color:'#9c78ff',xp:32,score:980}
+});
+
+const _v63AvailableEnemyTypes=availableEnemyTypes;
+availableEnemyTypes=function(){
+  const a=_v63AvailableEnemyTypes();
+  const w=game?.wave||1;
+  if(w>=14)a.push('voidblade');
+  if(w>=16)a.push('mortar');
+  if(w>=18)a.push('chrono');
+  if(w>=20)a.push('harvester');
+  if(w>=22)a.push('overseer');
+  if(w>=24)a.push('bastion');
+  if(w>=26)a.push('echo');
+  if(w>=28)a.push('broodcarrier');
+  if(w>=30)a.push('doomseer');
+  if(w>=34)a.push('singularity');
+  if(w>=40)a.push('voidblade','mortar','overseer','doomseer','singularity');
+  return a
+};
+
+function v63InitEnemy(e){
+  if(!e||e.v63Ready)return;
+  e.v63Ready=true;
+  e.v63T=rand(1.1,2.4);
+  e.v63T2=rand(2.2,4.2);
+  if(e.type==='bastion'){
+    e.shield=(e.shield||0)+e.maxHp*.65;
+    e.maxShield=Math.max(e.maxShield||0,e.shield)
+  }
+}
+const _v63UpdateEnemy=updateEnemy;
+updateEnemy=function(e,dt){
+  _v63UpdateEnemy(e,dt);
+  if(!game||!e||e.dead)return;
+  v63InitEnemy(e);
+  e.v63T-=dt;e.v63T2-=dt;
+  const p=nearestPlayer(e);
+  if(!p)return;
+  const a=Math.atan2(p.y-e.y,p.x-e.x);
+
+  if(e.type==='voidblade'&&e.v63T<=0){
+    e.v63T=rand(2.0,3.0);
+    const oldX=e.x,oldY=e.y;
+    e.x=clamp(p.x+rand(-95,95),30,WORLD_W-30);
+    e.y=clamp(p.y+rand(-95,95),30,WORLD_H-30);
+    game.particles.push({type:'line',x:oldX,y:oldY,x2:e.x,y2:e.y,life:.18,max:.18,color:'#9f8cff'});
+    damagePlayersInRadius(e.x,e.y,62,e.damage*.72,e)
+  }else if(e.type==='mortar'&&e.v63T<=0){
+    e.v63T=2.9;
+    for(let i=-1;i<=1;i++)addEnemyBullet(e.x,e.y,a+i*.10,105,e.damage*.78,8,'#ff835c','blast')
+  }else if(e.type==='chrono'&&e.v63T<=0){
+    e.v63T=2.25;
+    for(let i=-2;i<=2;i++)addEnemyBullet(e.x,e.y,a+i*.12,178,e.damage*.42,5,'#75e9ff','slow')
+  }else if(e.type==='harvester'&&e.v63T<=0){
+    e.v63T=2.35;
+    damagePlayersInRadius(e.x,e.y,105,e.damage*.38,e);
+    e.hp=Math.min(e.maxHp,e.hp+e.maxHp*.055)
+  }else if(e.type==='overseer'&&e.v63T<=0){
+    e.v63T=4.4;
+    const types=game.wave>=30?['voidblade','echo','prism','mini']:['assassin','prism','mini'];
+    for(let i=0;i<2;i++){
+      const t=types[Math.floor(Math.random()*types.length)];
+      game.enemies.push(makeEnemy(t,{x:clamp(e.x+rand(-70,70),25,WORLD_W-25),y:clamp(e.y+rand(-70,70),25,WORLD_H-25)},1+game.wave*.035))
+    }
+  }else if(e.type==='bastion'&&e.v63T<=0){
+    e.v63T=3.4;
+    e.shield=Math.min(e.maxHp*.9,(e.shield||0)+e.maxHp*.14);
+    for(const ally of game.enemies)if(ally!==e&&!ally.dead&&d2(e,ally)<150*150)ally.shield=(ally.shield||0)+ally.maxHp*.05
+  }else if(e.type==='echo'&&e.v63T<=0){
+    e.v63T=2.15;
+    for(let i=-1;i<=1;i++)addEnemyBullet(e.x,e.y,a+i*.18,255,e.damage*.48,4,'#ff9fe2')
+  }else if(e.type==='broodcarrier'&&e.v63T<=0){
+    e.v63T=3.75;
+    for(let i=0;i<3;i++)game.enemies.push(makeEnemy(Math.random()<.45?'prism':'mini',{x:clamp(e.x+rand(-85,85),25,WORLD_W-25),y:clamp(e.y+rand(-85,85),25,WORLD_H-25)},1+game.wave*.025))
+  }else if(e.type==='doomseer'&&e.v63T<=0){
+    e.v63T=2.7;
+    for(let i=0;i<10;i++)addEnemyBullet(e.x,e.y,i/10*TAU+game.t*.22,205,e.damage*.34,5,'#ffd06a');
+    addEnemyBullet(e.x,e.y,a,325,e.damage*.72,6,'#fff1ae')
+  }else if(e.type==='singularity'&&e.v63T<=0){
+    e.v63T=3.25;
+    damagePlayersInRadius(e.x,e.y,185,e.damage*.42,e);
+    for(let i=0;i<14;i++)addEnemyBullet(e.x,e.y,i/14*TAU,135,e.damage*.28,5,'#ad8cff','slow')
+  }
+
+  if(e.v63T2<=0){
+    e.v63T2=rand(4.2,6.5);
+    if(['voidblade','echo','doomseer','singularity'].includes(e.type))e.speed=Math.min(e.speed*1.08,e.baseSpeed*1.5)
+  }
+};
+
+const V63_ABYSS_LORDS={
+wastes:'深淵獸皇・噬界萬牙',
+forge:'黑爐滅神機・赤熔零式',
+frost:'白夜終王・絕零葬歌',
+marsh:'腐海原母・萬疫之冠',
+temple:'終焉觀測神・無相之眼'
+};
+const V63_CATACLYSM_LORDS={
+wastes:'災厄帝王・荒界吞星獸',
+forge:'災厄帝王・星核焚世機神',
+frost:'災厄帝王・絕對零度王座',
+marsh:'災厄帝王・終孢母神',
+temple:'災厄帝王・裂隙主宰'
+};
+
+const _v63SpawnBoss=spawnBoss;
+spawnBoss=function(){
+  _v63SpawnBoss();
+  const b=game?.boss;if(!b)return;
+  if(game.wave%90===0){
+    b.cataclysm=true;b.abyss=true;
+    b.bossName=V63_CATACLYSM_LORDS[game.map.id]||'災厄帝王・無名終焉';
+    b.maxHp*=5.8;b.hp=b.maxHp;b.damage*=1.9;b.speed*=1.22;b.baseSpeed=b.speed;b.r+=13;
+    b.color='#ff3d7f';b.v63Phase=0;b.v63BossT=1.05;b.v63BossT2=2.8;
+    b.shield=(b.shield||0)+b.maxHp*.18;b.maxShield=Math.max(b.maxShield||0,b.shield);
+    toast(`✹ 災厄帝王降臨：${b.bossName}`);shake=24
+  }else if(game.wave%45===0){
+    b.abyss=true;
+    b.bossName='深淵領主·'+(V63_ABYSS_LORDS[game.map.id]||b.bossName);
+    b.maxHp*=3.1;b.hp=b.maxHp;b.damage*=1.58;b.speed*=1.15;b.baseSpeed=b.speed;b.r+=9;
+    b.color='#c34cff';b.v63Phase=0;b.v63BossT=1.35;b.v63BossT2=3.4;
+    b.shield=(b.shield||0)+b.maxHp*.1;b.maxShield=Math.max(b.maxShield||0,b.shield);
+    toast(`◆ 深淵領主降臨：${b.bossName}`);shake=20
+  }
+};
+
+const _v63BossSkill=bossSkill;
+bossSkill=function(e){
+  _v63BossSkill(e);
+  if(!e?.abyss||e.dead)return;
+  const p=nearestPlayer(e);if(!p)return;
+  const a=Math.atan2(p.y-e.y,p.x-e.x);
+  const rings=e.cataclysm?28:18;
+  for(let i=0;i<rings;i++)addEnemyBullet(e.x,e.y,i/rings*TAU+game.t*(e.cataclysm?.7:.4),e.cataclysm?265:225,e.damage*(e.cataclysm?.24:.20),e.cataclysm?6:5,e.cataclysm?'#ff4e86':'#c776ff');
+  for(let i=-3;i<=3;i++)addEnemyBullet(e.x,e.y,a+i*.095,e.cataclysm?355:295,e.damage*(e.cataclysm?.40:.34),5,'#fff0b0')
+};
+
+const _v63BossUpdate=updateEnemy;
+updateEnemy=function(e,dt){
+  _v63BossUpdate(e,dt);
+  if(!game||!e||e.dead||!e.abyss)return;
+  e.v63BossT=(e.v63BossT||1.3)-dt;
+  e.v63BossT2=(e.v63BossT2||3.2)-dt;
+  const ratio=e.hp/e.maxHp;
+  const p=nearestPlayer(e);
+
+  if(ratio<.75&&e.v63Phase<1){
+    e.v63Phase=1;e.damage*=1.13;e.speed*=1.08;
+    toast(e.cataclysm?'✹ 災厄第二權能：裂界':'◆ 深淵第二型態：侵蝕')
+  }
+  if(ratio<.5&&e.v63Phase<2){
+    e.v63Phase=2;e.damage*=1.14;e.speed*=1.08;
+    e.shield=(e.shield||0)+e.maxHp*(e.cataclysm?.13:.08);
+    toast(e.cataclysm?'✹ 災厄第三權能：不滅':'◆ 深淵第三型態：再構')
+  }
+  if(ratio<.25&&e.v63Phase<3){
+    e.v63Phase=3;e.damage*=1.18;e.speed*=1.1;
+    toast(e.cataclysm?'✹ 災厄最終權能：終焉':'◆ 深淵最終型態：暴走')
+  }
+
+  if(e.v63BossT<=0&&p){
+    e.v63BossT=e.cataclysm?(e.v63Phase>=3?.72:1.05):(e.v63Phase>=3?1.0:1.45);
+    const a=Math.atan2(p.y-e.y,p.x-e.x);
+    for(let i=-2;i<=2;i++)addEnemyBullet(e.x,e.y,a+i*.085,e.cataclysm?390:325,e.damage*.31,5,e.cataclysm?'#ff4e86':'#d697ff')
+  }
+  if(e.v63BossT2<=0){
+    e.v63BossT2=e.cataclysm?2.5:3.3;
+    if(e.cataclysm){
+      const elitePool=['voidblade','doomseer','singularity','bastion'];
+      for(let i=0;i<3;i++)game.enemies.push(makeEnemy(elitePool[Math.floor(Math.random()*elitePool.length)],{x:clamp(e.x+rand(-130,130),30,WORLD_W-30),y:clamp(e.y+rand(-130,130),30,WORLD_H-30)},1+game.wave*.035))
+    }else{
+      for(let i=0;i<2;i++)game.enemies.push(makeEnemy(Math.random()<.5?'voidblade':'echo',{x:clamp(e.x+rand(-100,100),30,WORLD_W-30),y:clamp(e.y+rand(-100,100),30,WORLD_H-30)},1+game.wave*.03))
+    }
+  }
+};
+
+const _v63KillEnemy=killEnemy;
+killEnemy=function(e,owner){
+  const abyss=!e.dead&&e.abyss,cat=!e.dead&&e.cataclysm;
+  _v63KillEnemy(e,owner);
+  if(!game||(!abyss&&!cat))return;
+  const target=owner||alivePlayers()[0];if(!target)return;
+  const drops=cat?4:3;
+  for(let i=0;i<drops;i++)v6Equip(target,v6MakeItem({type:'boss',apex:true,mutant:true}));
+  game.coins+=cat?120:70;
+  toast(cat?'✹ 災厄戰利品：傳說裝備 ×4 + 120 裂隙幣':'◆ 深淵戰利品：傳說裝備 ×3 + 70 裂隙幣')
+};
+
+const _v63SetupMode=setupMode;
+setupMode=function(){
+  _v63SetupMode();
+  $('modeBadge').textContent=playerCount===2?'2 PLAYERS / V6.3 ABYSS':'1 PLAYER / V6.3 ABYSS';
+  $('modeSubtitle').textContent='10 種新高階敵人 × APEX × 深淵領主 × 災厄帝王 × 套裝與轉職奧義'
+};
+
+const _v63HudText=v62HudText;
+v62HudText=function(){
+  const base=_v63HudText();
+  if(!game?.boss)return base;
+  if(game.boss.cataclysm)return base+'<br><b style="color:#ff4e86">✹ CATACLYSM EMPEROR / 災厄帝王</b>';
+  if(game.boss.abyss)return base+'<br><b style="color:#d477ff">◆ ABYSS LORD / 深淵領主</b>';
+  return base
+};
