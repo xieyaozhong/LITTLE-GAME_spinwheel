@@ -1,0 +1,35 @@
+function endGame(){if(!game||game.ended)return;game.ended=true;state='gameover';const earned=game.coins+Math.floor(game.wave*1.6)+Math.floor(game.score/2200);save.coins=(save.coins||0)+earned;save.totalKills=(save.totalKills||0)+game.kills;save.bestScore=Math.max(save.bestScore||0,Math.floor(game.score));save.bestWave=Math.max(save.bestWave||0,game.wave);persist();updateMenuStats();$('hud').hidden=true;$('endWave').textContent=game.wave;$('endScore').textContent=Math.floor(game.score).toLocaleString();$('endKills').textContent=game.kills;$('endCoins').textContent=earned;$('gameOverText').textContent=playerCount===2?'兩名玩家都被裂隙吞噬了':'你被裂隙吞噬了';$('gameover').classList.add('show')}
+
+function rect(a,b,w,h,col){ctx.fillStyle=col;ctx.fillRect(Math.round(a),Math.round(b),Math.round(w),Math.round(h))}
+function drawBackground(cx,cy,z){
+const m=game?.map||MAPS[mapChoice],l=cx-W/(2*z)-60,r=cx+W/(2*z)+60,t=cy-H/(2*z)-60,b=cy+H/(2*z)+60;ctx.fillStyle=m.bg;ctx.fillRect(l,t,r-l,b-t);const g=48,sx=Math.floor(l/g)*g,sy=Math.floor(t/g)*g;ctx.strokeStyle=m.grid;ctx.lineWidth=1;for(let q=sx;q<r;q+=g){ctx.beginPath();ctx.moveTo(q,t);ctx.lineTo(q,b);ctx.stroke()}for(let q=sy;q<b;q+=g){ctx.beginPath();ctx.moveTo(l,q);ctx.lineTo(r,q);ctx.stroke()}ctx.strokeStyle=m.accent+'55';ctx.lineWidth=4;ctx.strokeRect(0,0,WORLD_W,WORLD_H)
+}
+function drawHazard(h){
+ctx.save();let alpha=.18;if(h.telegraph>0)alpha=.08+.12*Math.sin(game.t*10);ctx.globalAlpha=alpha;
+if(h.type==='ice'){ctx.fillStyle='#7fdcff';ctx.beginPath();ctx.arc(h.x,h.y,h.r,0,TAU);ctx.fill()}
+if(h.type==='lava'){ctx.fillStyle=h.active?'#ff5d3f':'#ffb06a';ctx.beginPath();ctx.arc(h.x,h.y,h.r,0,TAU);ctx.fill()}
+if(h.type==='toxic'){ctx.fillStyle='#65ff8d';ctx.beginPath();ctx.arc(h.x,h.y,h.r,0,TAU);ctx.fill()}
+if(h.type==='void'){ctx.fillStyle='#c16cff';ctx.beginPath();ctx.arc(h.x,h.y,h.r,0,TAU);ctx.fill()}
+if(h.type==='wind'){ctx.strokeStyle='#ff8cc3';ctx.lineWidth=4;ctx.beginPath();ctx.arc(h.x,h.y,h.r,0,TAU);ctx.stroke()}
+ctx.restore()
+}
+function drawPlayer(p){
+ctx.save();ctx.translate(Math.round(p.x),Math.round(p.y));if(p.dead)ctx.globalAlpha=.32;else if(p.invuln>0&&((p.invuln*15)|0)%2===0)ctx.globalAlpha=.35;if(p.dashing>0){rect(-22,-6,14,12,p.color);rect(-34,-3,9,6,'rgba(255,255,255,.5)')}
+rect(-8,-9,16,18,p.color);rect(-5,-13,10,6,'#f7d2b7');rect(-6,9,5,6,'#392f72');rect(1,9,5,6,'#392f72');rect(-3,-8,2,2,'#17102f');rect(3,-8,2,2,'#17102f');
+if(p.hero==='ranger')rect(-9,-15,18,3,'#8dffde');if(p.hero==='knight'){rect(-10,-15,20,4,'#c4c9ff');rect(7,-3,7,13,'#ffd166')}if(p.hero==='mage'){rect(-12,-17,24,5,'#7d53d9');rect(-5,-21,10,5,'#b586ff')}if(p.hero==='support'){rect(-10,-16,20,4,'#a6ffd0');rect(-3,-21,6,7,'#fff2a0')}if(p.hero==='shadow'){rect(-12,-15,24,3,'#7da7ff');rect(8,-2,8,3,'#d9e5ff')}if(p.hero==='engineer'){rect(-10,-16,20,5,'#ffb45f');rect(7,-4,7,9,'#7b4d2e')}if(p.hero==='elementalist'){rect(-12,-16,24,4,'#ff78b7');rect(-3,-21,6,6,'#ffe16d')}ctx.restore();
+ctx.font='bold 10px Courier New';ctx.textAlign='center';ctx.fillStyle=p.id===1?'#5ce1e6':'#ffd166';ctx.fillText(playerCount===2?'P'+p.id:p.name,p.x,p.y-25);if(p.shield>0){ctx.strokeStyle='rgba(125,255,178,.65)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(p.x,p.y,19,0,TAU);ctx.stroke()}if(p.drones)for(let i=0;i<p.drones;i++){const a=p.droneA+i/p.drones*TAU,ox=p.x+Math.cos(a)*54,oy=p.y+Math.sin(a)*54;rect(ox-5,oy-4,10,8,'#7dffb2')}
+}
+function drawEnemy(e){
+const col=e.hit?'#ffffff':e.color;if(e.type==='boss'){rect(e.x-e.r*.8,e.y-e.r*.7,e.r*1.6,e.r*1.4,col);rect(e.x-e.r-5,e.y-10,8,25,'#7b1f71');rect(e.x+e.r-3,e.y-10,8,25,'#7b1f71');if(e.mutant){ctx.strokeStyle='#ff8be7';ctx.lineWidth=4;ctx.beginPath();ctx.arc(e.x,e.y,e.r+9,0,TAU);ctx.stroke()}}
+else if(e.type==='tank'||e.type==='shielder'||e.type==='charger'){rect(e.x-13,e.y-13,26,26,col);if(e.type==='shielder'&&e.shield>0){ctx.strokeStyle='#a8f4ff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(e.x,e.y,19,0,TAU);ctx.stroke()}}
+else if(['shooter','sniper','frost','artillery'].includes(e.type)){rect(e.x-9,e.y-10,18,20,col);rect(e.x+7,e.y-4,12,5,e.type==='sniper'?'#fff0a6':e.type==='frost'?'#d9fbff':'#ffd29b')}
+else if(e.type==='assassin'||e.type==='blink'){rect(e.x-7,e.y-8,14,16,col);rect(e.x-12,e.y-2,8,4,'#d7f0ff')}
+else if(e.type==='bomber'){rect(e.x-10,e.y-10,20,20,col);rect(e.x-3,e.y-3,6,6,'#fff2a1')}
+else if(e.type==='healer'){rect(e.x-9,e.y-11,18,22,col);rect(e.x-2,e.y-16,4,9,'#fff')}
+else if(e.type==='summoner'||e.type==='reflector'){rect(e.x-11,e.y-12,22,24,col);ctx.strokeStyle=e.type==='reflector'?'#f7e2ff':'#f0c2ff';ctx.beginPath();ctx.arc(e.x,e.y,17,0,TAU);ctx.stroke()}
+else{rect(e.x-e.r+2,e.y-e.r+2,(e.r-2)*2,(e.r-2)*2,col)}
+if(e.type==='boss'||['tank','shielder','charger'].includes(e.type)){const w=e.r*2;rect(e.x-w/2,e.y-e.r-8,w,3,'#35142f');rect(e.x-w/2,e.y-e.r-8,w*clamp(e.hp/e.maxHp,0,1),3,e.color)}
+}
+function drawParticle(q){const a=clamp(q.life/q.max,0,1);ctx.globalAlpha=a;if(q.type==='dot')rect(q.x,q.y,q.size,q.size,q.color);else if(q.type==='line'){ctx.strokeStyle=q.color;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(q.x,q.y);ctx.lineTo(q.x2,q.y2);ctx.stroke()}else if(q.type==='ring'){ctx.strokeStyle=q.color;ctx.lineWidth=5;ctx.beginPath();ctx.arc(q.x,q.y,q.r,0,TAU);ctx.stroke()}ctx.globalAlpha=1}
+function draw(){
+const sx=shake?rand(-shake,shake):0,sy=shake?rand(-shake,shake):0;ctx.save();ctx.translate(W/2+sx,H/2+sy);const z=game?game.camera.zoom:.76;ctx.scale(z,z);const cx=game?game.camera.x:WORLD_W/2,cy=game?game.camera.y:WORLD_H/2;ctx.translate(-cx,-cy);drawBackground(cx,cy,z);
