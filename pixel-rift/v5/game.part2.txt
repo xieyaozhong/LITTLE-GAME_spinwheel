@@ -1,0 +1,69 @@
+shielder:{name:'結晶盾衛',r:13,hp:84,speed:46,damage:14,color:'#7ce7ff',xp:13,score:265},
+blink:{name:'相位獵手',r:9,hp:45,speed:68,damage:18,color:'#b77cff',xp:12,score:280},
+leech:{name:'血噬蟲',r:10,hp:55,speed:76,damage:13,color:'#ff6684',xp:11,score:240},
+frost:{name:'霜咒師',r:10,hp:48,speed:43,damage:12,color:'#78dfff',xp:12,score:270},
+artillery:{name:'裂隙砲台',r:13,hp:76,speed:26,damage:24,color:'#ff9f62',xp:15,score:330},
+reflector:{name:'鏡甲體',r:12,hp:68,speed:52,damage:13,color:'#e1b4ff',xp:14,score:310},
+charger:{name:'鋼角衝獸',r:14,hp:92,speed:55,damage:23,color:'#ffc267',xp:14,score:320},
+mini:{name:'幼裂體',r:6,hp:16,speed:108,damage:7,color:'#a7ffb7',xp:3,score:55}
+};
+
+const BOSS_TYPES=[
+{id:'warden',name:'裂隙守門者',color:'#ff3e87',hp:760,speed:46,damage:26,skill:'環形彈幕＋衝撞'},
+{id:'storm',name:'暴雷暴君',color:'#6ec8ff',hp:680,speed:55,damage:23,skill:'旋轉雷暴'},
+{id:'brood',name:'孢巢母皇',color:'#78ff9e',hp:820,speed:39,damage:24,skill:'大量召喚'},
+{id:'bishop',name:'虛空主教',color:'#c68cff',hp:720,speed:44,damage:22,skill:'治療儀式＋祭司'},
+{id:'behemoth',name:'鋼骸巨像',color:'#ffd166',hp:980,speed:34,damage:32,skill:'震地重擊'},
+{id:'reaper',name:'相位收割者',color:'#8a8cff',hp:790,speed:68,damage:28,skill:'瞬移連斬'},
+{id:'core',name:'災厄機核',color:'#ff8a55',hp:900,speed:30,damage:26,skill:'砲擊＋地雷'}
+];
+const MUTATIONS=[
+{id:'vamp',name:'吸血',desc:'造成傷害時回復生命'},
+{id:'volatile',name:'爆燃',desc:'更頻繁釋放環形彈幕'},
+{id:'temporal',name:'超時',desc:'技能與射擊速度大幅提升'},
+{id:'fortified',name:'晶甲',desc:'半血時重構護甲並恢復生命'},
+{id:'swarm',name:'蟲群',desc:'持續召喚護衛'},
+{id:'berserk',name:'狂暴',desc:'半血後移速與傷害大幅提升'}
+];
+
+let p1Choice=0,p2Choice=3,mapChoice=0,state='menu',game=null,last=performance.now(),shake=0,flash=0,keys={};
+
+function updateMenuStats(){$('bestScore').textContent=(save.bestScore||0).toLocaleString();$('bestWave').textContent=save.bestWave||0;$('bankCoins').textContent=save.coins||0;$('totalKills').textContent=(save.totalKills||0).toLocaleString()}
+function renderMaps(){const root=$('mapSelect');root.innerHTML='';MAPS.forEach((m,i)=>{const el=document.createElement('div');el.className='map-card'+(i===mapChoice?' selected':'');el.innerHTML=`<strong>${m.name}</strong><span>${m.desc}</span><i>${m.hazard}</i>`;el.onclick=()=>{mapChoice=i;renderMaps()};root.appendChild(el)})}
+function updateHeroUI(){const a=HEROES[p1Choice],b=HEROES[p2Choice];$('p1HeroName').textContent=a.name;$('p1HeroDesc').textContent=a.desc;$('p1HeroFlow').textContent=a.flow;$('p2HeroName').textContent=b.name;$('p2HeroDesc').textContent=b.desc;$('p2HeroFlow').textContent=b.flow}
+function setupMode(){
+$('modeSubtitle').textContent=playerCount===2?'同畫面合作 × 7 職業 × 5 地圖 × 多種敵人 AI × 變異魔王':'7 職業專屬流派 × 5 張環境地圖 × 16 種敵人 × 多關主 × 變異魔王';
+$('modeBadge').textContent=playerCount===2?'2 PLAYERS / V5 LOCAL CO-OP':'1 PLAYER / V5 SOLO';
+$('p2Card').style.display=playerCount===2?'block':'none';$('p2Help').style.display=playerCount===2?'block':'none';
+$('selectors').style.gridTemplateColumns=playerCount===2?'repeat(2,1fr)':'1fr';$('controlsGrid').style.gridTemplateColumns=playerCount===2?'repeat(2,1fr)':'1fr';
+$('p2Status').style.display=playerCount===2?'block':'none';$('p1Status').classList.toggle('single',playerCount===1);
+$('startBtn').textContent=playerCount===2?'開始雙人裂隙':'開始單人裂隙';
+$('upgradeSubtitle').textContent=playerCount===2?'通用升級共享；職業專屬升級只套用到對應角色':'通用與職業專屬升級混合出現，形成單人 Build'
+}
+
+function makePlayer(hero,index,x,y){return{
+id:index,hero:hero.id,name:hero.name,x,y,r:10,hp:hero.hp,maxHp:hero.hp,shield:0,speed:hero.speed,damage:hero.damage,rate:hero.rate,color:hero.color,pierce:hero.pierce,crit:hero.crit,
+projectiles:1,magnet:95,armor:0,shotT:0,shotCount:0,dashCd:0,dashing:0,dx:0,dy:0,invuln:0,dead:false,revive:0,gpDash:false,
+gale:0,hunterMark:0,hunterT:0,thorns:0,fortress:0,chain:0,nova:0,novaTimer:0,pulseCd:5.3,pulseTimer:1.2,pulseHeal:.035,pulseDamage:1.15,pulseRadius:170,pulseShield:0,drones:0,droneT:0,droneA:0,
+dashStrike:0,execute:0,shadowTempo:0,shadowTempoT:0,turretMax:hero.id==='engineer'?1:0,turretDamage:1,mineCd:hero.id==='engineer'?6:999,mineTimer:2.5,mineDamage:1,
+elementIndex:0,burnPower:1,frostPower:.62,frostDuration:1.8,elementChain:.25,slowT:0,slowFactor:1,mapSlow:1
+}}
+
+function newGame(){
+const cx=WORLD_W/2,cy=WORLD_H/2,players=[makePlayer(HEROES[p1Choice],1,cx-(playerCount===2?28:0),cy)];
+if(playerCount===2)players.push(makePlayer(HEROES[p2Choice],2,cx+28,cy));
+game={t:0,wave:1,waveT:0,waveLen:27,spawnT:0,score:0,kills:0,coins:0,xp:0,xpNeed:22,level:1,players,enemies:[],bullets:[],enemyBullets:[],gems:[],particles:[],texts:[],hazards:[],turrets:[],mines:[],camera:{x:cx,y:cy,zoom:.76},boss:null,ended:false,map:MAPS[mapChoice],hazardT:3.5};
+state='playing';$('menu').classList.remove('show');$('gameover').classList.remove('show');$('pause').classList.remove('show');$('hud').hidden=false;
+$('mapHud').textContent=game.map.name+' / '+game.map.hazard;
+setupMapHazards();
+for(let i=0;i<18;i++)spawnEnemy(true);
+last=performance.now();toast(`${game.map.name}：${playerCount===2?'雙人裂隙':'裂隙'}已開啟！`)
+}
+
+function alivePlayers(){return game.players.filter(p=>!p.dead)}
+function centerPlayers(){const a=alivePlayers();if(!a.length)return{x:WORLD_W/2,y:WORLD_H/2};return{x:a.reduce((s,p)=>s+p.x,0)/a.length,y:a.reduce((s,p)=>s+p.y,0)/a.length}}
+function nearestPlayer(from){let t=null,b=Infinity;for(const p of alivePlayers()){const q=d2(from,p);if(q<b){b=q;t=p}}return t}
+function spawnPoint(initial=false){const ctr=centerPlayers(),z=game.camera.zoom,viewR=Math.hypot(W/z,H/z)/2,a=Math.random()*TAU,r=initial?rand(190,440):rand(viewR*.8,viewR*1.08);return{x:clamp(ctr.x+Math.cos(a)*r,35,WORLD_W-35),y:clamp(ctr.y+Math.sin(a)*r,35,WORLD_H-35)}}
+
+function availableEnemyTypes(){
+const w=game.wave,a=['chaser'];if(w>=2)a.push('shooter');if(w>=3)a.push('tank','splitter');if(w>=4)a.push('assassin');if(w>=5)a.push('bomber','shielder');if(w>=6)a.push('healer','blink');if(w>=7)a.push('sniper','leech');if(w>=8)a.push('summoner','frost');if(w>=9)a.push('artillery');if(w>=10)a.push('reflector');if(w>=11)a.push('charger');
