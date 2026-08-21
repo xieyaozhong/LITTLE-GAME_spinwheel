@@ -1,0 +1,65 @@
+for(const t of game.map.enemyBias)if(!a.includes(t)&&ENEMY_DEFS[t])a.push(t,t);
+return a
+}
+function makeEnemy(type,pos,scale=1){const d=ENEMY_DEFS[type];return{
+x:pos.x,y:pos.y,type,name:d.name,r:d.r,hp:d.hp*scale,maxHp:d.hp*scale,speed:d.speed*(1+game.wave*.018),baseSpeed:d.speed*(1+game.wave*.018),damage:d.damage*(1+game.wave*.06),color:d.color,xp:d.xp,score:d.score,
+shotT:rand(.6,1.8),skillT:rand(1.5,3.5),chargeT:rand(1.2,2.5),dashT:0,healT:2.5,summonT:3.2,blinkT:2.6,shieldT:0,shield:type==='shielder'?d.hp*scale*.55:0,maxShield:type==='shielder'?d.hp*scale*.55:0,
+burnT:0,burnDps:0,slowT:0,slowFactor:1,reflectCd:0,dead:false,hit:0
+}}
+function spawnEnemy(initial=false,type=null){if(!game)return;const list=availableEnemyTypes();type=type||list[Math.floor(Math.random()*list.length)];const scale=(1+(game.wave-1)*.115)*(type==='mini'?.75:1);game.enemies.push(makeEnemy(type,spawnPoint(initial),scale))}
+function spawnBoss(){
+const idx=Math.floor(game.wave/5-1)%BOSS_TYPES.length,b=BOSS_TYPES[idx],mutant=game.wave%15===0,scale=Math.pow(1.31,Math.floor(game.wave/5)-1)*(playerCount===2?1.55:1);
+let hp=b.hp*scale;if(mutant)hp*=3.2;const pos=spawnPoint(false),boss={x:pos.x,y:pos.y,type:'boss',bossKind:b.id,bossName:(mutant?'變異·':'')+b.name,r:mutant?39:31,hp,maxHp:hp,speed:b.speed*(mutant?1.1:1),baseSpeed:b.speed*(mutant?1.1:1),damage:b.damage*(1+game.wave*.055)*(mutant?1.45:1),color:mutant?'#ff4ad8':b.color,baseDamage:b.damage*(1+game.wave*.055)*(mutant?1.45:1),xp:mutant?250:105,score:mutant?12500:3400,shotT:.8,skillT:2.2,burstT:2.7,summonT:3.3,phase2:false,mutant,mutations:[],armorRebuilt:false,dead:false,hit:0,burnT:0,burnDps:0,slowT:0,slowFactor:1};
+if(mutant){const pool=[...MUTATIONS];for(let i=0;i<2;i++)boss.mutations.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0])}
+game.enemies.push(boss);game.boss=boss;toast(mutant?'☠ 變異魔王降臨：'+boss.bossName:'⚠ 關主降臨：'+boss.bossName);shake=12
+}
+function nearestEnemy(from,exclude=null,max=Infinity){let t=null,b=max*max;for(const e of game.enemies){if(e.dead||e===exclude)continue;const q=d2(from,e);if(q<b){b=q;t=e}}return t}
+
+function fire(p){
+const target=nearestEnemy(p);if(!target)return;let count=p.projectiles;p.shotCount++;
+if(p.hero==='ranger'&&p.gale&&p.shotCount%10===0)count+=2*p.gale;
+const base=Math.atan2(target.y-p.y,target.x-p.x),spread=.13;
+for(let i=0;i<count;i++){
+const a=base+(i-(count-1)/2)*spread,special=p.hero==='ranger'&&p.shotCount%6===0;
+let element=null,color=special?'#fff6a6':p.color;
+if(p.hero==='elementalist'){element=['fire','frost','storm'][p.elementIndex%3];p.elementIndex++;color=element==='fire'?'#ff765c':element==='frost'?'#78dfff':'#ffe16d'}
+game.bullets.push({owner:p,x:p.x,y:p.y,vx:Math.cos(a)*435,vy:Math.sin(a)*435,r:special?5:3,damage:p.damage*(special?1.55:1),pierce:p.pierce+(special?2:0),life:1.75,hit:new Set(),color,element})
+}}
+function fireDrone(p){if(!p.drones)return;p.droneA+=.7;for(let i=0;i<p.drones;i++){const a=p.droneA+i/p.drones*TAU,ox=p.x+Math.cos(a)*54,oy=p.y+Math.sin(a)*54,t=nearestEnemy({x:ox,y:oy},null,700);if(t){const q=Math.atan2(t.y-oy,t.x-ox);game.bullets.push({owner:p,x:ox,y:oy,vx:Math.cos(q)*390,vy:Math.sin(q)*390,r:2.5,damage:p.damage*.52,pierce:0,life:1.5,hit:new Set(),color:'#9fffd0',element:null})}}}
+function addEnemyBullet(x,y,a,speed,damage,r=4,color='#ffb15c',effect=null){game.enemyBullets.push({x,y,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,r,damage,life:5,color,effect})}
+
+function shootEnemy(e){
+const p=nearestPlayer(e);if(!p)return;const a=Math.atan2(p.y-e.y,p.x-e.x),mult=e.mutant&&e.mutations.some(m=>m.id==='temporal')?.72:1;
+if(e.type==='boss'){
+if(e.bossKind==='storm'){for(let i=0;i<7;i++)addEnemyBullet(e.x,e.y,a+(i-3)*.14,210,e.damage*.48,4,'#78cfff')}
+else if(e.bossKind==='core'){for(let i=-1;i<=1;i++)addEnemyBullet(e.x,e.y,a+i*.1,260,e.damage*.6,5,'#ff9a62')}
+else{for(let i=-2;i<=2;i++)addEnemyBullet(e.x,e.y,a+i*.18,180,e.damage*.55,5,e.color)}
+e.shotT=(e.phase2?.72:1.05)*mult
+}else if(e.type==='sniper'){addEnemyBullet(e.x,e.y,a,320,e.damage,4,'#ffe39a');e.shotT=3}
+else if(e.type==='frost'){addEnemyBullet(e.x,e.y,a,170,e.damage,5,'#8ee8ff','slow');e.shotT=2.4}
+else if(e.type==='artillery'){addEnemyBullet(e.x,e.y,a,110,e.damage,7,'#ff9c5c','blast');e.shotT=3.2}
+else{addEnemyBullet(e.x,e.y,a,150,e.damage,4,e.color);e.shotT=2.1}
+}
+function damagePlayersInRadius(x,y,r,damage,source){for(const p of alivePlayers())if(d2(p,{x,y})<(p.r+r)**2)hurt(p,damage,x,y,source)}
+
+function hurt(p,amount,ex,ey,source=null){
+if(p.dead||p.invuln>0||p.dashing>0)return 0;let reduction=p.armor;
+if(p.hero==='knight'&&p.hp/p.maxHp<.45)reduction=Math.min(.75,reduction+p.fortress);
+let dealt=amount*(1-reduction);if(p.shield>0){const s=Math.min(p.shield,dealt);p.shield-=s;dealt-=s}
+if(dealt>0)p.hp-=dealt;p.invuln=.7;shake=7;flash=.08;
+const a=Math.atan2(p.y-ey,p.x-ex);p.x+=Math.cos(a)*10;p.y+=Math.sin(a)*10;
+if(source&&p.thorns)damageEnemy(source,amount*p.thorns,p,false);
+if(p.hero==='knight')for(const e of game.enemies)if(!e.dead&&d2(p,e)<75*75)damageEnemy(e,p.damage*.7,p,false);
+if(source?.type==='leech'&&dealt>0)source.hp=Math.min(source.maxHp,source.hp+dealt*.75);
+if(source?.mutant&&source.mutations.some(m=>m.id==='vamp')&&dealt>0)source.hp=Math.min(source.maxHp,source.hp+dealt*.55);
+if(p.hp<=0){p.hp=0;p.dead=true;p.revive=0;if(!alivePlayers().length)endGame()}return dealt
+}
+
+function chainFrom(e,owner,damage,chance=null){const ch=chance??owner.chain;if(!ch)return;if(Math.random()<ch){const n=nearestEnemy(e,e,160);if(n){game.particles.push({type:'line',x:e.x,y:e.y,x2:n.x,y2:n.y,life:.13,max:.13,color:'#a6fbff'});damageEnemy(n,damage*.55,owner,false)}}}
+function damageEnemy(e,amount,owner,canChain=true){
+if(e.dead)return;
+let raw=amount;
+if(owner?.execute&&e.hp/e.maxHp<owner.execute)raw*=2.5;
+const crit=Math.random()<(owner?.crit||0);let d=raw*(crit?2:1);
+if(e.shield>0){const s=Math.min(e.shield,d);e.shield-=s;d-=s}
+if(d>0)e.hp-=d;e.hit=.08;burst(e.x,e.y,crit?'#ffe36e':e.color,crit?7:3);
