@@ -1,0 +1,104 @@
+// PIXEL RIFT V6.4 addon: expanded build paths + two-stage ascensions
+const V64_UPGRADES={
+ranger:[
+ U('v64_r_spread','暴風散射','額外 +2 發，單發傷害 -8%','遊俠・散射流',p=>{p.projectiles=Math.min(10,p.projectiles+2);p.damage*=.92},['ranger']),
+ U('v64_r_pierce','裂界箭芯','穿透 +2，傷害 +18%','遊俠・穿透流',p=>{p.pierce+=2;p.damage*=1.18},['ranger']),
+ U('v64_r_crit','鷹眼共振','爆擊 +16%，獵風增益強化','遊俠・爆擊流',p=>{p.crit=Math.min(.9,p.crit+.16);p.hunterMark+=.18},['ranger']),
+ U('v64_r_gale','無盡颶風','颶風 +1，射速 +12%','遊俠・颶風流',p=>{p.gale=Math.min(5,p.gale+1);p.rate*=1.12},['ranger']),
+ U('v64_r_hunt','獵王節拍','移速 +18%，傷害 +15%','遊俠・機動流',p=>{p.speed*=1.18;p.damage*=1.15},['ranger'])],
+knight:[
+ U('v64_k_wall','王城重甲','最大生命 +55，護甲 +10%','騎士・壁壘流',p=>{p.maxHp+=55;p.hp+=55;p.armor=Math.min(.72,p.armor+.1)},['knight']),
+ U('v64_k_thorn','荊棘王冠','反傷 +70%，傷害 +10%','騎士・反擊流',p=>{p.thorns+=.7;p.damage*=1.1},['knight']),
+ U('v64_k_fury','破城狂怒','傷害 +32%，射速 +15%','騎士・狂戰流',p=>{p.damage*=1.32;p.rate*=1.15},['knight']),
+ U('v64_k_guard','守誓核心','低血減傷 +16%，生命 +30','騎士・守誓流',p=>{p.fortress=Math.min(.62,p.fortress+.16);p.maxHp+=30;p.hp+=30},['knight']),
+ U('v64_k_charge','鋼鐵突進','移速 +20%，衝刺獲得護盾','騎士・衝鋒流',p=>{p.speed*=1.2;p.v64DashShield=(p.v64DashShield||0)+18},['knight'])],
+mage:[
+ U('v64_m_chain','雷海連鎖','連鎖 +24%，傷害 +12%','法師・雷鏈流',p=>{p.chain=Math.min(.96,p.chain+.24);p.damage*=1.12},['mage']),
+ U('v64_m_nova','星爆循環','星爆冷卻 -28%，威力 +35%','法師・星爆流',p=>{p.nova=Math.max(1.8,(p.nova||6)*.72);p.v64NovaPower=(p.v64NovaPower||1)*1.35},['mage']),
+ U('v64_m_pierce','虛空棱鏡','穿透 +2，額外 +1 發','法師・棱鏡流',p=>{p.pierce+=2;p.projectiles++},['mage']),
+ U('v64_m_crit','天體演算','爆擊 +18%，傷害 +18%','法師・爆發流',p=>{p.crit=Math.min(.9,p.crit+.18);p.damage*=1.18},['mage']),
+ U('v64_m_speed','瞬星步','移速 +22%，射速 +18%','法師・瞬星流',p=>{p.speed*=1.22;p.rate*=1.18},['mage'])],
+support:[
+ U('v64_s_heal','聖泉共鳴','治療 +3.5%，脈衝冷卻 -15%','司祭・治療流',p=>{p.pulseHeal+=.035;p.pulseCd=Math.max(1.8,p.pulseCd*.85)},['support']),
+ U('v64_s_shield','聖盾和弦','脈衝護盾 +24，護甲 +6%','司祭・護盾流',p=>{p.pulseShield+=24;p.armor=Math.min(.65,p.armor+.06)},['support']),
+ U('v64_s_drone','六翼共鳴','浮游機 +2，傷害 +12%','司祭・浮游機流',p=>{p.drones=Math.min(7,p.drones+2);p.damage*=1.12},['support']),
+ U('v64_s_battle','戰歌高鳴','脈衝傷害 ×1.5，射速 +20%','司祭・戰歌流',p=>{p.pulseDamage*=1.5;p.rate*=1.2},['support']),
+ U('v64_s_solo','獨奏聖域','脈衝半徑 +60，傷害 +18%','司祭・聖域流',p=>{p.pulseRadius+=60;p.damage*=1.18},['support'])],
+shadow:[
+ U('v64_sh_exec','赤月斬殺','處刑線 +7%，傷害 +16%','刺客・處刑流',p=>{p.execute=Math.min(.42,Math.max(p.execute,.22)+.07);p.damage*=1.16},['shadow']),
+ U('v64_sh_dash','百影瞬斬','衝刺斬 +1.2，移速 +15%','刺客・瞬斬流',p=>{p.dashStrike+=1.2;p.speed*=1.15},['shadow']),
+ U('v64_sh_crit','死線洞察','爆擊 +20%，射速 +12%','刺客・爆擊流',p=>{p.crit=Math.min(.94,p.crit+.2);p.rate*=1.12},['shadow']),
+ U('v64_sh_tempo','夜行連段','衝刺後射速增益 +25%','刺客・連段流',p=>p.shadowTempo+=.25,['shadow']),
+ U('v64_sh_blood','血影契約','生命 +35，傷害 +25%','刺客・血影流',p=>{p.maxHp+=35;p.hp+=35;p.damage*=1.25},['shadow'])],
+engineer:[
+ U('v64_e_turret','砲塔矩陣','砲塔上限 +2','工程師・砲塔流',p=>p.turretMax=Math.min(8,p.turretMax+2),['engineer']),
+ U('v64_e_power','磁軌超載','砲塔傷害 +55%','工程師・磁軌流',p=>p.turretDamage*=1.55,['engineer']),
+ U('v64_e_mine','連鎖爆破','地雷傷害 +70%，部署加速','工程師・爆破流',p=>{p.mineDamage*=1.7;p.mineCd=Math.max(1.25,p.mineCd*.7)},['engineer']),
+ U('v64_e_weapon','戰地工程','主武器傷害 +28%，射速 +16%','工程師・槍械流',p=>{p.damage*=1.28;p.rate*=1.16},['engineer']),
+ U('v64_e_fort','機械堡壘','生命 +45，護甲 +8%','工程師・堡壘流',p=>{p.maxHp+=45;p.hp+=45;p.armor=Math.min(.68,p.armor+.08)},['engineer'])],
+elementalist:[
+ U('v64_el_fire','煉獄相位','燃燒 ×1.8，傷害 +12%','元素使・火焰流',p=>{p.burnPower*=1.8;p.damage*=1.12},['elementalist']),
+ U('v64_el_frost','絕對零度','冰霜更強，生命 +24','元素使・寒冰流',p=>{p.frostPower=Math.max(.25,p.frostPower-.12);p.frostDuration+=1;p.maxHp+=24;p.hp+=24},['elementalist']),
+ U('v64_el_storm','萬雷共鳴','雷鏈 +32%，射速 +14%','元素使・雷霆流',p=>{p.elementChain=Math.min(.98,p.elementChain+.32);p.rate*=1.14},['elementalist']),
+ U('v64_el_tri','三相輪轉','額外 +1 發，穿透 +1','元素使・三相流',p=>{p.projectiles++;p.pierce++},['elementalist']),
+ U('v64_el_tempest','天候暴走','傷害 +22%，移速 +18%','元素使・天候流',p=>{p.damage*=1.22;p.speed*=1.18},['elementalist'])]
+};
+for(const list of Object.values(V64_UPGRADES))UPGRADES.push(...list);
+
+const V64_FIRST_EXTRA={
+ranger:[
+ {name:'彈幕統帥',desc:'額外 +3 發、射速 +22%、颶風 +2',apply:p=>{p.projectiles+=3;p.rate*=1.22;p.gale=Math.min(6,p.gale+2)}},
+ {name:'蒼穹追獵者',desc:'移速 +30%、爆擊 +18%、傷害 +24%',apply:p=>{p.speed*=1.3;p.crit=Math.min(.94,p.crit+.18);p.damage*=1.24}}],
+knight:[
+ {name:'荊棘君王',desc:'反傷 +180%、護甲 +12%、生命 +50',apply:p=>{p.thorns+=1.8;p.armor=Math.min(.74,p.armor+.12);p.maxHp+=50;p.hp+=50}},
+ {name:'破軍霸主',desc:'傷害 +60%、射速 +28%、移速 +18%',apply:p=>{p.damage*=1.6;p.rate*=1.28;p.speed*=1.18}}],
+mage:[
+ {name:'雷霆聖典',desc:'連鎖 +45%、射速 +24%、傷害 +20%',apply:p=>{p.chain=Math.min(.98,p.chain+.45);p.rate*=1.24;p.damage*=1.2}},
+ {name:'天穹星術師',desc:'星爆大幅加速、爆擊 +22%、傷害 +32%',apply:p=>{p.nova=Math.max(1.6,(p.nova||5)*.55);p.crit=Math.min(.94,p.crit+.22);p.damage*=1.32}}],
+support:[
+ {name:'聖域守護者',desc:'護盾 +45、生命 +70、治療強化',apply:p=>{p.pulseShield+=45;p.maxHp+=70;p.hp+=70;p.pulseHeal+=.045}},
+ {name:'天啟樂師',desc:'浮游機 +3、傷害 +32%、脈衝 ×1.7',apply:p=>{p.drones=Math.min(8,p.drones+3);p.damage*=1.32;p.pulseDamage*=1.7}}],
+shadow:[
+ {name:'千影夜主',desc:'衝刺斬 +3、移速 +28%、射速 +20%',apply:p=>{p.dashStrike+=3;p.speed*=1.28;p.rate*=1.2}},
+ {name:'冥河獵首者',desc:'處刑線 40%、爆擊 +25%、傷害 +38%',apply:p=>{p.execute=Math.max(p.execute,.4);p.crit=Math.min(.95,p.crit+.25);p.damage*=1.38}}],
+engineer:[
+ {name:'鋼鐵蜂巢',desc:'砲塔 +3、砲塔傷害 +35%、護甲 +8%',apply:p=>{p.turretMax=Math.min(9,p.turretMax+3);p.turretDamage*=1.35;p.armor=Math.min(.7,p.armor+.08)}},
+ {name:'末日軍械師',desc:'地雷 ×2.4、主武器傷害 +38%',apply:p=>{p.mineDamage*=2.4;p.mineCd=Math.max(1.1,p.mineCd*.5);p.damage*=1.38}}],
+elementalist:[
+ {name:'煉獄冰冠',desc:'火焰 ×2、冰霜強化、傷害 +25%',apply:p=>{p.burnPower*=2;p.frostPower=Math.max(.22,p.frostPower-.18);p.frostDuration+=1.2;p.damage*=1.25}},
+ {name:'萬雷天候使',desc:'雷鏈 +45%、射速 +25%、額外 +1 發',apply:p=>{p.elementChain=Math.min(.99,p.elementChain+.45);p.rate*=1.25;p.projectiles++}}]
+};
+for(const [hero,list] of Object.entries(V64_FIRST_EXTRA))V6_ASCENSIONS[hero].push(...list);
+
+const V64_FINAL={
+ranger:[
+ {suffix:'・神化',desc:'彈幕與射速極限昇華',apply:p=>{p.projectiles+=2;p.rate*=1.32;p.gale=Math.min(8,p.gale+1)}},
+ {suffix:'・極化',desc:'單體傷害與爆擊極限昇華',apply:p=>{p.damage*=1.52;p.crit=Math.min(.99,p.crit+.24);p.pierce+=2}}],
+knight:[
+ {suffix:'・神化',desc:'生命、防禦與反傷極限昇華',apply:p=>{p.maxHp+=130;p.hp+=130;p.armor=Math.min(.78,p.armor+.1);p.thorns+=1.2}},
+ {suffix:'・極化',desc:'狂戰火力極限昇華',apply:p=>{p.damage*=1.62;p.rate*=1.28;p.speed*=1.16}}],
+mage:[
+ {suffix:'・神化',desc:'星爆與連鎖極限昇華',apply:p=>{p.nova=Math.max(1.1,(p.nova||4)*.62);p.chain=Math.min(.99,p.chain+.28);p.damage*=1.3}},
+ {suffix:'・極化',desc:'穿透、爆擊與主炮極限昇華',apply:p=>{p.pierce+=3;p.crit=Math.min(.99,p.crit+.24);p.damage*=1.48}}],
+support:[
+ {suffix:'・神化',desc:'治療、護盾與生存極限昇華',apply:p=>{p.pulseHeal+=.07;p.pulseShield+=65;p.maxHp+=90;p.hp+=90}},
+ {suffix:'・極化',desc:'戰歌與浮游火力極限昇華',apply:p=>{p.pulseDamage*=2;p.damage*=1.4;p.drones=Math.min(12,p.drones+4);p.rate*=1.2}}],
+shadow:[
+ {suffix:'・神化',desc:'衝刺、機動與連段極限昇華',apply:p=>{p.dashStrike+=3;p.speed*=1.32;p.rate*=1.28}},
+ {suffix:'・極化',desc:'斬殺、爆擊與傷害極限昇華',apply:p=>{p.execute=Math.max(p.execute,.48);p.crit=Math.min(.99,p.crit+.3);p.damage*=1.48}}],
+engineer:[
+ {suffix:'・神化',desc:'砲塔軍團極限昇華',apply:p=>{p.turretMax=Math.min(14,p.turretMax+4);p.turretDamage*=1.9;p.armor=Math.min(.75,p.armor+.06)}},
+ {suffix:'・極化',desc:'地雷與主武器極限昇華',apply:p=>{p.mineDamage*=2.8;p.mineCd=Math.max(.8,p.mineCd*.58);p.damage*=1.52;p.rate*=1.18}}],
+elementalist:[
+ {suffix:'・神化',desc:'三相元素與雷鏈極限昇華',apply:p=>{p.projectiles+=2;p.elementChain=Math.min(.99,p.elementChain+.3);p.rate*=1.26}},
+ {suffix:'・極化',desc:'火冰雙極與元素傷害極限昇華',apply:p=>{p.burnPower*=2;p.frostPower=Math.max(.16,p.frostPower-.14);p.damage*=1.52;p.pierce+=1}}]
+};
+
+v6ShowAscension=function(){state='upgrade';game.v6.ascended=true;game.v64=game.v64||{};$('upgradeSubtitle').textContent='V6.4 一轉：每職業 4 條道路；Lv28 再進行終階二轉';const root=$('upgradeCards');root.innerHTML='';['A','B','C','D'].forEach((label,idx)=>{const el=document.createElement('article');el.className='upgrade';const lines=game.players.map(p=>{const a=V6_ASCENSIONS[p.hero]?.[idx];return a?`<b>${p.name} → ${a.name}</b><br><small>${a.desc}</small>`:''}).join('<hr>');el.innerHTML=`<h3>一轉道路 ${label}</h3><p>${lines}</p><span class="tag">V6.4 ASCENSION I</span>`;el.onclick=()=>{for(const p of game.players){const a=V6_ASCENSIONS[p.hero]?.[idx];if(a){a.apply(p);p.ascension=a.name;p.name=a.name;p.v64FirstPath=idx}}$('upgrade').classList.remove('show');state='playing';last=performance.now();toast('✦ 一轉完成：Lv28 可進入終階二轉')};root.appendChild(el)});$('upgrade').classList.add('show')};
+
+function v64ShowSecondAscension(){state='upgrade';game.v64=game.v64||{};game.v64.secondAscended=true;$('upgradeSubtitle').textContent='V6.4 終階二轉：神化偏向職業核心機制，極化偏向高風險輸出';const root=$('upgradeCards');root.innerHTML='';['神化','極化'].forEach((label,idx)=>{const el=document.createElement('article');el.className='upgrade';const lines=game.players.map(p=>{const a=V64_FINAL[p.hero]?.[idx];return a?`<b>${p.name} → ${p.ascension}${a.suffix}</b><br><small>${a.desc}</small>`:''}).join('<hr>');el.innerHTML=`<h3>終階道路 ${label}</h3><p>${lines}</p><span class="tag">V6.4 ASCENSION II</span>`;el.onclick=()=>{for(const p of game.players){const a=V64_FINAL[p.hero]?.[idx];if(a){const next=p.ascension+a.suffix;a.apply(p);p.v64PreviousAscension=p.ascension;p.ascension=next;p.name=next}}$('upgrade').classList.remove('show');state='playing';last=performance.now();toast('✦ 終階二轉完成！')};root.appendChild(el)});$('upgrade').classList.add('show')}
+
+const _v64ShowUpgrade=showUpgrade;showUpgrade=function(){game.v64=game.v64||{};if(game?.level>=28&&game.v6?.ascended&&!game.v64.secondAscended){v64ShowSecondAscension();return}_v64ShowUpgrade()};
+const _v64Dash=dash;dash=function(p){const was=!!p&&!p.dead&&p.dashCd<=0;_v64Dash(p);if(was&&p?.v64DashShield)p.shield=Math.min(p.maxHp,p.shield+p.v64DashShield)};
+const _v64AreaDamage=areaDamage;areaDamage=function(x,y,r,damage,owner,color){return _v64AreaDamage(x,y,r,damage*(owner?.v64NovaPower||1),owner,color)};
+const _v64SetupMode=setupMode;setupMode=function(){_v64SetupMode();$('modeBadge').textContent=playerCount===2?'2 PLAYERS / V6.4 MULTI-BUILD':'1 PLAYER / V6.4 MULTI-BUILD';$('modeSubtitle').textContent=playerCount===2?'V6.4 雙人 × 35 新流派升級 × 每職 4 一轉 × Lv28 終階二轉':'V6.4 萬象流派 × 35 新專屬升級 × 28 一轉職業 × 56 終階轉職'};
