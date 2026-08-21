@@ -5,41 +5,18 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="theme-color" content="#100b2c">
 <title>PIXEL RIFT V6：裂隙昇華</title>
-<link rel="stylesheet" href="style.css?v=6.0">
+<link rel="stylesheet" href="style.css?v=6.1">
 </head>
 <body>
 <div class="rotate"><div><h2>↻ 請將裝置橫放</h2><p>裂隙戰場需要更寬的視野</p></div></div>
 <main class="app">
 <canvas id="game" width="960" height="540"></canvas><div class="scan"></div>
-<section class="hud" id="hud" hidden>
-  <div class="topbar">
-    <div class="status p1" id="p1Status"><div class="label"><span>P1 <b id="p1HeroLabel"></b></span><span id="p1HpText"></span></div><div class="bar"><i id="p1HpBar"></i></div></div>
-    <div class="centerStats"><div>WAVE <span id="waveText">1</span>　LV <span id="levelText">1</span>　◈ <span id="coinText">0</span></div><div>⏱ <span id="timeText">00:00</span>　SCORE <span id="scoreText">0</span></div><div class="map-mini" id="mapHud"></div></div>
-    <div class="status p2" id="p2Status"><div class="label"><span>P2 <b id="p2HeroLabel"></b></span><span id="p2HpText"></span></div><div class="bar"><i id="p2HpBar"></i></div></div>
-  </div>
-  <div class="bossbox" id="bossBox"><div class="bossname" id="bossName"></div><div class="bossbar"><i id="bossBar"></i></div><div class="affixes" id="bossAffixes"></div></div>
-  <div class="revive-note" id="reviveNote">靠近倒地隊友 3 秒可救援</div>
-</section>
+<section class="hud" id="hud" hidden><div class="topbar"><div class="status p1" id="p1Status"><div class="label"><span>P1 <b id="p1HeroLabel"></b></span><span id="p1HpText"></span></div><div class="bar"><i id="p1HpBar"></i></div></div><div class="centerStats"><div>WAVE <span id="waveText">1</span>　LV <span id="levelText">1</span>　◈ <span id="coinText">0</span></div><div>⏱ <span id="timeText">00:00</span>　SCORE <span id="scoreText">0</span></div><div class="map-mini" id="mapHud"></div></div><div class="status p2" id="p2Status"><div class="label"><span>P2 <b id="p2HeroLabel"></b></span><span id="p2HpText"></span></div><div class="bar"><i id="p2HpBar"></i></div></div></div><div class="bossbox" id="bossBox"><div class="bossname" id="bossName"></div><div class="bossbar"><i id="bossBar"></i></div><div class="affixes" id="bossAffixes"></div></div><div class="revive-note" id="reviveNote">靠近倒地隊友 3 秒可救援</div></section>
 <div class="toast" id="toast"></div>
-<section class="overlay show" id="menu"><div class="window">
-  <h1 class="logo">PIXEL RIFT V6<em>裂隙昇華</em></h1>
-  <p class="subtitle" id="modeSubtitle"></p><div class="mode-badge" id="modeBadge"></div>
-  <div class="stats"><div class="stat"><b id="bestScore">0</b><span>最高分</span></div><div class="stat"><b id="bestWave">0</b><span>最高波次</span></div><div class="stat"><b id="bankCoins">0</b><span>裂隙幣</span></div><div class="stat"><b id="totalKills">0</b><span>總擊殺</span></div></div>
-  <div style="margin:10px 0;padding:9px;border:1px solid #5c4a9e;background:#0d0927;text-align:center;color:#dcd4ff;font-size:11px;line-height:1.6">V6：裝備稀有度・菁英詞綴・地圖專屬領主・12 級進階轉職・新增高階敵人</div>
-  <h2 class="section-title">選擇地圖</h2>
-  <div class="map-select" id="mapSelect"></div>
-  <h2 class="section-title">選擇職業</h2>
-  <div class="selectors" id="selectors">
-    <div class="player-card p1"><div class="player-title">PLAYER 1</div><div class="hero-name" id="p1HeroName"></div><div class="hero-desc" id="p1HeroDesc"></div><div class="hero-flow" id="p1HeroFlow"></div><div class="row"><button id="p1Prev">◀</button><button id="p1Next">▶</button></div></div>
-    <div class="player-card p2" id="p2Card"><div class="player-title">PLAYER 2</div><div class="hero-name" id="p2HeroName"></div><div class="hero-desc" id="p2HeroDesc"></div><div class="hero-flow" id="p2HeroFlow"></div><div class="row"><button id="p2Prev">◀</button><button id="p2Next">▶</button></div></div>
-  </div>
-  <div class="controls-grid" id="controlsGrid"><div class="help"><b style="color:var(--cyan)">P1</b><br><span class="key">WASD</span> 移動　<span class="key">SPACE</span> 衝刺<br>第 1 支手把：左類比＋A</div><div class="help" id="p2Help"><b style="color:var(--gold)">P2</b><br><span class="key">方向鍵</span> 移動　<span class="key">ENTER</span> 衝刺<br>第 2 支手把：左類比＋A</div></div>
-  <div class="actions"><button class="gold" id="startBtn">開始裂隙</button><a class="btn" href="../play/">模式選擇</a></div>
-</div></section>
+<section class="overlay show" id="menu"><div class="window"><h1 class="logo">PIXEL RIFT V6<em>裂隙昇華</em></h1><p class="subtitle" id="modeSubtitle"></p><div class="mode-badge" id="modeBadge"></div><div class="stats"><div class="stat"><b id="bestScore">0</b><span>最高分</span></div><div class="stat"><b id="bestWave">0</b><span>最高波次</span></div><div class="stat"><b id="bankCoins">0</b><span>裂隙幣</span></div><div class="stat"><b id="totalKills">0</b><span>總擊殺</span></div></div><div style="margin:10px 0;padding:9px;border:1px solid #5c4a9e;background:#0d0927;text-align:center;color:#dcd4ff;font-size:11px;line-height:1.6">V6：裝備稀有度・菁英詞綴・地圖專屬領主・12 級進階轉職・新增高階敵人</div><h2 class="section-title">選擇地圖</h2><div class="map-select" id="mapSelect"></div><h2 class="section-title">選擇職業</h2><div class="selectors" id="selectors"><div class="player-card p1"><div class="player-title">PLAYER 1</div><div class="hero-name" id="p1HeroName"></div><div class="hero-desc" id="p1HeroDesc"></div><div class="hero-flow" id="p1HeroFlow"></div><div class="row"><button id="p1Prev">◀</button><button id="p1Next">▶</button></div></div><div class="player-card p2" id="p2Card"><div class="player-title">PLAYER 2</div><div class="hero-name" id="p2HeroName"></div><div class="hero-desc" id="p2HeroDesc"></div><div class="hero-flow" id="p2HeroFlow"></div><div class="row"><button id="p2Prev">◀</button><button id="p2Next">▶</button></div></div></div><div class="controls-grid" id="controlsGrid"><div class="help"><b style="color:var(--cyan)">P1</b><br><span class="key">WASD</span> 移動　<span class="key">SPACE</span> 衝刺<br>第 1 支手把：左類比＋A</div><div class="help" id="p2Help"><b style="color:var(--gold)">P2</b><br><span class="key">方向鍵</span> 移動　<span class="key">ENTER</span> 衝刺<br>第 2 支手把：左類比＋A</div></div><div class="actions"><button class="gold" id="startBtn">開始裂隙</button><a class="btn" href="../play/">模式選擇</a></div></div></section>
 <section class="overlay" id="upgrade"><div class="window"><h2 class="section-title gold-text">LEVEL UP / 流派進化</h2><p class="subtitle" id="upgradeSubtitle"></p><div class="upgrades" id="upgradeCards"></div></div></section>
 <section class="overlay" id="pause"><div class="window small-window"><h2 class="logo mini-logo">PAUSED</h2><div class="actions"><button class="gold" id="resumeBtn">繼續</button><button id="restartBtn">重新開始</button><a class="btn" href="../play/">模式選擇</a></div></div></section>
 <section class="overlay" id="gameover"><div class="window small-window"><h2 class="logo mini-logo danger-text">RIFT CLOSED</h2><p class="subtitle" id="gameOverText"></p><div class="endstats">WAVE <b id="endWave"></b><br>SCORE <b id="endScore"></b><br>擊殺 <b id="endKills"></b><br>◈ 獲得 <b id="endCoins"></b></div><div class="actions"><button class="gold" id="retryBtn">再次挑戰</button><a class="btn" href="../play/">模式選擇</a></div></div></section>
 </main>
-<script src="game-loader.js?v=6.0" defer></script>
-</body>
-</html>
+<script src="game-loader.js?v=6.1" defer></script>
+</body></html>
