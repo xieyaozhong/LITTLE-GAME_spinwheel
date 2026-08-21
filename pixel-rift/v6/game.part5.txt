@@ -1,0 +1,58 @@
+else if(e.bossKind==='behemoth'){damagePlayersInRadius(e.x,e.y,145,e.damage*.75,e);game.particles.push({type:'ring',x:e.x,y:e.y,r:10,maxR:155,life:.35,max:.35,color:'#ffd166'});e.dashVX=Math.cos(a)*290;e.dashVY=Math.sin(a)*290;e.dashT=.45}
+else if(e.bossKind==='reaper'){e.x=clamp(p.x+rand(-120,120),40,WORLD_W-40);e.y=clamp(p.y+rand(-120,120),40,WORLD_H-40);for(let i=-1;i<=1;i++)addEnemyBullet(e.x,e.y,a+i*.3,240,e.damage*.55,4,'#a7a8ff')}
+else if(e.bossKind==='core'){for(let i=0;i<3;i++){const q=makeEnemy('artillery',{x:e.x+rand(-90,90),y:e.y+rand(-90,90)},1+game.wave*.04);game.enemies.push(q)}for(let i=0;i<12;i++)addEnemyBullet(e.x,e.y,i/12*TAU,145,e.damage*.38,5,'#ff9b63')}
+if(e.mutant&&e.mutations.some(m=>m.id==='volatile'))for(let i=0;i<12;i++)addEnemyBullet(e.x,e.y,i/12*TAU,190,e.damage*.34,4,'#ff76df')
+}
+function applyMutations(e,dt){
+if(!e.mutant)return;
+if(e.hp/e.maxHp<.5&&!e.phase2){e.phase2=true;toast('☠ 變異魔王進入第二型態！');shake=15}
+if(e.mutations.some(m=>m.id==='fortified')&&e.hp/e.maxHp<.5&&!e.armorRebuilt){e.armorRebuilt=true;e.hp=Math.min(e.maxHp,e.hp+e.maxHp*.18);toast('◆ 晶甲重構：魔王恢復生命')}
+if(e.mutations.some(m=>m.id==='swarm')){e.summonT-=dt;if(e.summonT<=0){e.summonT=e.phase2?3.2:4.8;for(let i=0;i<3;i++)game.enemies.push(makeEnemy(i===0?'assassin':'chaser',{x:e.x+rand(-90,90),y:e.y+rand(-90,90)},1+game.wave*.05))}}
+if(e.mutations.some(m=>m.id==='berserk')&&e.phase2){e.speed=e.baseSpeed*1.45;e.damage=e.baseDamage*1.5}
+}
+
+function gainXp(v){game.xp+=v;if(game.xp>=game.xpNeed){game.xp-=game.xpNeed;game.level++;game.xpNeed=Math.floor(game.xpNeed*1.28+9);showUpgrade()}}
+function eligibleUpgrades(){const ids=new Set(game.players.map(p=>p.hero));return UPGRADES.filter(u=>!u.heroes||u.heroes.some(h=>ids.has(h)))}
+function showUpgrade(){
+state='upgrade';const pool=[...eligibleUpgrades()],choices=[];while(choices.length<3&&pool.length)choices.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]);$('upgradeCards').innerHTML='';
+for(const u of choices){const el=document.createElement('article');el.className='upgrade';const cls=!!u.heroes;el.innerHTML=`<h3>${u.name}</h3><p>${u.desc}</p><span class="tag ${cls?'class-tag':''}">${u.tag}</span>`;el.onclick=()=>{for(const p of game.players)if(!u.heroes||u.heroes.includes(p.hero))u.apply(p);$('upgrade').classList.remove('show');state='playing';last=performance.now();toast(u.name+' 已獲得！')};$('upgradeCards').appendChild(el)}
+$('upgrade').classList.add('show')
+}
+function dash(p){
+if(!p||p.dead||p.dashCd>0||state!=='playing')return;let dx=p.dx,dy=p.dy;if(Math.hypot(dx,dy)<.1){dx=p.id===1?1:-1;dy=0}const l=Math.hypot(dx,dy)||1;
+p.dashVX=dx/l*520;p.dashVY=dy/l*520;p.dashing=.18;p.dashCd=3.2;
+if(p.hero==='shadow'){p.shadowTempoT=2;if(p.dashStrike)areaDamage(p.x,p.y,95,p.damage*p.dashStrike,p,'#7da7ff')}
+burst(p.x,p.y,p.color,12)
+}
+function inputs(p){
+let mx=0,my=0;if(p.id===1){mx=(keys.d?1:0)-(keys.a?1:0);my=(keys.s?1:0)-(keys.w?1:0)}else{mx=(keys.ArrowRight?1:0)-(keys.ArrowLeft?1:0);my=(keys.ArrowDown?1:0)-(keys.ArrowUp?1:0)}
+const pads=navigator.getGamepads?navigator.getGamepads():[],gp=pads[p.id-1];if(gp){const gx=Math.abs(gp.axes[0]||0)>.18?gp.axes[0]:0,gy=Math.abs(gp.axes[1]||0)>.18?gp.axes[1]:0;if(Math.hypot(gx,gy)>.1){mx=gx;my=gy}if(gp.buttons[0]?.pressed&&!p.gpDash)dash(p);p.gpDash=gp.buttons[0]?.pressed}
+const l=Math.hypot(mx,my);if(l>1){mx/=l;my/=l}return[mx,my]
+}
+
+function updateEnemy(e,dt){
+if(e.dead)return;e.hit=Math.max(0,e.hit-dt);
+if(e.burnT>0){e.burnT-=dt;e.hp-=e.burnDps*dt;if(Math.random()<dt*5)burst(e.x,e.y,'#ff7b4c',2);if(e.hp<=0){killEnemy(e,null);return}}
+if(e.slowT>0){e.slowT-=dt;e.speed*=e.slowFactor}else e.slowFactor=1;
+if(e.type==='boss'){applyMutations(e,dt);e.skillT-=dt;e.shotT-=dt;if(e.skillT<=0)bossSkill(e);if(e.shotT<=0)shootEnemy(e)}
+const p=nearestPlayer(e);if(!p)return;const a=Math.atan2(p.y-e.y,p.x-e.x),d=Math.hypot(p.x-e.x,p.y-e.y);let ideal=0;
+if(['shooter','healer','summoner','frost'].includes(e.type))ideal=200;if(e.type==='sniper')ideal=340;if(e.type==='artillery')ideal=390;if(e.type==='boss')ideal=e.bossKind==='behemoth'?80:115;
+let dir=d>ideal+18?1:ideal&&d<ideal-35?-1:0;
+if(e.dashT>0){e.dashT-=dt;e.x+=e.dashVX*dt;e.y+=e.dashVY*dt}else{e.x+=Math.cos(a)*e.speed*dir*dt;e.y+=Math.sin(a)*e.speed*dir*dt}
+e.x=clamp(e.x,20,WORLD_W-20);e.y=clamp(e.y,20,WORLD_H-20);
+
+if(e.type==='shooter'){e.shotT-=dt;if(e.shotT<=0)shootEnemy(e)}
+if(e.type==='assassin'){e.chargeT-=dt;if(e.chargeT<=0){e.chargeT=2.6;e.dashVX=Math.cos(a)*410;e.dashVY=Math.sin(a)*410;e.dashT=.28}}
+if(e.type==='charger'){e.chargeT-=dt;if(e.chargeT<=0){e.chargeT=3.2;e.dashVX=Math.cos(a)*480;e.dashVY=Math.sin(a)*480;e.dashT=.42}}
+if(e.type==='bomber'&&d<72){damagePlayersInRadius(e.x,e.y,82,e.damage,e);game.particles.push({type:'ring',x:e.x,y:e.y,r:8,maxR:90,life:.3,max:.3,color:'#ff7556'});e.dead=true;game.kills++;return}
+if(e.type==='healer'){e.healT-=dt;if(e.healT<=0){e.healT=3;for(const q of game.enemies)if(q!==e&&!q.dead&&d2(q,e)<170*170)q.hp=Math.min(q.maxHp,q.hp+q.maxHp*.08);game.particles.push({type:'ring',x:e.x,y:e.y,r:8,maxR:170,life:.3,max:.3,color:'#77ffc0'})}}
+if(e.type==='summoner'){e.summonT-=dt;if(e.summonT<=0){e.summonT=4.1;for(let i=0;i<2;i++)game.enemies.push(makeEnemy('mini',{x:e.x+rand(-35,35),y:e.y+rand(-35,35)},1+game.wave*.03))}}
+if(e.type==='sniper'||e.type==='frost'||e.type==='artillery'){e.shotT-=dt;if(e.shotT<=0)shootEnemy(e)}
+if(e.type==='shielder'){e.shieldT-=dt;if(e.shield<=0&&e.shieldT<=0){e.shield=e.maxShield;e.shieldT=7}}
+if(e.type==='blink'){e.blinkT-=dt;if(e.blinkT<=0){e.blinkT=3.1;e.x=clamp(p.x+rand(-160,160),30,WORLD_W-30);e.y=clamp(p.y+rand(-160,160),30,WORLD_H-30);burst(e.x,e.y,'#c38cff',9)}}
+if(e.type==='reflector'){e.reflectCd=Math.max(0,e.reflectCd-dt)}
+for(const q of alivePlayers())if(d2(q,e)<(q.r+e.r)**2)hurt(q,e.damage,e.x,e.y,e)
+}
+
+function update(dt){
+if(state!=='playing'||!game)return;dt=Math.min(dt,.033);game.t+=dt;game.waveT+=dt;

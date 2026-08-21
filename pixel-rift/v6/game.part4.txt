@@ -1,0 +1,63 @@
+if(owner?.hero==='ranger'&&crit&&owner.hunterMark)owner.hunterT=1.4;
+if(canChain&&owner)chainFrom(e,owner,d);
+if(e.hp<=0)killEnemy(e,owner)
+}
+function killEnemy(e,owner){
+if(e.dead)return;e.dead=true;game.kills++;game.score+=e.score*(1+game.wave*.04);
+const n=e.type==='boss'?(e.mutant?36:20):['tank','shielder','charger'].includes(e.type)?3:1;
+for(let i=0;i<n;i++)game.gems.push({x:e.x+rand(-12,12),y:e.y+rand(-12,12),r:e.type==='boss'?5:4,value:e.xp/n,color:e.mutant?'#ff74e8':e.type==='boss'?'#ffd166':'#6ee7ff'});
+if(Math.random()<(e.type==='boss'?1:.08))game.coins+=e.mutant?18:e.type==='boss'?7:1;
+if(e.type==='splitter')for(let i=0;i<2;i++)game.enemies.push(makeEnemy('mini',{x:e.x+rand(-8,8),y:e.y+rand(-8,8)},1+(game.wave-1)*.08));
+if(e.type==='boss'){game.score+=e.mutant?13500:5400;game.coins+=e.mutant?20:8;game.boss=null;toast(e.mutant?'★ 變異魔王已擊破！':'★ 關主已擊破！')}
+burst(e.x,e.y,e.color,e.type==='boss'?45:14)
+}
+
+function applyElement(e,b){
+if(!b.element)return;const p=b.owner;
+if(b.element==='fire'){e.burnT=3.2;e.burnDps=Math.max(e.burnDps,p.damage*.28*p.burnPower)}
+else if(b.element==='frost'){e.slowT=p.frostDuration;e.slowFactor=Math.min(e.slowFactor,p.frostPower)}
+else if(b.element==='storm')chainFrom(e,p,b.damage,p.elementChain)
+}
+function pulseSupport(p){const heal=p.maxHp*p.pulseHeal;p.hp=Math.min(p.maxHp,p.hp+heal);if(p.pulseShield)p.shield=Math.min(p.maxHp*.45,p.shield+p.pulseShield);for(const ally of alivePlayers())if(ally!==p&&d2(p,ally)<250*250){ally.hp=Math.min(ally.maxHp,ally.hp+ally.maxHp*p.pulseHeal*.8);if(p.pulseShield)ally.shield=Math.min(ally.maxHp*.35,ally.shield+p.pulseShield)}for(const e of game.enemies)if(!e.dead&&d2(p,e)<(p.pulseRadius+e.r)**2)damageEnemy(e,p.damage*p.pulseDamage,p,false);game.particles.push({type:'ring',x:p.x,y:p.y,r:8,maxR:p.pulseRadius,life:.35,max:.35,color:'#7dffb2'})}
+function areaDamage(x,y,r,damage,owner,color='#ffb96a'){game.particles.push({type:'ring',x,y,r:8,maxR:r,life:.3,max:.3,color});for(const e of game.enemies)if(!e.dead&&d2(e,{x,y})<(r+e.r)**2)damageEnemy(e,damage,owner,false)}
+
+function deployTurret(p){
+const same=game.turrets.filter(t=>t.owner===p);if(same.length>=p.turretMax)same[0].life=0;
+game.turrets.push({owner:p,x:p.x,y:p.y,life:18,shotT:.3,damage:p.damage*.65*p.turretDamage})
+}
+function deployMine(p){game.mines.push({owner:p,x:p.x,y:p.y,r:12,life:15,damage:p.damage*2.2*p.mineDamage,armed:.55})}
+function updateMachines(dt){
+for(const t of game.turrets){t.life-=dt;t.shotT-=dt;if(t.shotT<=0){const e=nearestEnemy(t,null,560);if(e){const a=Math.atan2(e.y-t.y,e.x-t.x);game.bullets.push({owner:t.owner,x:t.x,y:t.y,vx:Math.cos(a)*390,vy:Math.sin(a)*390,r:3,damage:t.damage,pierce:0,life:1.8,hit:new Set(),color:'#ffbf6e',element:null});t.shotT=.7}}}
+for(const m of game.mines){m.life-=dt;m.armed-=dt;if(m.armed<=0){const e=nearestEnemy(m,null,60);if(e){areaDamage(m.x,m.y,90,m.damage,m.owner,'#ff9b5e');m.life=0}}}
+game.turrets=game.turrets.filter(t=>t.life>0);game.mines=game.mines.filter(m=>m.life>0)
+}
+
+function setupMapHazards(){
+if(game.map.id==='frost'){for(let i=0;i<5;i++)game.hazards.push({type:'ice',x:rand(350,WORLD_W-350),y:rand(300,WORLD_H-300),r:rand(90,145),life:999,active:true,tick:0})}
+}
+function spawnHazard(){
+const m=game.map,ctr=centerPlayers(),x=clamp(ctr.x+rand(-420,420),120,WORLD_W-120),y=clamp(ctr.y+rand(-280,280),120,WORLD_H-120);
+if(m.id==='forge')game.hazards.push({type:'lava',x,y,r:68,life:2.5,telegraph:1.05,active:false,tick:0,hit:new Set()});
+else if(m.id==='marsh')game.hazards.push({type:'toxic',x,y,r:100,life:7,active:true,tick:0});
+else if(m.id==='temple')game.hazards.push({type:'void',x,y,r:82,life:2.3,telegraph:1.25,active:false,tick:0,hit:new Set()});
+else if(m.id==='wastes')game.hazards.push({type:'wind',x,y,r:110,life:4.2,active:true,tick:0})
+}
+function updateHazards(dt){
+game.hazardT-=dt;if(game.hazardT<=0){spawnHazard();game.hazardT=game.map.id==='wastes'?6:game.map.id==='frost'?999:4.6}
+for(const h of game.hazards){h.life-=dt;h.tick-=dt;if(h.telegraph!=null&&h.telegraph>0){h.telegraph-=dt;if(h.telegraph<=0)h.active=true}
+if(!h.active)continue;
+if(h.type==='ice'){for(const p of alivePlayers())if(d2(p,h)<h.r*h.r)p.mapSlow=.62}
+if(h.type==='lava'&&h.tick<=0){h.tick=.28;for(const p of alivePlayers())if(d2(p,h)<(h.r+p.r)**2&&!h.hit.has(p)){hurt(p,18,h.x,h.y,null);h.hit.add(p)}}
+if(h.type==='toxic'&&h.tick<=0){h.tick=.75;for(const p of alivePlayers())if(d2(p,h)<(h.r+p.r)**2)hurt(p,7,h.x,h.y,null)}
+if(h.type==='void'&&h.tick<=0){h.tick=.4;for(const p of alivePlayers())if(d2(p,h)<(h.r+p.r)**2&&!h.hit.has(p)){hurt(p,22,h.x,h.y,null);h.hit.add(p)}for(const e of game.enemies)if(!e.dead&&d2(e,h)<(h.r+e.r)**2)damageEnemy(e,26,null,false)}
+if(h.type==='wind'){for(const e of game.enemies)if(!e.dead&&d2(e,h)<h.r*h.r)e.speed=e.baseSpeed*1.18}
+}
+game.hazards=game.hazards.filter(h=>h.life>0)
+}
+
+function bossSkill(e){
+const p=nearestPlayer(e);if(!p)return;const temporal=e.mutant&&e.mutations.some(m=>m.id==='temporal');let cd=temporal?1.7:2.7;if(e.phase2)cd*=.72;e.skillT=cd;const a=Math.atan2(p.y-e.y,p.x-e.x);
+if(e.bossKind==='warden'){for(let i=0;i<20;i++)addEnemyBullet(e.x,e.y,i/20*TAU,135,e.damage*.42,4,e.color);e.dashVX=Math.cos(a)*360;e.dashVY=Math.sin(a)*360;e.dashT=.35}
+else if(e.bossKind==='storm'){for(let i=0;i<16;i++)addEnemyBullet(e.x,e.y,i/16*TAU+game.t*.7,155,e.damage*.38,4,'#7bdcff')}
+else if(e.bossKind==='brood'){for(let i=0;i<4;i++)game.enemies.push(makeEnemy(i%2?'splitter':'chaser',{x:e.x+rand(-70,70),y:e.y+rand(-70,70)},1+game.wave*.06))}
+else if(e.bossKind==='bishop'){e.hp=Math.min(e.maxHp,e.hp+e.maxHp*.045);for(let i=0;i<2;i++)game.enemies.push(makeEnemy('healer',{x:e.x+rand(-80,80),y:e.y+rand(-80,80)},1+game.wave*.04));for(let i=0;i<10;i++)addEnemyBullet(e.x,e.y,i/10*TAU,125,e.damage*.34,4,'#dca4ff')}
