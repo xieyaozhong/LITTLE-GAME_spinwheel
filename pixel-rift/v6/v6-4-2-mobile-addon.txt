@@ -1,0 +1,76 @@
+// PIXEL RIFT V6.4.2 mobile controls hotfix
+const V642_MOBILE = {
+  enabled: (navigator.maxTouchPoints||0)>0 || matchMedia('(pointer:coarse)').matches,
+  active:false,
+  x:0,
+  y:0,
+  pointer:null
+};
+
+function v642BuildMobileControls(){
+  if(!V642_MOBILE.enabled || document.getElementById('v642MobileControls')) return;
+  const style=document.createElement('style');
+  style.id='v642MobileStyle';
+  style.textContent=`
+  #v642MobileControls{position:absolute;inset:0;z-index:14;pointer-events:none;display:none;touch-action:none;-webkit-user-select:none;user-select:none}
+  #v642MobileControls.active{display:block}
+  .v642-stick{position:absolute;left:max(18px,env(safe-area-inset-left));bottom:max(18px,env(safe-area-inset-bottom));width:132px;height:132px;border-radius:50%;border:2px solid rgba(92,225,230,.62);background:radial-gradient(circle,rgba(92,225,230,.12),rgba(9,6,29,.62) 62%,rgba(9,6,29,.3));box-shadow:0 0 20px rgba(92,225,230,.14);pointer-events:auto;touch-action:none}
+  .v642-stick:before,.v642-stick:after{content:"";position:absolute;background:rgba(92,225,230,.13)}
+  .v642-stick:before{left:50%;top:12px;bottom:12px;width:1px}.v642-stick:after{top:50%;left:12px;right:12px;height:1px}
+  .v642-knob{position:absolute;left:50%;top:50%;width:56px;height:56px;margin:-28px;border-radius:50%;border:2px solid #8cf7ff;background:rgba(36,25,90,.92);box-shadow:0 0 18px rgba(92,225,230,.48);transform:translate3d(0,0,0);pointer-events:none}
+  .v642-actions{position:absolute;right:max(18px,env(safe-area-inset-right));bottom:max(20px,env(safe-area-inset-bottom));display:flex;align-items:flex-end;gap:14px;pointer-events:none}
+  .v642-action{width:76px;height:76px;border-radius:50%;border:2px solid rgba(255,209,102,.76);background:rgba(36,25,90,.9);color:#fff;font:900 11px "Courier New",monospace;box-shadow:0 0 20px rgba(255,209,102,.18),inset 0 0 16px rgba(255,209,102,.08);pointer-events:auto;touch-action:none;padding:0}
+  .v642-action.ult{width:68px;height:68px;border-color:rgba(181,134,255,.86);color:#e8dcff;transform:translateY(-32px)}
+  .v642-action:active{transform:scale(.94)} .v642-action.ult:active{transform:translateY(-32px) scale(.94)}
+  @media (max-height:430px){.v642-stick{width:112px;height:112px}.v642-knob{width:50px;height:50px;margin:-25px}.v642-action{width:66px;height:66px}.v642-action.ult{width:60px;height:60px}.v642-actions{gap:10px}}
+  `;
+  document.head.appendChild(style);
+  const root=document.createElement('div');
+  root.id='v642MobileControls';
+  root.innerHTML=`<div class="v642-stick" id="v642Stick" aria-label="移動搖桿"><div class="v642-knob" id="v642Knob"></div></div><div class="v642-actions"><button class="v642-action ult" id="v642Ult" type="button">ULT</button><button class="v642-action" id="v642Dash" type="button">DASH</button></div>`;
+  document.querySelector('.app')?.appendChild(root);
+  const stick=document.getElementById('v642Stick'),knob=document.getElementById('v642Knob');
+  const updateStick=e=>{
+    const r=stick.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
+    let dx=e.clientX-cx,dy=e.clientY-cy;
+    const max=r.width*.32,len=Math.hypot(dx,dy)||1;
+    if(len>max){dx=dx/len*max;dy=dy/len*max}
+    V642_MOBILE.x=dx/max;V642_MOBILE.y=dy/max;V642_MOBILE.active=true;
+    knob.style.transform=`translate3d(${dx}px,${dy}px,0)`;
+  };
+  const resetStick=()=>{V642_MOBILE.x=0;V642_MOBILE.y=0;V642_MOBILE.active=false;V642_MOBILE.pointer=null;knob.style.transform='translate3d(0,0,0)'};
+  stick.addEventListener('pointerdown',e=>{e.preventDefault();V642_MOBILE.pointer=e.pointerId;try{stick.setPointerCapture(e.pointerId)}catch{}updateStick(e)},{passive:false});
+  stick.addEventListener('pointermove',e=>{if(e.pointerId!==V642_MOBILE.pointer)return;e.preventDefault();updateStick(e)},{passive:false});
+  for(const ev of ['pointerup','pointercancel','lostpointercapture'])stick.addEventListener(ev,e=>{if(V642_MOBILE.pointer!==null&&e.pointerId!==undefined&&e.pointerId!==V642_MOBILE.pointer)return;resetStick()},{passive:false});
+  const fire=(el,fn)=>el.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();fn()},{passive:false});
+  fire(document.getElementById('v642Dash'),()=>dash(game?.players?.[0]));
+  fire(document.getElementById('v642Ult'),()=>{if(typeof v62Ultimate==='function')v62Ultimate(game?.players?.[0])});
+  root.addEventListener('contextmenu',e=>e.preventDefault());
+  const sync=()=>{
+    root.classList.toggle('active',state==='playing');
+    if(state!=='playing'&&V642_MOBILE.active)resetStick();
+    requestAnimationFrame(sync);
+  };
+  requestAnimationFrame(sync);
+}
+
+const _v642Inputs=inputs;
+inputs=function(p){
+  const base=_v642Inputs(p);
+  if(V642_MOBILE.enabled&&p?.id===1&&V642_MOBILE.active){
+    let mx=V642_MOBILE.x,my=V642_MOBILE.y;
+    const l=Math.hypot(mx,my);if(l>1){mx/=l;my/=l}
+    return [mx,my];
+  }
+  return base;
+};
+
+const _v642SetupMode=setupMode;
+setupMode=function(){
+  _v642SetupMode();
+  v642BuildMobileControls();
+  if(V642_MOBILE.enabled){
+    $('modeSubtitle').textContent += '｜手機：左搖桿移動、右側 DASH／ULT';
+    $('modeBadge').textContent += ' / TOUCH';
+  }
+};
