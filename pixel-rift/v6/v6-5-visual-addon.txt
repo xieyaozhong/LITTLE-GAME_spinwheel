@@ -1,0 +1,106 @@
+// PIXEL RIFT V6.5 visual reforge — detailed canvas models + PWA visual identity
+const V65 = { version:'6.5', glow:true };
+function v65rect(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h))}
+function v65poly(points,fill,stroke='#09061d',lw=2){ctx.beginPath();ctx.moveTo(points[0][0],points[0][1]);for(let i=1;i<points.length;i++)ctx.lineTo(points[i][0],points[i][1]);ctx.closePath();ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw;ctx.stroke()}}
+function v65line(x1,y1,x2,y2,c,w=3){ctx.strokeStyle=c;ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke()}
+function v65circle(x,y,r,c,stroke=null,lw=2){ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fillStyle=c;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw;ctx.stroke()}}
+function v65diamond(x,y,r,c,stroke='#fff'){v65poly([[x,y-r],[x+r,y],[x,y+r],[x-r,y]],c,stroke,1.5)}
+function v65shadow(x,y,r,a=.26){ctx.save();ctx.globalAlpha=a;ctx.scale(1,.42);v65circle(x,y/.42+18,r,'#000');ctx.restore()}
+function v65Glow(c,blur=12){ctx.shadowColor=c;ctx.shadowBlur=blur}
+function v65NoGlow(){ctx.shadowBlur=0;ctx.shadowColor='transparent'}
+function v65HeroBase(body,trim,skin='#f4c7a7'){
+  v65poly([[-8,-13],[8,-13],[11,6],[7,14],[-7,14],[-11,6]],body,'#09061d',2);
+  v65rect(-7,-4,14,4,trim);v65circle(0,-17,6,skin,'#09061d',2);v65rect(-7,12,5,8,'#17102f');v65rect(2,12,5,8,'#17102f');
+}
+function v65DrawRanger(p){
+  v65HeroBase('#123457','#5ce1e6');v65poly([[-7,-22],[2,-27],[9,-21],[5,-17],[-8,-17]],'#154f73','#07101d',2);
+  v65poly([[-9,-9],[-18,-3],[-16,12],[-6,8]],'#0a2240','#5ce1e6',1.5);
+  ctx.strokeStyle='#5ce1e6';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(12,-2,13,-1.25,1.25);ctx.stroke();v65line(16,-14,16,10,'#cfffff',1);v65line(6,-2,24,-2,'#9fffff',2);v65diamond(25,-2,3,'#dfffff','#5ce1e6');
+}
+function v65DrawKnight(p){
+  v65HeroBase('#20335b','#ffd166');v65poly([[-9,-23],[0,-28],[9,-23],[8,-14],[-8,-14]],'#5269a2','#d8e2ff',2);v65rect(-2,-31,4,8,'#4b84d1');
+  v65poly([[8,-9],[20,-12],[24,-5],[22,14],[10,11]],'#234c8c','#ffd166',2);v65diamond(16,0,4,'#ffd166','#fff2b3');
+  v65line(-10,-3,-23,14,'#fff1b0',5);v65line(-22,14,-26,19,'#ffd166',7);
+}
+function v65DrawMage(p){
+  v65poly([[-12,14],[-9,-10],[0,-22],[9,-10],[13,14]],'#351a68','#9a67ff',2);v65poly([[-9,-13],[0,-27],[9,-13],[5,-9],[-5,-9]],'#23124d','#b586ff',2);v65circle(0,-13,4,'#151026');
+  v65line(13,12,18,-20,'#d0a3ff',3);v65diamond(19,-24,6,'#9f61ff','#f0dcff');v65Glow('#d85cff',10);v65circle(-16,-2,4,'#ff6cff');v65line(-20,-2,-12,-2,'#f4baff',1.5);v65line(-16,-6,-16,2,'#f4baff',1.5);v65NoGlow();
+}
+function v65DrawSupport(p){
+  v65poly([[-12,14],[-9,-10],[0,-21],[9,-10],[12,14]],'#e9e4ff','#ffd166',2);v65rect(-5,-8,10,16,'#6d50a8');v65poly([[-9,-13],[0,-25],[9,-13],[5,-10],[-5,-10]],'#f7f2ff','#ffd166',2);v65circle(0,-14,4,'#f3c9a7');
+  ctx.strokeStyle='#ffd166';ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,-24,11,Math.PI,TAU);ctx.stroke();
+  const t=game?.t||0;for(let i=0;i<4;i++){const a=t*.8+i*TAU/4;const x=Math.cos(a)*19,y=-4+Math.sin(a)*10;v65diamond(x,y,3,i%2?'#b586ff':'#ffd166','#fff')}
+}
+function v65DrawShadow(p){
+  v65HeroBase('#160d2d','#ff4d8a','#d5b0a0');v65poly([[-10,-22],[-3,-27],[8,-23],[10,-17],[-9,-17]],'#0a1026','#e0447d',2);v65poly([[-10,-7],[-22,2],[-14,15],[-5,9]],'#1b0b2c','#e0447d',1.5);
+  v65line(-8,-2,-25,12,'#ff4d8a',4);v65line(8,-2,24,10,'#8eb5ff',4);v65line(-24,12,-28,16,'#fff',2);v65line(23,10,28,14,'#fff',2);
+}
+function v65DrawEngineer(p){
+  v65HeroBase('#4c3527','#ff9c45');v65poly([[-9,-23],[0,-27],[10,-22],[7,-16],[-8,-16]],'#b7b9c6','#ffb45f',2);v65circle(-4,-22,3,'#6eeaff','#1d2738',1);v65circle(4,-22,3,'#ffb45f','#1d2738',1);
+  v65rect(8,-7,10,16,'#6b4127');v65circle(13,-3,3,'#ff6a2b');v65poly([[-12,-5],[-25,-1],[-24,5],[-8,5]],'#5b6679','#ffb45f',2);v65rect(-28,-3,8,5,'#ff8a2b');
+  v65rect(10,10,10,8,'#6a4328');v65circle(15,14,3,'#ff9b42');
+}
+function v65DrawElementalist(p){
+  v65poly([[-11,14],[-9,-9],[0,-20],[9,-9],[11,14]],'#142d62','#a985ff',2);v65circle(0,-17,5,'#e7c4ad','#09061d',2);v65poly([[-8,-24],[0,-28],[8,-23],[5,-18],[-7,-19]],'#ddeeff','#7db7ff',1.5);
+  const t=game?.t||0,orb=[[Math.cos(t)*18,-4+Math.sin(t)*5,'#ff6c38'],[Math.cos(t+2.1)*18,-4+Math.sin(t+2.1)*5,'#6edcff'],[Math.cos(t+4.2)*18,-4+Math.sin(t+4.2)*5,'#c071ff']];
+  for(const [x,y,c] of orb){v65Glow(c,9);v65circle(x,y,4,c,'#fff',1);v65NoGlow()}
+}
+const V65_HERO_DRAW={ranger:v65DrawRanger,knight:v65DrawKnight,mage:v65DrawMage,support:v65DrawSupport,shadow:v65DrawShadow,engineer:v65DrawEngineer,elementalist:v65DrawElementalist};
+const _v65OldDrawPlayer=drawPlayer;
+drawPlayer=function(p){
+  if(!p){return}
+  ctx.save();v65shadow(p.x,p.y,16);ctx.translate(Math.round(p.x),Math.round(p.y));if(p.dead)ctx.globalAlpha=.32;else if(p.invuln>0&&((p.invuln*15)|0)%2===0)ctx.globalAlpha=.38;
+  if(p.dashing>0){ctx.globalAlpha*=.35;for(let i=1;i<=3;i++){ctx.save();ctx.translate(-p.dx*i*9,-p.dy*i*9);v65poly([[-7,-12],[7,-12],[9,12],[-9,12]],p.color,null);ctx.restore()}ctx.globalAlpha=p.dead?.32:1}
+  ctx.save();v65Glow(p.color,7);(V65_HERO_DRAW[p.hero]||v65DrawRanger)(p);v65NoGlow();ctx.restore();ctx.restore();
+  ctx.font='bold 10px Courier New';ctx.textAlign='center';ctx.fillStyle=p.id===1?'#5ce1e6':'#ffd166';ctx.fillText(playerCount===2?'P'+p.id:p.name,p.x,p.y-34);
+  if(p.shield>0){ctx.strokeStyle='rgba(125,255,178,.75)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(p.x,p.y,24,0,TAU);ctx.stroke()}
+  if(p.drones)for(let i=0;i<p.drones;i++){const a=p.droneA+i/p.drones*TAU,ox=p.x+Math.cos(a)*54,oy=p.y+Math.sin(a)*54;v65diamond(ox,oy,5,'#7dffb2','#dffff1')}
+};
+function v65EnemyShadow(e){v65shadow(e.x,e.y,Math.max(9,e.r*.9),.22)}
+function v65EnemyArchetype(e){
+  const t=e.type;
+  if(['chaser','splitter','mini','leech'].includes(t))return 0;
+  if(['assassin','blink','voidblade','echo'].includes(t))return 1;
+  if(['shooter','sniper','frost','chrono'].includes(t))return 2;
+  if(['tank','shielder','charger','bastion'].includes(t))return 3;
+  if(['healer','harvester'].includes(t))return 4;
+  if(['prism','reflector','nullifier','graviton'].includes(t))return 5;
+  if(['mimic','bomber'].includes(t))return 6;
+  if(['artillery','mortar'].includes(t))return 7;
+  if(t==='wraith')return 8;
+  if(t==='aegis')return 9;
+  if(['summoner','broodcarrier','overseer'].includes(t))return 10;
+  if(['doomseer','singularity'].includes(t))return 11;
+  return 0;
+}
+function v65DrawEnemyModel(e){
+  const a=v65EnemyArchetype(e),c=e.hit?'#ffffff':e.color,r=Math.max(8,e.r),s=r/10;ctx.scale(s,s);
+  if(a===0){v65circle(0,0,7,c,'#130922',2);for(let i=0;i<4;i++){const ang=i*TAU/4+(game?.t||0)*.4;v65poly([[Math.cos(ang)*6,Math.sin(ang)*6],[Math.cos(ang+.45)*13,Math.sin(ang+.45)*13],[Math.cos(ang-.45)*13,Math.sin(ang-.45)*13]],'#5b258f','#130922',1)}v65circle(0,0,2,'#ff72dc','#fff',1)}
+  if(a===1){v65poly([[-6,8],[-5,-8],[0,-13],[6,-8],[7,8]],'#15102a',c,2);v65poly([[-5,-9],[0,-16],[6,-9]],c,'#130922',1);v65line(-5,0,-14,8,'#ff5cbb',3);v65line(5,0,15,7,'#a8e7ff',3)}
+  if(a===2){v65poly([[-7,9],[-6,-8],[0,-13],[7,-8],[7,9]],'#172644',c,2);v65poly([[-6,-10],[0,-16],[7,-10]],c,'#101528',1);v65line(5,-2,18,-2,c,3);v65diamond(19,-2,2,'#fff',c)}
+  if(a===3){v65poly([[-10,10],[-9,-9],[0,-14],[10,-9],[11,10]],'#2a2146',c,2);v65poly([[7,-10],[16,-8],[17,9],[8,12]],c,'#dedcff',1.5);v65circle(-3,-5,2,'#ff79dd')}
+  if(a===4){v65poly([[-8,11],[-6,-8],[0,-15],[7,-8],[9,11]],'#173321',c,2);v65circle(0,-8,4,'#0c1812');v65line(7,9,12,-14,'#74ff9b',2);v65circle(13,-16,3,'#9eff83')}
+  if(a===5){ctx.rotate((game?.t||0)*.8);v65diamond(0,0,12,'#2f145d',c);v65diamond(0,0,6,c,'#fff');ctx.rotate(-(game?.t||0)*1.6);for(let i=0;i<3;i++){const q=i*TAU/3;v65diamond(Math.cos(q)*15,Math.sin(q)*15,3,c,null)}}
+  if(a===6){v65poly([[-11,7],[-9,-8],[9,-8],[11,7]],'#3b1b50',c,2);v65poly([[-8,-2],[0,5],[8,-2],[7,5],[0,9],[-7,5]],'#180c20','#ffb4e2',1.5);v65line(-5,0,-2,2,'#fff',1);v65line(5,0,2,2,'#fff',1)}
+  if(a===7){v65poly([[-11,9],[-8,-8],[4,-12],[11,-5],[10,10]],'#25364e',c,2);v65rect(-2,-17,8,10,'#38234f');v65circle(2,-15,4,c,'#fff',1);for(let i=-1;i<=1;i++)v65line(i*5+0,7,i*8+0,15,'#171026',2)}
+  if(a===8){v65poly([[-10,9],[-5,-10],[0,-16],[6,-10],[11,9],[4,5],[0,13],[-4,5]],'#0d3557',c,2);v65circle(0,-8,2,'#55eeff')}
+  if(a===9){v65poly([[-12,10],[-10,-10],[2,-14],[10,-8],[11,10]],'#1b2849',c,2);v65poly([[-17,-12],[-8,-15],[-8,15],[-17,12]],'#2465a1','#9cefff',2)}
+  if(a===10){v65poly([[-12,10],[-8,-8],[0,-15],[9,-8],[12,10]],'#3b1445',c,2);v65circle(0,-6,5,c,'#ffc6ef',1);for(let i=0;i<3;i++){const x=(i-1)*10;v65circle(x,12,4,'#401447',c,1)}}
+  if(a===11){v65Glow(c,10);ctx.strokeStyle=c;ctx.lineWidth=4;ctx.beginPath();ctx.arc(0,0,11,0,TAU);ctx.stroke();v65circle(0,0,6,'#05030b','#fff',1);for(let i=0;i<4;i++){const q=(game?.t||0)*.6+i*TAU/4;v65poly([[Math.cos(q)*11,Math.sin(q)*11],[Math.cos(q+.2)*18,Math.sin(q+.2)*18],[Math.cos(q-.2)*18,Math.sin(q-.2)*18]],c,null)}v65NoGlow()}
+}
+function v65BossBeast(e){const c=e.hit?'#fff':'#b586ff';v65circle(0,-2,17,'#2c203b',c,3);for(let i=0;i<8;i++){const a=i*TAU/8;v65poly([[Math.cos(a)*12,Math.sin(a)*12],[Math.cos(a+.18)*24,Math.sin(a+.18)*24],[Math.cos(a-.18)*24,Math.sin(a-.18)*24]],'#ddd4e8','#5e3b85',1)}v65poly([[-10,-14],[-5,-25],[0,-17],[6,-25],[11,-14]],'#ffd166','#7e5518',2);v65circle(-5,-5,2,'#ff58cf');v65circle(5,-5,2,'#ff58cf')}
+function v65BossForge(e){v65poly([[-22,17],[-19,-15],[-9,-24],[9,-24],[20,-15],[23,17]],'#2a2427','#ff723d',3);v65circle(0,-3,9,'#5c1e15','#ffb042',3);v65circle(0,-3,4,'#ff6d2c','#fff1a8',1);v65poly([[-13,-22],[-6,-31],[0,-25],[7,-31],[14,-22]],'#21181b','#ff8a3c',2);v65line(18,1,34,17,'#7f4a2e',7);v65rect(28,12,16,13,'#ff7135')}
+function v65BossFrost(e){v65poly([[-19,17],[-17,-13],[-8,-25],[0,-19],[8,-27],[18,-13],[20,17]],'#183755','#79dfff',3);v65poly([[-11,-20],[-7,-33],[0,-23],[8,-35],[12,-19]],'#b9f1ff','#ffffff',2);v65line(16,-2,35,22,'#d9fbff',7);v65line(35,22,39,28,'#78dfff',10)}
+function v65BossMarsh(e){v65poly([[-22,14],[-18,-12],[-8,-21],[8,-21],[20,-11],[23,14]],'#241638','#9f53d8',3);for(let i=0;i<8;i++){const a=i*TAU/8;v65circle(Math.cos(a)*17,Math.sin(a)*12+3,5,i%2?'#6d257e':'#8c359a','#da8aff',1)}v65poly([[-8,-18],[0,-27],[9,-18],[6,-8],[-6,-8]],'#3a194a','#c86aff',2);for(let i=-2;i<=2;i++)v65line(i*4,10,i*7,25,'#6dff9a',2)}
+function v65BossSaint(e){v65poly([[-19,18],[-14,-12],[0,-29],[14,-12],[20,18]],'#241448','#b586ff',3);v65circle(0,-16,5,'#0c0715','#f0dcff',1);ctx.strokeStyle='#d27cff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,-14,24,0,TAU);ctx.stroke();for(let i=0;i<5;i++){const a=(game?.t||0)*.3+i*TAU/5;v65diamond(Math.cos(a)*26,-8+Math.sin(a)*18,4,'#a864ff','#fff')}}
+function v65BossAbyss(e){v65Glow('#c44cff',14);v65circle(0,-2,18,'#12091d','#c44cff',4);v65circle(0,-2,8,'#030108','#6eeaff',2);for(let i=0;i<8;i++){const a=(game?.t||0)*.2+i*TAU/8;ctx.strokeStyle=i%2?'#6d43cc':'#a23cff';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(Math.cos(a)*12,Math.sin(a)*12);ctx.quadraticCurveTo(Math.cos(a+.5)*28,Math.sin(a+.5)*28,Math.cos(a+.8)*36,Math.sin(a+.8)*36);ctx.stroke()}v65poly([[-15,-15],[-9,-30],[0,-21],[8,-31],[15,-15]],'#2a1044','#ff55cb',2);v65NoGlow()}
+function v65DrawBoss(e){ctx.save();const scale=Math.max(1.15,e.r/22);ctx.scale(scale,scale);if(e.cataclysm||e.abyss){v65BossAbyss(e)}else{const id=game?.map?.id||'wastes';({wastes:v65BossBeast,forge:v65BossForge,frost:v65BossFrost,marsh:v65BossMarsh,temple:v65BossSaint}[id]||v65BossBeast)(e)}ctx.restore()}
+const _v65OldDrawEnemy=drawEnemy;
+drawEnemy=function(e){
+  if(!e)return;v65EnemyShadow(e);ctx.save();ctx.translate(Math.round(e.x),Math.round(e.y));if(e.eliteAffixes?.length){ctx.strokeStyle='#ffe16d';ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,e.r+7,0,TAU);ctx.stroke()}
+  if(e.type==='boss')v65DrawBoss(e);else v65DrawEnemyModel(e);ctx.restore();
+  if(e.type==='boss'||['tank','shielder','charger','bastion'].includes(e.type)){const w=Math.max(22,e.r*2.2);v65rect(e.x-w/2,e.y-e.r-12,w,4,'#35142f');v65rect(e.x-w/2,e.y-e.r-12,w*clamp(e.hp/e.maxHp,0,1),4,e.type==='boss'?'#ff5c86':e.color)}
+  if((e.shield||0)>0){ctx.strokeStyle='rgba(135,225,255,.72)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(e.x,e.y,e.r+5,0,TAU);ctx.stroke()}
+};
+const _v65SetupMode=setupMode;
+setupMode=function(){_v65SetupMode();$('modeSubtitle').textContent=(playerCount===2?'V6.5 本機合作｜':'V6.5 單人｜')+'視覺重鑄：7 英雄、全敵人、Boss 專屬建模｜手機觸控保留';$('modeBadge').textContent=playerCount===2?'2 PLAYERS / V6.5 VISUAL':'1 PLAYER / V6.5 VISUAL'};
