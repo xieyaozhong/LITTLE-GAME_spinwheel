@@ -1,0 +1,243 @@
+// PIXEL RIFT V6.8 armory rift — 4 new professions, mythic arsenal, new gear slots and 10 enemies
+const V68={version:'6.8'};
+
+// ── NEW PROFESSIONS ───────────────────────────────────────────────────────────
+HEROES.push(
+  {id:'gunslinger',name:'裂隙槍鬥士',flow:'雙槍超載流',desc:'高速雙槍、側翼彈幕與爆擊連射，擅長持續壓制與精準爆發',hp:88,speed:224,damage:14,rate:6.1,color:'#ff8a5c',pierce:0,crit:.13},
+  {id:'necromancer',name:'魂契死靈師',flow:'亡魂循環流',desc:'擊殺收集魂能，蓄滿後釋放亡魂風暴並吸取生命',hp:96,speed:188,damage:21,rate:3.55,color:'#9d72ff',pierce:1,crit:.08},
+  {id:'arbiter',name:'聖槍仲裁者',flow:'裁決聖槍流',desc:'高穿透聖槍、週期裁決與護盾，兼具前排韌性與直線爆發',hp:128,speed:194,damage:22,rate:3.7,color:'#ffe08a',pierce:1,crit:.07},
+  {id:'chronomancer',name:'時序術士',flow:'時間回響流',desc:'回響射擊、時間緩速與高速術式，擅長控制高階敵群',hp:84,speed:205,damage:19,rate:4.45,color:'#72e4ff',pierce:0,crit:.11}
+);
+
+const V68_UPGRADES={
+  gunslinger:[
+    U('v68_g_twin','雙槍同步','每 4 次射擊追加雙側彈幕','槍鬥士・雙槍流',p=>p.v68Twin=(p.v68Twin||0)+1,['gunslinger']),
+    U('v68_g_crit','賭命扳機','爆擊 +18%，傷害 +14%','槍鬥士・爆擊流',p=>{p.crit=Math.min(.96,p.crit+.18);p.damage*=1.14},['gunslinger']),
+    U('v68_g_rate','無限彈鏈','射速 +28%，移速 +10%','槍鬥士・超頻流',p=>{p.rate*=1.28;p.speed*=1.1},['gunslinger']),
+    U('v68_g_pierce','磁軌彈匣','穿透 +2，傷害 +16%','槍鬥士・磁軌流',p=>{p.pierce+=2;p.damage*=1.16},['gunslinger']),
+    U('v68_g_dash','槍火滑步','衝刺後獲得 12 護盾，射速 +12%','槍鬥士・滑步流',p=>{p.v64DashShield=(p.v64DashShield||0)+12;p.rate*=1.12},['gunslinger'])
+  ],
+  necromancer:[
+    U('v68_n_soul','魂匣擴容','亡魂風暴需求 -1，傷害 +12%','死靈師・魂能流',p=>{p.v68SoulNeed=Math.max(3,(p.v68SoulNeed||6)-1);p.damage*=1.12},['necromancer']),
+    U('v68_n_blood','血契回流','亡魂爆發額外回復生命','死靈師・血契流',p=>p.v68SoulHeal=(p.v68SoulHeal||.025)+.035,['necromancer']),
+    U('v68_n_swarm','百鬼夜行','亡魂風暴彈數 +4','死靈師・百鬼流',p=>p.v68SoulShots=(p.v68SoulShots||8)+4,['necromancer']),
+    U('v68_n_curse','魂蝕詛咒','傷害 +24%，爆擊 +10%','死靈師・詛咒流',p=>{p.damage*=1.24;p.crit=Math.min(.94,p.crit+.1)},['necromancer']),
+    U('v68_n_armor','冥界骨甲','生命 +38，護甲 +8%','死靈師・骨甲流',p=>{p.maxHp+=38;p.hp+=38;p.armor=Math.min(.7,p.armor+.08)},['necromancer'])
+  ],
+  arbiter:[
+    U('v68_a_spear','破界聖槍','每 3 次射擊追加高穿透聖槍','仲裁者・聖槍流',p=>p.v68Spear=(p.v68Spear||0)+1,['arbiter']),
+    U('v68_a_guard','裁決壁壘','生命 +48，護甲 +9%','仲裁者・壁壘流',p=>{p.maxHp+=48;p.hp+=48;p.armor=Math.min(.72,p.armor+.09)},['arbiter']),
+    U('v68_a_judge','天秤裁決','裁決脈衝冷卻 -25%','仲裁者・裁決流',p=>p.v68JudgeCd=Math.max(1.8,(p.v68JudgeCd||4.8)*.75),['arbiter']),
+    U('v68_a_force','貫星槍勢','穿透 +2，傷害 +22%','仲裁者・貫穿流',p=>{p.pierce+=2;p.damage*=1.22},['arbiter']),
+    U('v68_a_aegis','聖域推進','衝刺護盾 +22，移速 +14%','仲裁者・聖域流',p=>{p.v64DashShield=(p.v64DashShield||0)+22;p.speed*=1.14},['arbiter'])
+  ],
+  chronomancer:[
+    U('v68_c_echo','時間回響','每 5 次射擊追加回響彈幕','時序術士・回響流',p=>p.v68Echo=(p.v68Echo||0)+1,['chronomancer']),
+    U('v68_c_slow','凝滯力場','時間緩速更強、持續更久','時序術士・凝滯流',p=>{p.v68Slow=Math.max(.2,(p.v68Slow||.5)-.09);p.v68SlowDur=(p.v68SlowDur||1.8)+.65},['chronomancer']),
+    U('v68_c_rate','超時演算','射速 +25%，爆擊 +12%','時序術士・超時流',p=>{p.rate*=1.25;p.crit=Math.min(.95,p.crit+.12)},['chronomancer']),
+    U('v68_c_pierce','因果穿梭','穿透 +2，傷害 +16%','時序術士・因果流',p=>{p.pierce+=2;p.damage*=1.16},['chronomancer']),
+    U('v68_c_phase','秒針步法','移速 +24%，衝刺冷卻回復更快','時序術士・秒針流',p=>{p.speed*=1.24;p.v68DashRecovery=(p.v68DashRecovery||0)+.16},['chronomancer'])
+  ]
+};
+for(const list of Object.values(V68_UPGRADES))UPGRADES.push(...list);
+
+Object.assign(V6_ASCENSIONS,{
+  gunslinger:[
+    {name:'雙槍皇',desc:'射速 +38%、額外彈幕、爆擊 +15%',apply:p=>{p.rate*=1.38;p.projectiles++;p.crit=Math.min(.97,p.crit+.15);p.v68Twin=(p.v68Twin||0)+1}},
+    {name:'磁軌決鬥者',desc:'穿透 +3、傷害 +45%',apply:p=>{p.pierce+=3;p.damage*=1.45}},
+    {name:'彈幕賭徒',desc:'額外 +2 發、爆擊 +22%、生命 -12%',apply:p=>{p.projectiles+=2;p.crit=Math.min(.98,p.crit+.22);p.maxHp=Math.max(50,p.maxHp-12);p.hp=Math.min(p.hp,p.maxHp)}},
+    {name:'終末槍王',desc:'傷害 +35%、射速 +25%、移速 +20%',apply:p=>{p.damage*=1.35;p.rate*=1.25;p.speed*=1.2}}
+  ],
+  necromancer:[
+    {name:'萬魂之主',desc:'魂能需求降低、亡魂彈數大增',apply:p=>{p.v68SoulNeed=Math.max(3,(p.v68SoulNeed||6)-2);p.v68SoulShots=(p.v68SoulShots||8)+8}},
+    {name:'骸骨大君',desc:'生命 +90、護甲 +16%、傷害 +20%',apply:p=>{p.maxHp+=90;p.hp+=90;p.armor=Math.min(.74,p.armor+.16);p.damage*=1.2}},
+    {name:'血契冥王',desc:'傷害 +50%、魂爆治療大幅提升',apply:p=>{p.damage*=1.5;p.v68SoulHeal=(p.v68SoulHeal||.025)+.09}},
+    {name:'靈界牧者',desc:'射速 +30%、穿透 +2、魂爆 +4 發',apply:p=>{p.rate*=1.3;p.pierce+=2;p.v68SoulShots=(p.v68SoulShots||8)+4}}
+  ],
+  arbiter:[
+    {name:'星槍裁決者',desc:'聖槍頻率提升、穿透 +3、傷害 +30%',apply:p=>{p.v68Spear=(p.v68Spear||0)+2;p.pierce+=3;p.damage*=1.3}},
+    {name:'聖域先鋒',desc:'生命 +100、護甲 +15%、衝刺護盾 +30',apply:p=>{p.maxHp+=100;p.hp+=100;p.armor=Math.min(.75,p.armor+.15);p.v64DashShield=(p.v64DashShield||0)+30}},
+    {name:'破界武神',desc:'傷害 +55%、射速 +20%、移速 +14%',apply:p=>{p.damage*=1.55;p.rate*=1.2;p.speed*=1.14}},
+    {name:'天秤執法官',desc:'裁決脈衝冷卻大幅降低、範圍提高',apply:p=>{p.v68JudgeCd=Math.max(1.5,(p.v68JudgeCd||4.8)*.55);p.v68JudgeRadius=(p.v68JudgeRadius||160)+70}}
+  ],
+  chronomancer:[
+    {name:'永劫賢者',desc:'回響頻率提升、時間緩速強化',apply:p=>{p.v68Echo=(p.v68Echo||0)+2;p.v68Slow=Math.max(.18,(p.v68Slow||.5)-.14);p.v68SlowDur=(p.v68SlowDur||1.8)+1}},
+    {name:'時停君王',desc:'傷害 +30%、射速 +28%、時間脈衝強化',apply:p=>{p.damage*=1.3;p.rate*=1.28;p.v68TimePulse=(p.v68TimePulse||0)+1}},
+    {name:'逆因果術皇',desc:'穿透 +3、額外 +1 發、爆擊 +18%',apply:p=>{p.pierce+=3;p.projectiles++;p.crit=Math.min(.97,p.crit+.18)}},
+    {name:'秒針獵手',desc:'移速 +35%、射速 +35%、傷害 +18%',apply:p=>{p.speed*=1.35;p.rate*=1.35;p.damage*=1.18}}
+  ]
+});
+
+Object.assign(V64_FINAL,{
+  gunslinger:[
+    {suffix:'・神化',desc:'彈幕、射速與雙槍機制極限昇華',apply:p=>{p.projectiles+=2;p.rate*=1.34;p.v68Twin=(p.v68Twin||0)+2}},
+    {suffix:'・極化',desc:'爆擊與單發火力極限昇華',apply:p=>{p.damage*=1.62;p.crit=Math.min(.995,p.crit+.22);p.pierce+=2}}
+  ],
+  necromancer:[
+    {suffix:'・神化',desc:'亡魂風暴極限昇華',apply:p=>{p.v68SoulNeed=Math.max(2,(p.v68SoulNeed||6)-1);p.v68SoulShots=(p.v68SoulShots||8)+10;p.v68SoulHeal=(p.v68SoulHeal||.025)+.05}},
+    {suffix:'・極化',desc:'死靈火力與爆擊極限昇華',apply:p=>{p.damage*=1.58;p.rate*=1.24;p.crit=Math.min(.99,p.crit+.2)}}
+  ],
+  arbiter:[
+    {suffix:'・神化',desc:'聖槍、護盾與裁決極限昇華',apply:p=>{p.v68Spear=(p.v68Spear||0)+2;p.v68JudgeCd=Math.max(1.2,(p.v68JudgeCd||4.8)*.65);p.maxHp+=80;p.hp+=80}},
+    {suffix:'・極化',desc:'貫穿與近戰爆發極限昇華',apply:p=>{p.damage*=1.6;p.pierce+=4;p.rate*=1.22}}
+  ],
+  chronomancer:[
+    {suffix:'・神化',desc:'時間回響與控制極限昇華',apply:p=>{p.v68Echo=(p.v68Echo||0)+3;p.v68Slow=Math.max(.12,(p.v68Slow||.5)-.12);p.v68SlowDur=(p.v68SlowDur||1.8)+1.4}},
+    {suffix:'・極化',desc:'超時射擊與爆擊極限昇華',apply:p=>{p.damage*=1.52;p.rate*=1.45;p.crit=Math.min(.99,p.crit+.18)}}
+  ]
+});
+
+// Class runtime state + core mechanics
+const _v68MakePlayer=makePlayer;
+makePlayer=function(hero,index,x,y){
+  const p=_v68MakePlayer(hero,index,x,y);p.v68Shot=0;p.v68Souls=0;p.v68SoulNeed=6;p.v68SoulShots=8;p.v68SoulHeal=.025;p.v68JudgeCd=4.8;p.v68JudgeT=1.5;p.v68JudgeRadius=160;p.v68Slow=.5;p.v68SlowDur=1.8;p.v68Echo=0;p.v68Twin=0;p.v68Spear=0;p.v68DashRecovery=0;return p
+};
+function v68PushBullet(p,a,speed,damage,color,pierce=0,r=3,element=null){game.bullets.push({owner:p,x:p.x,y:p.y,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,r,damage,pierce,life:1.9,hit:new Set(),color,element})}
+const _v68Fire=fire;
+fire=function(p){
+  const target=p?nearestEnemy(p):null,base=target?Math.atan2(target.y-p.y,target.x-p.x):0;
+  const out=_v68Fire(p);if(!p||!target)return out;p.v68Shot=(p.v68Shot||0)+1;
+  if(p.hero==='gunslinger'&&p.v68Shot%Math.max(2,4-(p.v68Twin||0))===0){v68PushBullet(p,base-.18,500,p.damage*1.05,'#ffb07a',p.pierce,3);v68PushBullet(p,base+.18,500,p.damage*1.05,'#ffd09b',p.pierce,3)}
+  else if(p.hero==='arbiter'&&p.v68Shot%Math.max(2,4-(p.v68Spear||0))===0){v68PushBullet(p,base,560,p.damage*1.75,'#fff0a6',p.pierce+3,5)}
+  else if(p.hero==='chronomancer'&&p.v68Shot%Math.max(2,5-(p.v68Echo||0))===0){for(let i=-1;i<=1;i++)v68PushBullet(p,base+i*.13,420,p.damage*.82,'#8eefff',p.pierce+1,3,'frost');target.slowT=Math.max(target.slowT||0,p.v68SlowDur||1.8);target.slowFactor=Math.min(target.slowFactor||1,p.v68Slow||.5)}
+  return out
+};
+
+function v68SoulBurst(p){
+  const n=p.v68SoulShots||8;for(let i=0;i<n;i++){const a=i/n*TAU+game.t*.18;v68PushBullet(p,a,390,p.damage*1.35,'#c49bff',p.pierce+1,4)}
+  p.hp=Math.min(p.maxHp,p.hp+p.maxHp*(p.v68SoulHeal||.025));burst(p.x,p.y,'#a979ff',14);v67PushText?.(p.x,p.y-34,'SOUL STORM','#d8b8ff',15,.8)
+}
+const _v68KillEnemy=killEnemy;
+killEnemy=function(e,owner){
+  const fresh=!!e&&!e.dead;const out=_v68KillEnemy(e,owner);
+  if(fresh&&owner?.hero==='necromancer'&&game){owner.v68Souls=(owner.v68Souls||0)+1;if(owner.v68Souls>=(owner.v68SoulNeed||6)){owner.v68Souls=0;v68SoulBurst(owner)}}
+  return out
+};
+const _v68Update=update;
+update=function(dt){
+  if(game){for(const p of game.players){
+    if(p.hero==='arbiter'&&!p.dead){p.v68JudgeT=(p.v68JudgeT||1.5)-dt;if(p.v68JudgeT<=0){p.v68JudgeT=p.v68JudgeCd||4.8;const r=p.v68JudgeRadius||160;areaDamage(p.x,p.y,r,p.damage*1.25,p,'#ffe78f');p.shield=Math.min(p.maxHp*.5,(p.shield||0)+10)}}
+    if(p.hero==='chronomancer'&&!p.dead&&p.v68TimePulse){p.v68TimeT=(p.v68TimeT||3.4)-dt;if(p.v68TimeT<=0){p.v68TimeT=3.4;for(const e of game.enemies)if(!e.dead&&d2(p,e)<240*240){e.slowT=Math.max(e.slowT||0,1.8);e.slowFactor=Math.min(e.slowFactor||1,.42)}game.particles.push({type:'ring',x:p.x,y:p.y,r:8,maxR:240,life:.32,max:.32,color:'#78eaff'})}}
+    if(p.v68DashRecovery)p.dashCd=Math.max(0,(p.dashCd||0)-p.v68DashRecovery*dt)
+  }}
+  return _v68Update(dt)
+};
+
+// Ultimates for the four new professions
+Object.assign(V62_ULT_NAMES,{gunslinger:'終幕・萬槍齊鳴',necromancer:'冥界・萬魂夜宴',arbiter:'神判・天槍墜界',chronomancer:'禁術・零秒領域'});
+const _v68Ultimate=v62Ultimate;
+v62Ultimate=function(p){
+  if(!p||!['gunslinger','necromancer','arbiter','chronomancer'].includes(p.hero))return _v68Ultimate(p);
+  if(p.dead||!p.ascension||p.v62UltT>0)return;p.v62UltT=18;toast(`✦ ${p.name}：${V62_ULT_NAMES[p.hero]}`);shake=12;
+  if(p.hero==='gunslinger'){const target=nearestEnemy(p),base=target?Math.atan2(target.y-p.y,target.x-p.x):0;for(let i=0;i<28;i++)v68PushBullet(p,base+(i-13.5)*.065,560,p.damage*2.15,i%2?'#ffd070':'#ff8a62',p.pierce+2,4)}
+  else if(p.hero==='necromancer'){areaDamage(p.x,p.y,390,p.damage*3.4,p,'#b879ff');for(let i=0;i<22;i++)v68PushBullet(p,i/22*TAU,420,p.damage*1.7,'#d1adff',p.pierce+1,4);p.hp=Math.min(p.maxHp,p.hp+p.maxHp*.45)}
+  else if(p.hero==='arbiter'){p.invuln=Math.max(p.invuln,2);p.shield=Math.min(p.maxHp,(p.shield||0)+p.maxHp*.65);areaDamage(p.x,p.y,350,p.damage*3.8,p,'#fff0a0');for(let i=0;i<12;i++)v68PushBullet(p,i/12*TAU,470,p.damage*1.9,'#ffe482',p.pierce+4,5)}
+  else if(p.hero==='chronomancer'){for(const e of game.enemies)if(!e.dead){e.slowT=Math.max(e.slowT||0,4);e.slowFactor=Math.min(e.slowFactor||1,.18)}areaDamage(p.x,p.y,470,p.damage*3.1,p,'#87eaff');for(let i=0;i<18;i++)v68PushBullet(p,i/18*TAU,430,p.damage*1.55,'#9ff5ff',p.pierce+2,4,'frost')}
+  burst(p.x,p.y,p.color,28)
+};
+
+// ── ARSENAL EXPANSION ────────────────────────────────────────────────────────
+if(!V6_RARITIES.some(r=>r.id==='mythic'))V6_RARITIES.push({id:'mythic',name:'神話',color:'#ff6ee7',mult:2.22});
+if(!V6_SLOTS.some(s=>s[0]==='armor'))V6_SLOTS.push(['armor','戰甲']);
+if(!V6_SLOTS.some(s=>s[0]==='sigil'))V6_SLOTS.push(['sigil','戰紋']);
+V62_GEAR_AFFIXES.push(
+  {id:'overdrive',name:'超限',apply:i=>{i.mods.damage=(i.mods.damage||0)+.08;i.mods.rate=(i.mods.rate||0)+.07}},
+  {id:'colossus',name:'泰坦',apply:i=>{i.mods.hp=(i.mods.hp||0)+32;i.mods.armor=(i.mods.armor||0)+.035}},
+  {id:'predator',name:'掠食',apply:i=>{i.mods.crit=(i.mods.crit||0)+.06;i.mods.speed=(i.mods.speed||0)+.055}},
+  {id:'oracle',name:'先知',apply:i=>{i.mods.rate=(i.mods.rate||0)+.06;i.mods.crit=(i.mods.crit||0)+.045}},
+  {id:'breaker',name:'破軍',apply:i=>{i.mods.damage=(i.mods.damage||0)+.12}},
+  {id:'aegis2',name:'聖鎧',apply:i=>{i.mods.armor=(i.mods.armor||0)+.055;i.mods.hp=(i.mods.hp||0)+18}},
+  {id:'phantom',name:'幻步',apply:i=>{i.mods.speed=(i.mods.speed||0)+.09;i.mods.rate=(i.mods.rate||0)+.04}},
+  {id:'entropy2',name:'熵蝕',apply:i=>{i.mods.damage=(i.mods.damage||0)+.07;i.mods.crit=(i.mods.crit||0)+.07}}
+);
+const V68_SET_NAMES={warpath:'戰禍',aether:'星脈',guardian:'不滅',entropy:'終熵'};
+const V68_SET_LABELS={warpath:'戰禍軍械',aether:'星脈軍械',guardian:'不滅軍械',entropy:'終熵軍械'};
+const _v68ApplyGearMods=v6ApplyGearMods;
+v6ApplyGearMods=function(p,item,dir){
+  _v68ApplyGearMods(p,item,dir);if(!item?.mods)return;const m=item.mods;if(m.pierce)p.pierce=Math.max(0,p.pierce+dir*m.pierce);if(m.projectiles)p.projectiles=Math.max(1,p.projectiles+dir*m.projectiles)
+};
+function v68GearScore(i){const m=i.mods||{};return v62GearScore(i)+(m.pierce||0)*85+(m.projectiles||0)*120+(i.rarity?.id==='mythic'?90:0)+(i.v68Set?35:0)}
+const _v68MakeItem=v6MakeItem;
+v6MakeItem=function(source){
+  const item=_v68MakeItem(source),w=game?.wave||1,myth=V6_RARITIES.find(r=>r.id==='mythic');
+  const mythChance=source?.cataclysm?.35:source?.abyss?.22:source?.apex?.15:source?.type==='boss'?Math.min(.06+w*.0015,.16):w>=28?Math.min(.012+(w-28)*.0008,.07):0;
+  if(myth&&Math.random()<mythChance&&item.rarity.id!=='mythic'){
+    const old=item.rarity.mult||1,ratio=myth.mult/old;for(const k of Object.keys(item.mods||{})){item.mods[k]=k==='hp'?Math.round(item.mods[k]*ratio):+(item.mods[k]*ratio).toFixed(3)}item.rarity=myth;
+    const pool=V62_GEAR_AFFIXES.filter(a=>!item.affixes?.includes(a.id));item.affixes=item.affixes||[];while(item.affixes.length<3&&pool.length){const a=pool.splice(Math.floor(Math.random()*pool.length),1)[0];item.affixes.push(a.id);a.apply(item)}
+  }
+  if(item.slot==='armor'){item.mods.hp=(item.mods.hp||0)+Math.round(rand(18,38)*(item.rarity.mult||1));item.mods.armor=(item.mods.armor||0)+.035*(item.rarity.mult||1)}
+  if(item.slot==='sigil'){item.mods.damage=(item.mods.damage||0)+.045*(item.rarity.mult||1);item.mods.crit=(item.mods.crit||0)+.025*(item.rarity.mult||1)}
+  if(item.rarity.id==='mythic'){
+    if(item.slot==='weapon'){item.mods.pierce=(item.mods.pierce||0)+1;item.mods.damage=(item.mods.damage||0)+.08}
+    else if(item.slot==='sigil'){item.mods.projectiles=(item.mods.projectiles||0)+1;item.mods.rate=(item.mods.rate||0)+.06}
+    else if(item.slot==='armor'){item.mods.hp=(item.mods.hp||0)+45;item.mods.armor=(item.mods.armor||0)+.05}
+    else if(item.slot==='core'){item.mods.hp=(item.mods.hp||0)+35;item.mods.damage=(item.mods.damage||0)+.06}
+    else {item.mods.speed=(item.mods.speed||0)+.06;item.mods.crit=(item.mods.crit||0)+.04}
+  }
+  const setChance=item.rarity.id==='mythic'?.72:item.rarity.id==='legendary'?.34:item.rarity.id==='epic'?.12:0;
+  if(Math.random()<setChance){const ids=Object.keys(V68_SET_NAMES);item.v68Set=ids[Math.floor(Math.random()*ids.length)];item.v68SetName=V68_SET_NAMES[item.v68Set]}
+  item.score=v68GearScore(item);const affixText=item.affixes?.length?'·'+item.affixes.map(id=>V62_GEAR_AFFIXES.find(a=>a.id===id)?.name||id).join('·'):'';item.name=`${item.rarity.name}・${item.v68SetName?item.v68SetName+'・':''}${item.setName?item.setName+'・':''}${item.slotName}${affixText}`;return item
+};
+function v68ClearArsenalSet(p){const b=p.v68SetBonus;if(!b)return;if(b.damage)p.damage/=b.damage;if(b.rate)p.rate/=b.rate;if(b.speed)p.speed/=b.speed;if(b.crit)p.crit=clamp(p.crit-b.crit,0,.99);if(b.armor)p.armor=clamp(p.armor-b.armor,0,.78);if(b.pierce)p.pierce=Math.max(0,p.pierce-b.pierce);if(b.projectiles)p.projectiles=Math.max(1,p.projectiles-b.projectiles);if(b.hp){p.maxHp=Math.max(1,p.maxHp-b.hp);p.hp=Math.min(p.hp,p.maxHp)}p.v68SetBonus=null}
+const _v68RefreshSetBonus=v62RefreshSetBonus;
+v62RefreshSetBonus=function(p){
+  v68ClearArsenalSet(p);_v68RefreshSetBonus(p);const counts={};for(const item of Object.values(p.gear||{}))if(item?.v68Set)counts[item.v68Set]=(counts[item.v68Set]||0)+1;let id=null,count=0;for(const [k,n] of Object.entries(counts))if(n>count){id=k;count=n}p.v68Set={id,count};if(!id||count<2)return;
+  const b={damage:1,rate:1,speed:1,crit:0,armor:0,pierce:0,projectiles:0,hp:0};
+  if(id==='warpath'){b.damage=1.18;if(count>=4){b.rate=1.18;b.pierce=1}}
+  if(id==='aether'){b.rate=1.16;b.speed=1.12;if(count>=4){b.crit=.12;b.projectiles=1}}
+  if(id==='guardian'){b.hp=55;b.armor=.08;if(count>=4)b.damage=1.14}
+  if(id==='entropy'){b.crit=.1;b.damage=1.12;if(count>=4){b.damage=1.26;b.speed=1.14}}
+  p.damage*=b.damage;p.rate*=b.rate;p.speed*=b.speed;p.crit=clamp(p.crit+b.crit,0,.99);p.armor=clamp(p.armor+b.armor,0,.78);p.pierce+=b.pierce;p.projectiles+=b.projectiles;if(b.hp){p.maxHp+=b.hp;p.hp=Math.min(p.maxHp,p.hp+b.hp)}p.v68SetBonus=b;toast(`◆ ${V68_SET_LABELS[id]} ${count}/4 啟動`)
+};
+
+// ── TEN NEW ENEMIES ──────────────────────────────────────────────────────────
+Object.assign(ENEMY_DEFS,{
+  razorwing:{name:'裂空刃翼',r:9,hp:82,speed:122,damage:22,color:'#ff6fb1',xp:18,score:480},
+  suppressor:{name:'禁域砲衛',r:13,hp:138,speed:36,damage:27,color:'#ff9b68',xp:22,score:590},
+  parasite:{name:'虛蝕寄生體',r:10,hp:102,speed:72,damage:18,color:'#8bff9e',xp:20,score:550},
+  mirage:{name:'幻相術士',r:10,hp:96,speed:58,damage:24,color:'#d07cff',xp:21,score:610},
+  colossus:{name:'星骸巨衛',r:18,hp:310,speed:24,damage:34,color:'#7eb7ff',xp:34,score:1050},
+  dronecarrier:{name:'蜂巢戰母',r:16,hp:205,speed:34,damage:19,color:'#f58cff',xp:27,score:790},
+  executioner:{name:'斷界行刑者',r:12,hp:156,speed:96,damage:36,color:'#ff4f6f',xp:29,score:880},
+  entropy:{name:'熵核先知',r:14,hp:188,speed:38,damage:29,color:'#b36dff',xp:30,score:920},
+  lancer:{name:'星槍追獵者',r:11,hp:118,speed:67,damage:30,color:'#ffe06f',xp:25,score:720},
+  eclipse:{name:'蝕界觀測體',r:15,hp:228,speed:31,damage:26,color:'#6f72ff',xp:32,score:980}
+});
+const _v68AvailableEnemyTypes=availableEnemyTypes;
+availableEnemyTypes=function(){const a=_v68AvailableEnemyTypes(),w=game?.wave||1;if(w>=12)a.push('razorwing');if(w>=15)a.push('suppressor');if(w>=18)a.push('parasite');if(w>=21)a.push('mirage');if(w>=24)a.push('lancer');if(w>=27)a.push('dronecarrier');if(w>=30)a.push('executioner');if(w>=33)a.push('entropy');if(w>=36)a.push('colossus');if(w>=40)a.push('eclipse');if(w>=48)a.push('executioner','entropy','colossus','eclipse');return a};
+function v68InitEnemy(e){if(!e||e.v68Ready)return;e.v68Ready=true;e.v68T=rand(1.2,2.5);e.v68T2=rand(2.8,4.8);if(e.type==='colossus'){e.shield=(e.shield||0)+e.maxHp*.35;e.maxShield=Math.max(e.maxShield||0,e.shield)}if(e.type==='eclipse'){e.shield=(e.shield||0)+e.maxHp*.25;e.maxShield=Math.max(e.maxShield||0,e.shield)}}
+const _v68UpdateEnemy=updateEnemy;
+updateEnemy=function(e,dt){
+  _v68UpdateEnemy(e,dt);if(!game||!e||e.dead||!ENEMY_DEFS[e.type]||!['razorwing','suppressor','parasite','mirage','colossus','dronecarrier','executioner','entropy','lancer','eclipse'].includes(e.type))return;v68InitEnemy(e);e.v68T-=dt;e.v68T2-=dt;const p=nearestPlayer(e);if(!p)return;const a=Math.atan2(p.y-e.y,p.x-e.x);
+  if(e.type==='razorwing'&&e.v68T<=0){e.v68T=2.25;const ox=e.x,oy=e.y;e.x=clamp(p.x+rand(-120,120),30,WORLD_W-30);e.y=clamp(p.y+rand(-120,120),30,WORLD_H-30);game.particles.push({type:'line',x:ox,y:oy,x2:e.x,y2:e.y,life:.16,max:.16,color:e.color});damagePlayersInRadius(e.x,e.y,52,e.damage*.62,e)}
+  else if(e.type==='suppressor'&&e.v68T<=0){e.v68T=2.55;for(let i=-3;i<=3;i++)addEnemyBullet(e.x,e.y,a+i*.11,205,e.damage*.42,5,e.color)}
+  else if(e.type==='parasite'&&e.v68T<=0){e.v68T=2.75;damagePlayersInRadius(e.x,e.y,112,e.damage*.35,e);e.hp=Math.min(e.maxHp,e.hp+e.maxHp*.075)}
+  else if(e.type==='mirage'&&e.v68T<=0){e.v68T=2.35;e.x=clamp(p.x+rand(-180,180),30,WORLD_W-30);e.y=clamp(p.y+rand(-150,150),30,WORLD_H-30);for(let i=-2;i<=2;i++)addEnemyBullet(e.x,e.y,a+i*.18,230,e.damage*.4,4,e.color)}
+  else if(e.type==='colossus'&&e.v68T<=0){e.v68T=3.25;damagePlayersInRadius(e.x,e.y,165,e.damage*.52,e);e.shield=Math.min(e.maxHp*.65,(e.shield||0)+e.maxHp*.08);game.particles.push({type:'ring',x:e.x,y:e.y,r:8,maxR:170,life:.36,max:.36,color:e.color})}
+  else if(e.type==='dronecarrier'&&e.v68T<=0){e.v68T=4.0;for(let i=0;i<2;i++){const t=Math.random()<.5?'prism':'nullifier';game.enemies.push(makeEnemy(t,{x:clamp(e.x+rand(-75,75),25,WORLD_W-25),y:clamp(e.y+rand(-75,75),25,WORLD_H-25)},1+game.wave*.03))}}
+  else if(e.type==='executioner'&&e.v68T<=0){e.v68T=2.1;e.x=clamp(e.x+Math.cos(a)*110,25,WORLD_W-25);e.y=clamp(e.y+Math.sin(a)*110,25,WORLD_H-25);damagePlayersInRadius(e.x,e.y,58,e.damage*.72,e)}
+  else if(e.type==='entropy'&&e.v68T<=0){e.v68T=2.8;for(let i=0;i<14;i++)addEnemyBullet(e.x,e.y,i/14*TAU+game.t*.25,155,e.damage*.3,5,e.color,'slow')}
+  else if(e.type==='lancer'&&e.v68T<=0){e.v68T=2.45;for(let i=-1;i<=1;i++)addEnemyBullet(e.x,e.y,a+i*.07,330,e.damage*.58,5,e.color)}
+  else if(e.type==='eclipse'&&e.v68T<=0){e.v68T=3.1;for(let i=0;i<12;i++)addEnemyBullet(e.x,e.y,i/12*TAU+game.t*.4,190,e.damage*.31,5,e.color);e.shield=Math.min(e.maxHp*.55,(e.shield||0)+e.maxHp*.06)}
+};
+
+// Visual archetypes for the new enemies
+const _v68EnemyArchetype=v65EnemyArchetype;
+v65EnemyArchetype=function(e){const map={razorwing:1,suppressor:7,parasite:4,mirage:8,colossus:3,dronecarrier:10,executioner:1,entropy:11,lancer:2,eclipse:5};return map[e?.type]??_v68EnemyArchetype(e)};
+function v68EnemyTelegraph(e){if(!e||e.dead||!game||!(e.v68T<.45))return;const p=nearestPlayer(e);if(!p)return;ctx.save();ctx.globalAlpha=.22+.12*Math.sin(game.t*22);ctx.strokeStyle=e.color;ctx.lineWidth=['colossus','eclipse'].includes(e.type)?3:2;const a=Math.atan2(p.y-e.y,p.x-e.x);if(['suppressor','lancer','executioner'].includes(e.type)){ctx.beginPath();ctx.moveTo(e.x,e.y);ctx.lineTo(e.x+Math.cos(a)*220,e.y+Math.sin(a)*220);ctx.stroke()}else{ctx.beginPath();ctx.arc(e.x,e.y,['colossus','entropy','eclipse'].includes(e.type)?e.r+24:e.r+14,0,TAU);ctx.stroke()}ctx.restore()}
+const _v68DrawEnemy=drawEnemy;drawEnemy=function(e){v68EnemyTelegraph(e);return _v68DrawEnemy(e)};
+
+// New character models compatible with the V6.5/V6.6 renderer
+function v68DrawGunslinger(){v65HeroBase('#40253c','#ff9a66');v65poly([[-8,-22],[0,-28],[9,-22],[7,-17],[-8,-17]],'#34182a','#ffc08c',2);v65line(-8,-2,-25,-1,'#ff9a66',4);v65line(8,-2,25,-1,'#ffd08c',4);v65rect(-29,-4,9,6,'#c6d2e8');v65rect(20,-4,9,6,'#c6d2e8')}
+function v68DrawNecromancer(){v65poly([[-12,14],[-9,-9],[0,-23],[9,-9],[12,14]],'#23113f','#9d72ff',2);v65circle(0,-15,5,'#d9c2b0','#09061d',2);v65poly([[-9,-22],[0,-30],[9,-22],[5,-17],[-6,-17]],'#160b2b','#bd8cff',2);v65Glow('#9d72ff',9);v65circle(15,-3,4,'#8b63ff','#fff',1);v65circle(-15,3,3,'#c68cff','#fff',1);v65NoGlow()}
+function v68DrawArbiter(){v65HeroBase('#42445d','#ffe08a');v65poly([[-9,-23],[0,-29],[9,-23],[8,-14],[-8,-14]],'#d6d9e8','#ffe08a',2);v65line(10,-8,26,18,'#fff0a0',4);v65diamond(28,20,5,'#ffe08a','#fff');v65poly([[-18,-10],[-9,-12],[-9,13],[-18,9]],'#415c91','#ffe08a',2)}
+function v68DrawChronomancer(){v65poly([[-11,14],[-9,-10],[0,-22],[9,-10],[11,14]],'#143b53','#72e4ff',2);v65circle(0,-16,5,'#dbc0ad','#09061d',2);ctx.strokeStyle='#72e4ff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,-5,17,0,TAU);ctx.stroke();v65line(0,-5,0,-14,'#fff',1.5);v65line(0,-5,7,0,'#fff',1.5);v65diamond(17,-5,3,'#9ff4ff','#fff')}
+Object.assign(V65_HERO_DRAW,{gunslinger:v68DrawGunslinger,necromancer:v68DrawNecromancer,arbiter:v68DrawArbiter,chronomancer:v68DrawChronomancer});
+function v68HeroFx(p){if(!p||p.dead||!(p.v66Attack>0))return;ctx.save();ctx.translate(p.x,p.y);ctx.globalAlpha=.42;const face=p.v66Face||1;if(p.hero==='gunslinger'){ctx.strokeStyle='#ff9a66';ctx.lineWidth=2;for(let i=-2;i<=2;i++){ctx.beginPath();ctx.moveTo(face*10,i*3);ctx.lineTo(face*(32+i*2),i*5);ctx.stroke()}}else if(p.hero==='necromancer'){ctx.strokeStyle='#b78cff';for(let i=0;i<3;i++){ctx.beginPath();ctx.arc(0,0,18+i*6,0,TAU);ctx.stroke()}}else if(p.hero==='arbiter'){ctx.strokeStyle='#ffe08a';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(-face*8,-16);ctx.lineTo(face*34,16);ctx.stroke()}else if(p.hero==='chronomancer'){ctx.strokeStyle='#72e4ff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,26,0,TAU);ctx.stroke();for(let i=0;i<4;i++){const a=game.t*2+i*TAU/4;v65diamond(Math.cos(a)*28,Math.sin(a)*18,2.5,'#9ef5ff',null)}}ctx.restore()}
+const _v68DrawPlayer=drawPlayer;drawPlayer=function(p){const out=_v68DrawPlayer(p);v68HeroFx(p);return out};
+
+// HUD + labels
+function v68GearHud(){if(!game)return'';const myth=game.players.reduce((n,p)=>n+Object.values(p.gear||{}).filter(i=>i?.rarity?.id==='mythic').length,0);return myth?`｜神話裝 ${myth}`:''}
+const _v68HudText=v62HudText;v62HudText=function(){return _v68HudText()+v68GearHud()};
+const _v68SetupMode=setupMode;
+setupMode=function(){_v68SetupMode();$('modeSubtitle').textContent=(playerCount===2?'V6.8 本機合作｜':'V6.8 單人｜')+'軍械裂變：11 職業／神話裝備／5 裝備槽／軍械套裝／10 新敵人';$('modeBadge').textContent=playerCount===2?'2 PLAYERS / V6.8 ARMORY':'1 PLAYER / V6.8 ARMORY'};
