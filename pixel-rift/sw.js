@@ -1,4 +1,4 @@
-const CACHE='pixel-rift-v6.7-shell';
+const CACHE='pixel-rift-v6.8-shell';
 const SHELL=['./play/','./manifest.webmanifest','./assets/icon-192.png','./assets/icon.svg','./assets/apple-touch-icon.png'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('pixel-rift-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
