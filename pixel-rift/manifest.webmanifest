@@ -1,9 +1,9 @@
 {
-  "name":"PIXEL RIFT V6.6",
+  "name":"PIXEL RIFT V6.7",
   "short_name":"PIXEL RIFT",
-  "description":"PIXEL RIFT 動態重鑄版 — Roguelite 裂隙生存戰",
+  "description":"PIXEL RIFT 戰鬥重鑄版 — Roguelite 裂隙生存戰",
   "id":"./play/",
-  "start_url":"./play/?source=pwa&v=6.6",
+  "start_url":"./play/?source=pwa&v=6.7",
   "scope":"./",
   "display":"standalone",
   "orientation":"landscape",
@@ -14,7 +14,7 @@
     {"src":"./assets/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
   ],
   "shortcuts":[
-    {"name":"單人裂隙","url":"./v6/index.html?players=1&v=6.6"},
-    {"name":"本機雙人","url":"./v6/index.html?players=2&v=6.6"}
+    {"name":"單人裂隙","url":"./v6/index.html?players=1&v=6.7"},
+    {"name":"本機雙人","url":"./v6/index.html?players=2&v=6.7"}
   ]
 }
