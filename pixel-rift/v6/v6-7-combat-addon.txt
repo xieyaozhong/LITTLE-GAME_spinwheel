@@ -1,0 +1,129 @@
+// PIXEL RIFT V6.7 combat reforge — readable telegraphs, damage numbers, combo flow and perfect dash
+const V67={version:'6.7',combo:0,comboT:0,perfect:0,texts:[],lastTier:0};
+function v67Reset(){V67.combo=0;V67.comboT=0;V67.perfect=0;V67.texts.length=0;V67.lastTier=0}
+function v67PushText(x,y,text,color='#fff',size=12,life=.7){
+  if(!game)return;
+  const cap=(typeof V66!=='undefined'&&V66.lowVisual)?28:64;
+  if(V67.texts.length>=cap)V67.texts.splice(0,V67.texts.length-cap+1);
+  V67.texts.push({x,y,text:String(text),color,size,life,max:life,vy:-24-rand(0,9),vx:rand(-5,5)})
+}
+function v67EnsureHud(){
+  if(document.getElementById('v67CombatHud'))return;
+  const style=document.createElement('style');style.id='v67CombatStyle';style.textContent=`
+  #v67CombatHud{position:absolute;left:50%;top:max(82px,env(safe-area-inset-top));transform:translateX(-50%);z-index:13;pointer-events:none;text-align:center;opacity:0;transition:opacity .16s ease}
+  #v67CombatHud.show{opacity:1}.v67-combo{font:900 clamp(13px,2.2vw,22px) "Courier New",monospace;color:#fff;text-shadow:0 0 12px #b586ff,2px 2px 0 #351d63;letter-spacing:.08em}.v67-combo b{color:#ffd166;font-size:1.35em}.v67-tier{margin-top:2px;font:900 9px "Courier New",monospace;color:#8ff7ff;letter-spacing:.2em}
+  #v67Perfect{position:absolute;left:50%;top:54%;transform:translate(-50%,-50%) scale(.92);z-index:19;pointer-events:none;opacity:0;color:#8ff7ff;font:900 clamp(18px,4vw,34px) "Courier New",monospace;letter-spacing:.14em;text-shadow:0 0 18px #5ce1e6,3px 3px 0 #162b58;transition:opacity .12s ease,transform .12s ease}#v67Perfect.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  @media(max-height:430px){#v67CombatHud{top:62px}.v67-combo{font-size:13px}#v67Perfect{font-size:18px}}
+  `;document.head.appendChild(style);
+  const hud=document.createElement('div');hud.id='v67CombatHud';hud.innerHTML='<div class="v67-combo"><b id="v67ComboN">0</b> COMBO</div><div class="v67-tier" id="v67Tier">RIFT FLOW</div>';
+  const perfect=document.createElement('div');perfect.id='v67Perfect';perfect.textContent='PERFECT RIFT DASH';
+  document.querySelector('.app')?.append(hud,perfect)
+}
+function v67Tier(n){return n>=50?'TRANSCENDENT':n>=30?'ABYSSAL':n>=15?'OVERDRIVE':n>=7?'RISING':'RIFT FLOW'}
+function v67SyncHud(){
+  const root=document.getElementById('v67CombatHud'),n=document.getElementById('v67ComboN'),tier=document.getElementById('v67Tier');if(!root||!n||!tier)return;
+  root.classList.toggle('show',state==='playing'&&V67.combo>=2);n.textContent=V67.combo;tier.textContent=v67Tier(V67.combo)
+}
+function v67ShowPerfect(){const e=document.getElementById('v67Perfect');if(!e)return;e.classList.add('show');clearTimeout(V67.perfectTimer);V67.perfectTimer=setTimeout(()=>e.classList.remove('show'),650)}
+
+const _v67NewGame=newGame;
+newGame=function(){v67Reset();const out=_v67NewGame();v67EnsureHud();return out};
+
+const _v67DamageEnemy=damageEnemy;
+damageEnemy=function(e,amount,owner,canChain=true){
+  if(!e||e.dead)return _v67DamageEnemy(e,amount,owner,canChain);
+  const hp0=e.hp,shield0=e.shield||0;
+  const out=_v67DamageEnemy(e,amount,owner,canChain);
+  const lost=Math.max(0,hp0-(e.hp||0))+Math.max(0,shield0-(e.shield||0));
+  if(lost>.25){const big=amount>=(owner?.damage||amount)*1.7;v67PushText(e.x,e.y-e.r-7,Math.round(lost),big?'#ffe16d':'#f7f3ff',big?15:11,big?.82:.58)}
+  return out
+};
+
+const _v67Hurt=hurt;
+hurt=function(p,amount,ex,ey,source=null){
+  const hp0=p?.hp||0,sh0=p?.shield||0,out=_v67Hurt(p,amount,ex,ey,source),lost=Math.max(0,hp0-(p?.hp||0))+Math.max(0,sh0-(p?.shield||0));
+  if(lost>.2&&p)v67PushText(p.x,p.y-26,'-'+Math.round(lost),'#ff7799',12,.68);
+  if(lost>0){V67.combo=Math.max(0,Math.floor(V67.combo*.55));V67.comboT=V67.combo?1.1:0}
+  return out
+};
+
+const _v67KillEnemy=killEnemy;
+killEnemy=function(e,owner){
+  const fresh=!!e&&!e.dead,boss=e?.type==='boss',x=e?.x||0,y=e?.y||0;
+  const out=_v67KillEnemy(e,owner);
+  if(fresh&&game){
+    V67.combo++;V67.comboT=boss?5:2.8;
+    const tier=Math.floor(V67.combo/10);
+    if(tier>V67.lastTier){V67.lastTier=tier;game.score+=tier*180;v67PushText(x,y-34,`${V67.combo} COMBO!`,'#ffd166',boss?21:17,1)}
+    else if(boss)v67PushText(x,y-38,'BOSS BREAK','#ff82dd',21,1.05);
+    if(owner&&V67.combo>1&&V67.combo%25===0){owner.shield=Math.min(owner.maxHp*.5,(owner.shield||0)+12);toast(`✦ ${V67.combo} COMBO：裂隙護盾 +12`)}
+  }
+  return out
+};
+
+const _v67Dash=dash;
+dash=function(p){
+  if(!p||p.dead)return _v67Dash(p);
+  let danger=false,nearest=Infinity;
+  if(game?.enemyBullets)for(const b of game.enemyBullets){const q=d2(p,b);if(q<nearest)nearest=q;if(q<(p.r+(b.r||4)+48)**2){danger=true;break}}
+  if(!danger&&game?.enemies)for(const e of game.enemies){if(!e.dead&&d2(p,e)<72*72){danger=true;break}}
+  const before=p.dashing||0,out=_v67Dash(p);
+  if(danger&&(p.dashing||0)>before){
+    V67.perfect++;p.invuln=Math.max(p.invuln||0,.9);p.shield=Math.min(p.maxHp*.42,(p.shield||0)+6);game.score+=150+V67.combo*8;
+    V67.combo=Math.max(2,V67.combo+2);V67.comboT=3.2;v67PushText(p.x,p.y-34,'PERFECT','#8ff7ff',16,.8);v67ShowPerfect();burst(p.x,p.y,'#8ff7ff',10)
+  }
+  return out
+};
+
+function v67EnemyIsRanged(e){return ['shooter','sniper','frost','artillery','mortar','chrono','doomseer','echo'].includes(e.type)}
+function v67TelegraphEnemy(e){
+  if(!e||e.dead||!game)return;const p=nearestPlayer(e);if(!p)return;
+  ctx.save();
+  const boss=e.type==='boss',shot=Number(e.shotT)||99,skill=Number(e.skillT)||99,charge=Number(e.chargeT)||99;
+  if(boss&&(skill<.62||shot<.34)){
+    const a=Math.atan2(p.y-e.y,p.x-e.x),len=Math.min(360,Math.sqrt(d2(e,p)));ctx.globalAlpha=.2+.16*Math.sin(game.t*18);ctx.strokeStyle=e.cataclysm?'#ff416f':e.abyss?'#c776ff':'#ff8ca8';ctx.lineWidth=e.cataclysm?5:3;ctx.setLineDash([10,8]);ctx.beginPath();ctx.moveTo(e.x,e.y);ctx.lineTo(e.x+Math.cos(a)*len,e.y+Math.sin(a)*len);ctx.stroke();ctx.setLineDash([]);ctx.beginPath();ctx.arc(p.x,p.y,e.cataclysm?54:40,0,TAU);ctx.stroke()
+  }else if(v67EnemyIsRanged(e)&&shot<.36){
+    const a=Math.atan2(p.y-e.y,p.x-e.x),len=Math.min(220,Math.sqrt(d2(e,p)));ctx.globalAlpha=.18+.14*Math.sin(game.t*22);ctx.strokeStyle=e.color;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(e.x,e.y);ctx.lineTo(e.x+Math.cos(a)*len,e.y+Math.sin(a)*len);ctx.stroke()
+  }
+  if((e.type==='charger'||e.type==='voidblade')&&charge<.5){ctx.globalAlpha=.22+.13*Math.sin(game.t*20);ctx.strokeStyle='#ffd166';ctx.lineWidth=3;ctx.beginPath();ctx.arc(e.x,e.y,e.r+15,0,TAU);ctx.stroke()}
+  ctx.restore()
+}
+
+const _v67DrawEnemy=drawEnemy;
+drawEnemy=function(e){v67TelegraphEnemy(e);return _v67DrawEnemy(e)};
+
+function v67HeroFx(p){
+  if(!p||p.dead||!(p.v66Attack>0)||typeof V66!=='undefined'&&V66.reduced)return;
+  const q=Math.max(0,Math.min(1,p.v66Attack/.18)),face=p.v66Face||1;ctx.save();ctx.translate(p.x,p.y);ctx.globalAlpha=.15+.45*q;
+  if(p.hero==='ranger'){ctx.strokeStyle='#8ff7ff';ctx.lineWidth=2;for(let i=-1;i<=1;i++){ctx.beginPath();ctx.moveTo(face*12,i*5);ctx.lineTo(face*(28+q*12),i*7);ctx.stroke()}}
+  else if(p.hero==='knight'){ctx.strokeStyle='#ffd166';ctx.lineWidth=5;ctx.beginPath();ctx.arc(face*5,2,25,-1.05,1.05);ctx.stroke()}
+  else if(p.hero==='mage'){ctx.strokeStyle='#c38cff';ctx.lineWidth=2;for(let i=0;i<3;i++){ctx.beginPath();ctx.arc(0,0,16+i*5+q*4,0,TAU);ctx.stroke()}}
+  else if(p.hero==='support'){ctx.strokeStyle='#7dffb2';ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,27+q*6,0,TAU);ctx.stroke();v65line(-8,0,8,0,'#fff2a0',2);v65line(0,-8,0,8,'#fff2a0',2)}
+  else if(p.hero==='shadow'){ctx.strokeStyle='#ff5c9a';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-face*18,-15);ctx.lineTo(face*28,12);ctx.stroke();ctx.strokeStyle='#8eb5ff';ctx.beginPath();ctx.moveTo(-face*22,10);ctx.lineTo(face*25,-12);ctx.stroke()}
+  else if(p.hero==='engineer'){ctx.fillStyle='#ff9c45';for(let i=0;i<4;i++)ctx.fillRect(face*(15+i*7),-2+(i%2)*4,4,4)}
+  else if(p.hero==='elementalist'){for(const [a,c] of [[0,'#ff765c'],[2.1,'#78dfff'],[4.2,'#ffe16d']]){ctx.fillStyle=c;ctx.beginPath();ctx.arc(Math.cos(a+game.t*4)*23,Math.sin(a+game.t*4)*14,3+q*2,0,TAU);ctx.fill()}}
+  ctx.restore()
+}
+const _v67DrawPlayer=drawPlayer;
+drawPlayer=function(p){const out=_v67DrawPlayer(p);v67HeroFx(p);return out};
+
+const _v67Update=update;
+update=function(dt){
+  const out=_v67Update(dt);
+  if(state==='playing'){
+    V67.comboT=Math.max(0,V67.comboT-dt);if(V67.comboT<=0&&V67.combo>0){V67.combo=Math.max(0,V67.combo-1);V67.comboT=V67.combo?Math.max(.12,1.05-Math.min(.65,V67.combo*.012)):0}
+    for(const t of V67.texts){t.life-=dt;t.x+=t.vx*dt;t.y+=t.vy*dt;t.vy*=.985}
+    V67.texts=V67.texts.filter(t=>t.life>0)
+  }
+  v67SyncHud();return out
+};
+
+function v67DrawFloating(){
+  if(!game||!V67.texts.length)return;const z=game.camera.zoom,cx=game.camera.x,cy=game.camera.y;ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';
+  for(const t of V67.texts){const a=Math.max(0,t.life/t.max),sx=(t.x-cx)*z+W/2,sy=(t.y-cy)*z+H/2;ctx.globalAlpha=Math.min(1,a*1.7);ctx.font=`900 ${Math.max(9,t.size*z)}px Courier New`;ctx.lineWidth=3;ctx.strokeStyle='rgba(8,4,26,.8)';ctx.strokeText(t.text,sx,sy);ctx.fillStyle=t.color;ctx.fillText(t.text,sx,sy)}ctx.restore()
+}
+const _v67Draw=draw;
+draw=function(){const out=_v67Draw();v67DrawFloating();return out};
+
+const _v67SetupMode=setupMode;
+setupMode=function(){_v67SetupMode();v67EnsureHud();$('modeSubtitle').textContent=(playerCount===2?'V6.7 本機合作｜':'V6.7 單人｜')+'戰鬥重鑄：傷害數字／連段／技能預警／職業特效／完美閃避';$('modeBadge').textContent=playerCount===2?'2 PLAYERS / V6.7 COMBAT':'1 PLAYER / V6.7 COMBAT'};
