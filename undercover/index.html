@@ -18,13 +18,13 @@ button,input,select,textarea{font:inherit}button{touch-action:manipulation}.app{
 </head>
 <body>
 <main class="app">
-<header class="top"><div><div class="eyebrow">PIXEL PARTY / STORY LAB</div><h1>WHO'S THE SPY?</h1></div><div class="version">V3.1 / STORY+</div></header>
+<header class="top"><div><div class="eyebrow">PIXEL PARTY / STORY LAB</div><h1>WHO'S THE SPY?</h1></div><div class="version">V3.2 / 100 STORIES</div></header>
 <section class="panel">
 <div class="screen active" id="setup">
 <div class="hero"><div class="face" id="heroFace">?</div><h2 id="heroTitle">像素內鬼・風味瓶版</h2><p class="muted" id="heroDesc">把實體聞香瓶變成遊戲的一部分：分配瓶號、輪流聞香、描述氣味，再找出不一樣的人。</p></div>
 <div class="tabs"><button class="tab active" data-mode="flavor">🧪 風味瓶</button><button class="tab" data-mode="word">ABC 文字</button><button class="tab" data-mode="story">📖 妙語說書人</button></div>
 <div class="lab" id="lab"><div class="labhead"><span>AROMA LAB / 本局風味瓶</span><span class="tag">搭配實體瓶</span></div><div class="pair"><div class="bcard"><div class="bcopy"><small>MAJORITY</small><b id="prevNameA">檸檬</b><span id="prevNoA">瓶號 A-01</span></div></div><div class="vs">VS</div><div class="bcard"><div class="bcopy"><small>UNDERCOVER</small><b id="prevNameB">柑橘</b><span id="prevNoB">瓶號 B-01</span></div></div></div><div class="rules">每位玩家只看自己的瓶號 → 拿對應聞香瓶聞 5–10 秒 → 用一句話描述。不能直接說瓶名、瓶號或答案。</div></div>
-<div class="storyLab storyOnly hidden" id="storyLab"><div class="storyTitle"><div class="storyIcon">📚</div><div><b>STORY LAB / 妙語說書人</b><span>大量故事題庫・每局都能換一種世界觀</span></div></div><div class="storyFlow"><div class="storyStep"><strong>1</strong>抽角色</div><div class="storyStep"><strong>2</strong>看秘密元素</div><div class="storyStep"><strong>3</strong>輪流續寫</div><div class="storyStep"><strong>4</strong>猜故事終點</div></div><div class="rules">說書人知道「故事終點」，其他玩家各拿一個秘密元素。所有人輪流補上 1–3 句，必須自然把自己的提示藏進故事裡，最後一起猜故事真正要走向哪裡。</div></div>
+<div class="storyLab storyOnly hidden" id="storyLab"><div class="storyTitle"><div class="storyIcon">📚</div><div><b>STORY LAB / 妙語說書人</b><span>100 組故事題庫・每局都能換一種世界觀</span></div></div><div class="storyFlow"><div class="storyStep"><strong>1</strong>抽角色</div><div class="storyStep"><strong>2</strong>看秘密元素</div><div class="storyStep"><strong>3</strong>輪流續寫</div><div class="storyStep"><strong>4</strong>猜故事終點</div></div><div class="rules">說書人知道「故事終點」，其他玩家各拿一個秘密元素。所有人輪流補上 1–3 句，必須自然把自己的提示藏進故事裡，最後一起猜故事真正要走向哪裡。</div></div>
 <div class="grid">
 <div class="field"><label>玩家人數</label><select id="players"></select></div><div class="field" id="roleCountField"><label>內鬼人數</label><select id="spies"></select></div>
 <div class="field full"><label>玩家名稱 <span class="hint">（可空白；每行一人）</span></label><textarea id="names" placeholder="阿忠\n小安\nLucy\n玩家4"></textarea></div>
@@ -43,7 +43,7 @@ button,input,select,textarea{font:inherit}button{touch-action:manipulation}.app{
 <div class="screen" id="secretScreen"><div class="status"><span id="sprog">PLAYER 1 / 6</span><span>TOP SECRET</span></div><div class="secret" id="secretCard"><div class="roletag" id="roleTag">CIVILIAN</div><div class="role" id="role">你是平民</div><div class="word" id="word">盲聞・不要猜答案</div><div class="storyPrompt hidden" id="storyPrompt"><small id="storyPromptLabel">SECRET STORY ELEMENT</small><div id="storyPromptText"></div></div><div class="note" id="note"></div></div><button class="btn green" id="next">✓ 我記住了・遮住畫面</button></div>
 <div class="screen" id="ready"><div class="summary"><div class="trophy" id="readyIcon">🕵️</div><h2 id="readyTitle">所有人都看完了！</h2><p class="muted" id="readyDesc"></p><div class="sbox" id="summary"></div><div class="storyReady hidden" id="storyReady"><div class="storyCard"><div class="kicker">TONIGHT'S STORY</div><h3 id="publicStoryTitle"></h3><p id="publicOpening"></p></div><div class="storyOrder" id="storyOrder"></div><div class="goalBox"><strong>所有人說完後再揭曉</strong><div class="goalSecret" id="goalSecret">？？？？？？</div><button class="miniBtn" id="revealGoal">👁 揭曉故事終點</button></div></div><div class="warn" id="readyWarn"></div><button class="btn danger" id="restart">↻ 再玩一局</button><button class="btn ghost" id="back">⚙ 回設定頁</button></div></div>
 </section>
-<div class="footer">PIXEL PARTY V3.1・風味瓶 + 文字內鬼 + 妙語說書人 STORY+</div>
+<div class="footer">PIXEL PARTY V3.2・風味瓶 + 文字內鬼 + 妙語說書人 100 STORIES</div>
 </main><div class="toast" id="toast"></div>
 <script>
 (()=>{'use strict';
@@ -119,7 +119,39 @@ const storyCards=[
 ['空白的畢業紀念冊','翻開畢業紀念冊，所有同學照片都還在，唯獨自己的位置是一片空白。','找到一張能證明自己曾經在這個班級的合照'],
 ['只能往前走的巷子','一條熟悉的小巷突然變得無法回頭，每走一步，身後的路就會消失。','走到盡頭面對一直逃避的選擇'],
 ['星星收購站','夜市裡有個攤位高價收購「看過的星星」，每賣一顆就會忘記一段夜晚。','保住一顆和重要之人一起看過的星星'],
-['星期八','手機行事曆突然多出「星期八」，只有你能看見，而且那一天沒有任何人安排事情。','利用星期八完成一件平常永遠來不及做的事']
+['星期八','手機行事曆突然多出「星期八」，只有你能看見，而且那一天沒有任何人安排事情。','利用星期八完成一件平常永遠來不及做的事'],
+['逆向書店','巷尾新開的書店只賣從結局開始印的小說，老闆說讀完一本就能改變一個決定。','讀到最後才發現書裡主角就是自己'],
+['夜班計程車','凌晨攔到一輛沒有車牌的計程車，司機問的第一句不是去哪裡，而是「你最想回到哪一天？」','選擇一個只能停留十分鐘的過去'],
+['沒有天空的城市','某座城市從出生起就被巨大屋頂覆蓋，居民從沒見過天空，今天屋頂第一次裂開。','讓所有人第一次看見真正的星空'],
+['會偷夢的枕頭','你換了一顆二手枕頭後開始夢見陌生人的人生，而自己的夢卻一天比一天模糊。','找到前任主人並交換回彼此的夢'],
+['第零號乘客','最後一班捷運的監視器顯示車上比實際人數多一位乘客，而且系統把他標記為「0」。','發現零號乘客一直在保護列車避免事故'],
+['冰箱裡的冬天','打開老冰箱時，冷風後方竟是一片正在下雪的森林，而且雪地上有你家的腳印。','走進森林找回童年遺失的一件玩具'],
+['漂浮的郵筒','颱風過後，一個紅色郵筒漂在半空中，投入的信會消失，隔天卻收到陌生人的回信。','和另一個年代的人完成一次跨時代通信'],
+['一百層地下室','新家地下室明明只有一層，樓梯卻在午夜自動往下延伸到第100層。','在最底層找到這棟房子真正的第一位住戶'],
+['不會老的鐘錶匠','鎮上鐘錶匠幾十年來從未變老，他修好的每支鐘都會替主人保存一天。','發現他把自己的時間分給了整個小鎮'],
+['被取消的明天','午夜新聞宣布「明天因故取消」，所有日曆都直接跳到後天，只有你仍記得本來的明天。','把被取消的一天重新帶回所有人的時間裡'],
+['只有你聽得到的警報','城市每天中午都很平靜，但你卻聽見只有自己聽得到的防空警報，而且聲音越來越近。','找到發出警報的地下舊控制室'],
+['會換位置的房間','每天醒來，你的房間都出現在不同建築裡：學校、醫院、飯店，甚至陌生人的家。','找到讓房間停下來的真正歸屬感'],
+['最後一家照相館','老照相館宣布關門，老闆說最後一天只拍「人們想忘記但不該忘記的事」。','拍下一張多年後能拯救自己的照片'],
+['太陽請假日','氣象台宣布太陽今天不會升起，但所有人仍照常上班上課，只有孩子們開始尋找太陽。','在城市最高處找到藏起來休息的太陽'],
+['失蹤的海岸線','早晨醒來，整座城市的海岸線後退了十公里，露出一條從未有人見過的石板路。','沿石板路找到沉在海底的舊城入口'],
+['無人回覆的群組','手機突然被加入一個有上千人的群組，但所有訊息都只有你發送，沒有人回覆。','發現群組成員其實都在不同年份閱讀你的訊息'],
+['借來的心跳','醫院給你一個實驗裝置，能暫時借用別人的心跳與情緒，卻開始收到陌生人的記憶。','找到心跳真正的主人並完成他的心願'],
+['霧裡的火車','每逢大霧，廢棄月台就會停靠一班沒有時刻表的火車，而且只開門一分鐘。','搭上火車前往被霧隱藏的小鎮'],
+['記憶博物館','博物館新展覽不是古物，而是一段段被人捐出的記憶，其中一段標示著你的名字。','取回一段自己曾主動捐出的重要記憶'],
+['跟著月光走的船','海上出現一艘沒有船員的白船，它每天只沿著月光前進，岸邊老人說它從不載活人。','登船後發現它負責送未完成的願望回家'],
+['不准睡覺的小鎮','小鎮規定所有人午夜後禁止睡覺，違規的人隔天就會被大家忘記。','揭開規定其實是為了阻止共同惡夢成真'],
+['世界最後一棵樹','地球最後一棵樹突然開花，花瓣落下的位置都長出一扇小門。','穿過其中一扇門找到仍完整存在的森林'],
+['一分鐘偵探社','街角偵探社承諾任何案件都能在一分鐘內破案，但每次破案都會失去一分鐘記憶。','接下自己失蹤的一分鐘記憶案件'],
+['失控的天氣遙控器','你在跳蚤市場買到一個舊遙控器，按鍵竟能切換晴天、下雨、下雪與颱風。','在電池耗盡前把城市天氣恢復正常'],
+['會說未來話的孩子','鄰居家的孩子開始說沒人聽得懂的句子，幾天後大家發現那其實是十年後的語言。','從他的話中找到一則對現在的警告'],
+['被遺忘的超級英雄','城市博物館裡有一整層英雄展覽，唯獨中央雕像沒有名字，所有人也想不起他是誰。','找回英雄犧牲自己換來全城平安的真相'],
+['一封寄給全世界的信','某天每個人的信箱都收到同一封手寫信，開頭只有一句：「對不起，我把時間弄壞了。」','找到寫信的人並修復逐漸錯亂的時間'],
+['沒有重力的星期一','星期一早上重力突然消失，城市裡所有東西開始飄起，只有老舊鐘塔仍牢牢貼在地面。','利用鐘塔內的裝置恢復城市重力'],
+['博物館裡醒來的畫','閉館後，一幅百年肖像裡的人走出畫框，第一句話就是問現在是哪一年。','幫他找到當年沒能交出去的一封信'],
+['只剩一頁的日曆','新年第一天，全世界的日曆突然只剩最後一頁，上面沒有日期，只有一句「完成最重要的事」。','完成那件事後讓時間重新開始'],
+['城市地下的第二個太陽','地鐵施工挖到巨大地下空洞，裡面竟懸著另一顆小型太陽，照亮一座無人城市。','發現地下城市正等待地表居民重新啟動'],
+['凌晨零點的最後願望','每年只有今晚零點，廣場噴泉會實現一個人的願望，但今年水池裡浮出上百張寫著同一願望的紙。','發現整座城市共同希望找回一個被遺忘的人']
 ];
 const storyElements=['一把沒有鑰匙孔的鑰匙','遠處傳來的鋼琴聲','一張被雨淋濕的照片','只剩一格電的手機','會倒著唸名字的鸚鵡','一枚發熱的舊硬幣','突然停下來的電梯','淡淡的柑橘香','沒有寄件人的包裹','一盞忽明忽暗的路燈','紅色雨傘','碎掉的懷錶','寫著錯誤日期的報紙','一隻總是走在前面的黑貓','一句似曾相識的話','只在鏡子裡出現的門','一杯已經冷掉的咖啡','一張畫了一半的地圖','某人突然笑了','一個不該出現在這裡的名字','沾著泥的白鞋','會自己轉動的指南針','一張只有半邊的車票','陌生人的語音留言','沒有指針的鐘','一枚透明鈕扣','突然出現的童年玩具','玻璃瓶裡的一顆星','一本被撕掉最後一頁的書','沒有影子的路人','一首沒有人記得歌名的旋律','寫著「別回頭」的紙條','一束已經乾掉的花','不會融化的冰塊','從口袋裡掉出的陌生鑰匙','一張拍到未來的照片','只亮三秒的招牌','反覆出現的數字 17','一個裝著海水的信封','一條通往屋頂的紅線','凌晨準時響起的鬧鐘','一個會回答問題的販賣機','突然失去訊號的廣播','一張寫錯名字的名片','從遠處飄來的爆米花香','一隻戴著項圈卻沒有主人的狗','一扇只能推不能拉的門','沒有任何內容的簡訊','一枚刻著明天日期的硬幣','天空突然掉下一片羽毛'];
 let mode='flavor',state={players:[],roles:[],i:0,elements:[],storyteller:-1,lastStory:-1};
