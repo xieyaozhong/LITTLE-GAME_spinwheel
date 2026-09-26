@@ -83,6 +83,7 @@
       }
     }
     draw(){
+      if(window.ArenaSkillModels)return super.draw();
       if(this.c?.juggernautEngine&&!this.out&&!this.burst&&(this.colossusSkillState||'idle')==='idle'){
         const p=Math.max(.18,this.colossusPressurePulse||0);
         ctx.save();

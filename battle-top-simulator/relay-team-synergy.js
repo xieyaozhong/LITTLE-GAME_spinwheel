@@ -392,7 +392,7 @@
       }
       ctx.restore();
     }
-    draw(){super.draw();this.drawBondEffects()}
+    draw(){super.draw();if(!window.ArenaSkillModels)this.drawBondEffects()}
   };
 
   const start=$q('#start'),previousStart=start?.onclick;

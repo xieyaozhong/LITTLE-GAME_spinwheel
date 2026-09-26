@@ -139,6 +139,7 @@
   draw(){
    if(this.out||this.burst)return;
    if(!this.c.phaseCloak||!this.phaseInvisible)return super.draw();
+   if(window.ArenaSkillModels)return;
 
    // 隱形時只保留非常淡的空氣折射，讓玩家知道它仍在場上。
    const flicker=.055+.035*(.5+.5*Math.sin(this.phasePulse*2.1));

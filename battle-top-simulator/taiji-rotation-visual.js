@@ -86,6 +86,7 @@
 
   Top = class Top extends PriorTop {
     draw() {
+      if(window.ArenaSkillModels)return super.draw();
       if (!this.c?.taijiV2) {
         super.draw();
         return;

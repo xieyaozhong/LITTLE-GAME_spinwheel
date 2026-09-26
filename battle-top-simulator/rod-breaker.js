@@ -199,7 +199,7 @@
    }
    ctx.restore();
   }
-  draw(){super.draw();this.drawBreakerFx()}
+  draw(){super.draw();if(!window.ArenaSkillModels)this.drawBreakerFx()}
  };
 
  const physicalCollide=collide;

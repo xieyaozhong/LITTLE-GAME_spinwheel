@@ -67,6 +67,7 @@
   }
   drawModel(speed){
    super.drawModel(speed);
+   if(window.ArenaModels)return;
    if(this.c.shape!=='twinNova'&&this.c.shape!=='twinNovaChild')return;
    const combined=this.c.shape==='twinNova'&&!this.splitPart;
    const mark=combined?'∞':(this.splitPart||'β');

@@ -161,6 +161,7 @@
   }
   draw(){
    super.draw();
+   if(window.ArenaSkillModels)return;
    if(!this.c.rageEngine||this.out||this.burst)return;
    const rage=rageRatio(this),stage=rageStage(this),attack=effectiveAttack(this);
    if(rage<=.015)return;

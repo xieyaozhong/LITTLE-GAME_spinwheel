@@ -53,7 +53,7 @@
     }
     if(kind==='sky')return top.skyJumpState||'idle';
     if(kind==='phase')return top.phaseInvisible?'phase':'idle';
-    if(kind==='charm')return top.charmedBy?'controlled':(top.charmCount||0)>0?`cast:${top.charmCount}`:'idle';
+    if(kind==='charm')return top.charmedBy?'controlled':(top.charmCastPulse||0)>.02?`cast:${top.charmCount||0}`:'idle';
     if(kind==='rage')return top.rageSkillState&&top.rageSkillState!=='idle'?top.rageSkillState:'idle';
     if(kind==='morph')return top.morphMode||'idle';
     if(kind==='taiji')return top.taijiMode||'idle';
@@ -67,7 +67,7 @@
       if(top.colossusVortexActive||(top.colossusVortexPulse||0)>.03)return 'vortexActive';
       return 'idle';
     }
-    if(kind==='breaker')return `hits:${top.counterHits||0}`;
+    if(kind==='breaker')return (top.breakerLungeWindow||0)>0?'lunge':`hits:${top.counterHits||0}`;
     if(kind==='wooden')return (top.woodAuraCooldown||0)>.42?'aura':'idle';
     return 'idle';
   }
@@ -236,6 +236,7 @@
   }
 
   function drawSignature(top){
+    if(window.ArenaSkillModels)return window.ArenaSkillModels.draw(top,kindOf(top));
     const kind=kindOf(top);if(!kind||kind==='colossus'||!active(top))return;
     const pulse=.5+.5*Math.sin(time*(kind==='chrono'?2.4:4.2)+(top.fxHuePhase||top.index||0)),state=stateOf(top,kind),idle=state==='idle'||state==='hits:0';
     ctx.save();ctx.translate(top.x,top.y);ctx.globalCompositeOperation='screen';ctx.globalAlpha=idle?(reduceMotion ? .24 : .32):.92;
@@ -244,6 +245,7 @@
   }
 
   function drawBond(top){
+    if(window.ArenaSkillModels)return window.ArenaSkillModels.bond(top);
     const bond=top.relayCoreBondData;if(!bond||!active(top))return;
     const activeFx=clamp(Math.max(top.relayBondSkillPulse||0,top.relayBondLocalFx||0),0,1);if(activeFx<=.03&&!(top.relayBondShieldTimer>0)&&!(top.relayBondPhaseTimer>0)&&!(top.relayBondAfterimage>0))return;
     const color=top.relayBondColor||bond.color||'#82e8ff',partner=metaPresets?.[bond.partnerKey]||null,partnerColor=partner?.primary||top.c.secondary||'#ffffff',r=top.r,m=motionOf(top);
@@ -256,16 +258,18 @@
     ctx.restore();
   }
   function drawBondHit(top){
+    if(!active(top)||top.phaseInvisible)return;
     const hit=clamp(Math.max(top.relayBondHitPulse||0,top.relayBondLocalHit||0),0,1);if(hit<=0)return;const color=top.relayBondHitColor||top.relayBondLocalHitColor||'#fff',r=top.r,m=motionOf(top),progress=1-hit;
     ctx.save();ctx.translate(top.x,top.y);ctx.rotate(m.angle);ctx.globalCompositeOperation='screen';fillGlow(color,r*(.68+progress*.42),.10+hit*.14);ctx.strokeStyle=alpha(color,hit*.30);ctx.lineWidth=1+hit;ctx.beginPath();ctx.ellipse(0,0,r*(.70+progress*.52),r*(.30+progress*.18),0,0,Math.PI*2);ctx.stroke();
     for(const side of [-1,1]){ctx.fillStyle=alpha(color,hit*.32);ctx.beginPath();ctx.moveTo(side*r*.34,-r*.08);ctx.lineTo(side*r*(.90+progress*.38),0);ctx.lineTo(side*r*.34,r*.08);ctx.closePath();ctx.fill()}ctx.restore();
   }
 
   function announceTransition(top,kind,before,after,beforeCounters){
+    if(kind==='charm'&&(top.charmCount||0)>beforeCounters.charmCount){triggerSkill(top,kind,skillLabel(top,kind,after));return}
     if(!kind||before===after)return;
     let should=after!=='idle';
     if(kind==='charm')should=(top.charmCount||0)>beforeCounters.charmCount||after==='controlled';
-    if(kind==='breaker')should=(top.counterHits||0)>beforeCounters.counterHits;
+    if(kind==='breaker')should=after==='lunge'||(top.counterHits||0)>beforeCounters.counterHits;
     if(kind==='wooden')should=after==='aura'&&before!=='aura';
     if(kind==='rage'&&after==='idle')should=false;
     if(kind==='chrono'&&after==='idle')should=false;
@@ -294,7 +298,7 @@
       if(!rageAdvanced)announceTransition(this,kind,before,after,counters);
       if(rageAdvanced)triggerSkill(this,kind,`血怒階段 ${rageStage}`,{strength:1+rageStage*.18});
       const bondPower=Math.max(this.relayBondSkillPulse||0,this.relayBondLocalFx||0),bondLatched=bondPower>.78;
-      if(this.relayCoreBondData&&bondLatched&&!beforeBond){const bond=this.relayCoreBondData;triggerSkill(this,kindOf(this),`${bond.skill}・${bond.variant||'羈絆共鳴'}`,{bond:true,color:bond.color||this.relayBondColor,mark:bond.icon||'羈',strength:1.5})}
+      if(this.relayCoreBondData&&bondLatched&&!beforeBond){const bond=this.relayCoreBondData;triggerSkill(this,window.ArenaSkillModels?.bondKind(bond)||kindOf(this),`${bond.skill}・${bond.variant||'羈絆共鳴'}`,{bond:true,color:bond.color||this.relayBondColor,mark:bond.icon||'羈',strength:1.5})}
       this.skillFxKind=kind;this.skillFxState=after;this.skillFxCharmCount=this.charmCount||0;this.skillFxCounterHits=this.counterHits||0;this.skillFxRageStage=rageStage;this.skillFxBondLatched=bondLatched;
     }
     draw(){super.draw();drawSignature(this);drawBond(this);drawBondHit(this)}
@@ -314,6 +318,7 @@
     ctx.save();ctx.translate(x,y);ctx.fillStyle=alpha(color,.12+power*.30);ctx.beginPath();ctx.moveTo(0,-r*.7);ctx.quadraticCurveTo(r*.7,0,0,r);ctx.quadraticCurveTo(-r*.7,0,0,-r*.7);ctx.fill();ctx.restore();
   }
   function burstMotif(fx,r,power,progress){
+    if(window.ArenaSkillModels)return window.ArenaSkillModels.burst(fx,r,power,progress);
     const kind=fx.kind||'phase',accent=fx.secondary||'#ffffff',spin=(fx.spinSign||1)*(fx.spinRate||0);
     if(kind==='twin'){
       const spread=r*(.18+.20*progress);ctx.strokeStyle=alpha(accent,.16+power*.42);ctx.lineWidth=.8+power*1.2;ctx.beginPath();ctx.moveTo(-spread,0);ctx.quadraticCurveTo(0,-r*.10*spin,spread,0);ctx.stroke();burstNode(-spread,0,r*.075,fx.color,power);burstNode(spread,0,r*.075,accent,power);

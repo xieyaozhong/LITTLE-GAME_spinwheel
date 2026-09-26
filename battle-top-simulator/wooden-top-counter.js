@@ -66,6 +66,7 @@
    return super.bladeRadius(i);
   }
   drawModel(speed){
+   if(window.ArenaModels)return window.ArenaModels.render(ctx,this);
    if(this.c.shape!=='wooden')return super.drawModel(speed);
 
    const r=this.r;

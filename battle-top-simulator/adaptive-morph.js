@@ -236,6 +236,7 @@
    if(form){this.c.primary=form.primary;this.c.secondary=form.secondary;this.c.accent=form.accent}
    super.draw();
    this.c.primary=original.primary;this.c.secondary=original.secondary;this.c.accent=original.accent;
+   if(window.ArenaSkillModels)return;
    if(this.out||this.burst)return;
 
    const primary=form?.primary||original.primary,secondary=form?.secondary||original.secondary,accent=form?.accent||original.accent;

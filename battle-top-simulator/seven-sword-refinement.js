@@ -160,6 +160,7 @@
   }
   draw(){
    super.draw();
+   if(window.ArenaSkillModels)return;
    if(!this.isSwordUser?.()||this.out||this.burst)return;
    if(this.swordFxTrail.length>1){
     ctx.save();ctx.globalCompositeOperation='screen';ctx.lineCap='round';

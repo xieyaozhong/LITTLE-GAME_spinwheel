@@ -152,6 +152,7 @@
   }
   draw(){
    super.draw();
+   if(window.ArenaSkillModels)return;
    if(!this.twinCharmBetrayal||this.out||this.burst)return;
    const source=this.twinCharmSource,pulse=.5+.5*Math.sin(time*8.4),r=this.r*(1.32+pulse*.08);
    ctx.save();ctx.translate(this.x,this.y);ctx.rotate(-time*1.9);

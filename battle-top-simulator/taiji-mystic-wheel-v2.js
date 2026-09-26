@@ -149,6 +149,7 @@
       }
       super.draw();
       Object.assign(this.c, original);
+      if(window.ArenaSkillModels)return;
       if (this.out || this.burst) return;
       const yang = this.taijiMode === 'yang';
       const pulse = 0.5 + 0.5 * Math.sin(this.taijiPulse);

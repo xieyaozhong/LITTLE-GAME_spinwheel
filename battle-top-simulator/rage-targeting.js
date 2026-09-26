@@ -282,6 +282,7 @@
   }
   draw(){
    super.draw();
+   if(window.ArenaSkillModels)return;
    if(!isRager(this)||this.out||this.burst)return;
    const recovering=this.rageSkillState==='idle'&&this.rageRecoveryTimer>0;
    if(this.rageSkillState==='idle'&&!recovering)return;

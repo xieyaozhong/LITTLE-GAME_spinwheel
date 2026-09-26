@@ -171,6 +171,7 @@
     }
     draw(){
       super.draw();
+      if(window.ArenaSkillModels)return;
       drawSourceEffect(this);
       drawHitEffect(this);
     }

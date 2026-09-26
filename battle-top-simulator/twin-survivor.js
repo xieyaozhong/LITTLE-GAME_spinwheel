@@ -181,6 +181,7 @@
   }
   draw(){
    super.draw();
+   if(window.ArenaSkillModels)return;
    if(!this.twinInheritanceAwakened||!combatAlive(this))return;
    const guardian=this.twinInheritanceMode==='guardian';
    const pulse=.5+.5*Math.sin(time*(guardian?4.2:7.4));

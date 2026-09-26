@@ -338,8 +338,8 @@
     this.y=originalY-h*24;
     this.r=originalR*(1+h*.16);
    }
-   super.drawModel(speed);
-   this.y=originalY;this.r=originalR;
+   try{super.drawModel(speed)}finally{this.y=originalY;this.r=originalR}
+   if(window.ArenaModels)return;
    ctx.save();
    ctx.translate(this.x,originalY-h*24);
    ctx.rotate(this.angle*.72);

@@ -273,6 +273,7 @@
   }
   draw(){
    super.draw();
+   if(window.ArenaSkillModels)return;
    if(this.out||this.burst)return;
 
    const charmed=!!this.charmedBy,caster=this.isCharmCaster();

@@ -255,6 +255,7 @@
   }
   draw(){
    super.draw();
+   if(window.ArenaSkillModels)return;
    if(!this.isSwordUser()||this.out||this.burst)return;
    const active=this.swordState!=='idle',pulse=.5+.5*Math.sin(time*(this.swordState==='guard'?5.2:8.4));
    ctx.save();ctx.translate(this.x,this.y);ctx.globalCompositeOperation='screen';ctx.rotate(time*(this.swordState==='guard'?-.72:1.25));
